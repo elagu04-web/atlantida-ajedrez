@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
-import { ResultadoPartida, rondaCompleta, puedeEditarJugadores } from "@/lib/tournaments";
+import { rondaCompleta, puedeEditarJugadores } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
 
 const estadoLabel: Record<string, string> = {
@@ -277,60 +277,79 @@ export default function TorneoPage() {
             <h3 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 font-semibold">
               Ronda {ronda.numero}
             </h3>
-            <table className="w-full text-sm">
-              <thead className="border-b border-zinc-200 text-left text-zinc-500">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Blancas</th>
-                  <th className="px-4 py-2 font-medium">Negras</th>
-                  <th className="px-4 py-2 font-medium">Resultado</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {ronda.emparejamientos.map((e) => (
-                  <tr key={e.numero} className="border-b border-zinc-100 last:border-0">
-                    <td className="px-4 py-2">{nombreDe(e.blancasId)}</td>
-                    <td className="px-4 py-2">
-                      {e.negrasId ? nombreDe(e.negrasId) : <span className="text-zinc-400">— descansa —</span>}
-                    </td>
-                    <td className="px-4 py-2">
-                      {e.negrasId ? (
-                        <select
-                          value={e.resultado ?? ""}
-                          onChange={(ev) =>
-                            registrarResultado(
-                              torneo.id,
-                              ronda.numero,
-                              e.numero,
-                              (ev.target.value || null) as ResultadoPartida | null
-                            )
-                          }
-                          className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
-                        >
-                          <option value="">Sin resultado</option>
-                          <option value="1-0">1 - 0 (ganan blancas)</option>
-                          <option value="0-1">0 - 1 (ganan negras)</option>
-                          <option value="1/2-1/2">½ - ½ (tablas)</option>
-                        </select>
-                      ) : (
-                        <span className="text-zinc-400">punto libre</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {e.negrasId && (
-                        <button
-                          onClick={() => corregirColor(torneo.id, ronda.numero, e.numero)}
-                          className="text-xs text-blue-600 hover:underline"
-                          title="Intercambiar quién jugó con blancas y quién con negras"
-                        >
-                          ↔ Corregir colores
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="flex flex-col divide-y divide-zinc-100">
+              {ronda.emparejamientos.map((e) =>
+                e.negrasId ? (
+                  <div key={e.numero} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="grid flex-1 grid-cols-3 gap-2">
+                      <button
+                        onClick={() =>
+                          registrarResultado(
+                            torneo.id,
+                            ronda.numero,
+                            e.numero,
+                            e.resultado === "1-0" ? null : "1-0"
+                          )
+                        }
+                        className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                          e.resultado === "1-0"
+                            ? "border-green-600 bg-green-600 text-white"
+                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                        }`}
+                      >
+                        🏆 {nombreDe(e.blancasId)}
+                      </button>
+                      <button
+                        onClick={() =>
+                          registrarResultado(
+                            torneo.id,
+                            ronda.numero,
+                            e.numero,
+                            e.resultado === "1/2-1/2" ? null : "1/2-1/2"
+                          )
+                        }
+                        className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                          e.resultado === "1/2-1/2"
+                            ? "border-zinc-600 bg-zinc-600 text-white"
+                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                        }`}
+                      >
+                        ½ Tablas
+                      </button>
+                      <button
+                        onClick={() =>
+                          registrarResultado(
+                            torneo.id,
+                            ronda.numero,
+                            e.numero,
+                            e.resultado === "0-1" ? null : "0-1"
+                          )
+                        }
+                        className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                          e.resultado === "0-1"
+                            ? "border-green-600 bg-green-600 text-white"
+                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                        }`}
+                      >
+                        🏆 {nombreDe(e.negrasId)}
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => corregirColor(torneo.id, ronda.numero, e.numero)}
+                      className="shrink-0 text-xs text-blue-600 hover:underline sm:ml-3"
+                      title="Intercambiar quién jugó con blancas y quién con negras"
+                    >
+                      ↔ colores
+                    </button>
+                  </div>
+                ) : (
+                  <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-500">
+                    <span>{nombreDe(e.blancasId)}</span>
+                    <span className="text-zinc-400">— descansa (punto libre) —</span>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         ))}
       </div>
