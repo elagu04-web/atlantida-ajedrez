@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useJugadores } from "@/context/JugadoresContext";
@@ -47,7 +47,9 @@ export default function TorneoPage() {
   const [eloNuevo, setEloNuevo] = useState("1500");
   const [modoEdicion, setModoEdicion] = useState(false);
   const [modoEmergencia, setModoEmergencia] = useState(false);
-  const [slotSeleccionado, setSlotSeleccionado] = useState<SlotEmparejamiento | null>(null);
+  const [arrastrando, setArrastrando] = useState<SlotEmparejamiento | null>(null);
+  const arrastrandoRef = useRef<SlotEmparejamiento | null>(null);
+  const [sobreSlot, setSobreSlot] = useState<SlotEmparejamiento | null>(null);
   const [mensajeEdicion, setMensajeEdicion] = useState<string | null>(null);
 
   const torneo = obtenerTorneo(id);
@@ -79,32 +81,51 @@ export default function TorneoPage() {
     setEloNuevo("1500");
   }
 
-  async function handleSlotClick(rondaNumero: number, slot: SlotEmparejamiento) {
+  function slotDesdeElemento(el: Element | null): SlotEmparejamiento | null {
+    const objetivo = el?.closest<HTMLElement>("[data-emp]");
+    if (!objetivo) return null;
+    const emparejamientoNumero = Number(objetivo.dataset.emp);
+    const color = objetivo.dataset.color as "blancas" | "negras" | undefined;
+    if (!emparejamientoNumero || !color) return null;
+    return { emparejamientoNumero, color };
+  }
+
+  function handlePointerDown(ev: React.PointerEvent<HTMLButtonElement>, slot: SlotEmparejamiento) {
+    try {
+      ev.currentTarget.setPointerCapture(ev.pointerId);
+    } catch {
+      // algunos navegadores/entornos no permiten capturar un puntero sintético; no es crítico
+    }
+    arrastrandoRef.current = slot;
+    setArrastrando(slot);
+    setSobreSlot(null);
     setMensajeEdicion(null);
-    if (!slotSeleccionado) {
-      setSlotSeleccionado(slot);
+  }
+
+  function handlePointerMove(ev: React.PointerEvent<HTMLButtonElement>) {
+    if (!arrastrandoRef.current) return;
+    const el = document.elementFromPoint(ev.clientX, ev.clientY);
+    setSobreSlot(slotDesdeElemento(el));
+  }
+
+  async function handlePointerUp(ev: React.PointerEvent<HTMLButtonElement>, rondaNumero: number) {
+    const origen = arrastrandoRef.current;
+    arrastrandoRef.current = null;
+    setArrastrando(null);
+    setSobreSlot(null);
+    if (!origen) return;
+    const el = document.elementFromPoint(ev.clientX, ev.clientY);
+    const destino = slotDesdeElemento(el);
+    if (!destino) return;
+    if (destino.emparejamientoNumero === origen.emparejamientoNumero && destino.color === origen.color) {
       return;
     }
-    if (
-      slotSeleccionado.emparejamientoNumero === slot.emparejamientoNumero &&
-      slotSeleccionado.color === slot.color
-    ) {
-      setSlotSeleccionado(null);
-      return;
-    }
-    const ok = await intercambiarJugadores(
-      torneo!.id,
-      rondaNumero,
-      slotSeleccionado,
-      slot,
-      modoEmergencia
-    );
+    const ok = await intercambiarJugadores(torneo!.id, rondaNumero, origen, destino, modoEmergencia);
     if (!ok) {
       setMensajeEdicion(
         "Esos dos jugadores ya se enfrentaron antes en este torneo — activá el modo de emergencia para forzarlo igual."
       );
     }
-    setSlotSeleccionado(null);
   }
 
   function handleEliminarUltimaRonda() {
@@ -330,7 +351,8 @@ export default function TorneoPage() {
                   <button
                     onClick={() => {
                       setModoEdicion((v) => !v);
-                      setSlotSeleccionado(null);
+                      setArrastrando(null);
+                      setSobreSlot(null);
                       setMensajeEdicion(null);
                     }}
                     className={`rounded-md px-3 py-1.5 text-xs font-medium ${
@@ -347,7 +369,7 @@ export default function TorneoPage() {
               {editandoEstaRonda && (
                 <div className="flex flex-col gap-2 border-b border-zinc-100 bg-amber-50 px-4 py-3 text-sm">
                   <p className="text-zinc-600">
-                    Tocá un jugador y después a otro para intercambiarlos (también cambia el color).
+                    Arrastrá un jugador encima de otro para intercambiarlos (también cambia el color).
                   </p>
                   <label className="flex items-center gap-2 font-medium text-amber-800">
                     <input
@@ -365,20 +387,32 @@ export default function TorneoPage() {
                 {ronda.emparejamientos.map((e) => {
                   const slotBlancas: SlotEmparejamiento = { emparejamientoNumero: e.numero, color: "blancas" };
                   const slotNegras: SlotEmparejamiento = { emparejamientoNumero: e.numero, color: "negras" };
-                  const esSeleccionado = (slot: SlotEmparejamiento) =>
-                    slotSeleccionado?.emparejamientoNumero === slot.emparejamientoNumero &&
-                    slotSeleccionado?.color === slot.color;
+                  const esSlot = (a: SlotEmparejamiento | null, b: SlotEmparejamiento) =>
+                    a?.emparejamientoNumero === b.emparejamientoNumero && a?.color === b.color;
+
+                  function claseSlot(slot: SlotEmparejamiento) {
+                    if (esSlot(arrastrando, slot)) {
+                      return "cursor-grabbing border-blue-600 bg-blue-50 opacity-50";
+                    }
+                    if (esSlot(sobreSlot, slot)) {
+                      return "cursor-grabbing border-blue-600 bg-blue-100 ring-2 ring-blue-500 ring-dashed";
+                    }
+                    return "cursor-grab border-zinc-300 bg-white hover:bg-zinc-50";
+                  }
 
                   if (editandoEstaRonda) {
                     return (
                       <div key={e.numero} className="flex items-center gap-2 p-4">
                         <button
-                          onClick={() => handleSlotClick(ronda.numero, slotBlancas)}
-                          className={`flex-1 rounded-md border px-3 py-3 text-sm font-medium ${
-                            esSeleccionado(slotBlancas)
-                              ? "border-blue-600 bg-blue-50 ring-2 ring-blue-500"
-                              : "border-zinc-300 bg-white hover:bg-zinc-50"
-                          }`}
+                          data-emp={e.numero}
+                          data-color="blancas"
+                          onPointerDown={(ev) => handlePointerDown(ev, slotBlancas)}
+                          onPointerMove={handlePointerMove}
+                          onPointerUp={(ev) => handlePointerUp(ev, ronda.numero)}
+                          style={{ touchAction: "none" }}
+                          className={`flex-1 select-none rounded-md border px-3 py-3 text-sm font-medium ${claseSlot(
+                            slotBlancas
+                          )}`}
                         >
                           {nombreDe(e.blancasId)}
                         </button>
@@ -386,12 +420,15 @@ export default function TorneoPage() {
                           <>
                             <span className="text-xs text-zinc-400">vs</span>
                             <button
-                              onClick={() => handleSlotClick(ronda.numero, slotNegras)}
-                              className={`flex-1 rounded-md border px-3 py-3 text-sm font-medium ${
-                                esSeleccionado(slotNegras)
-                                  ? "border-blue-600 bg-blue-50 ring-2 ring-blue-500"
-                                  : "border-zinc-300 bg-white hover:bg-zinc-50"
-                              }`}
+                              data-emp={e.numero}
+                              data-color="negras"
+                              onPointerDown={(ev) => handlePointerDown(ev, slotNegras)}
+                              onPointerMove={handlePointerMove}
+                              onPointerUp={(ev) => handlePointerUp(ev, ronda.numero)}
+                              style={{ touchAction: "none" }}
+                              className={`flex-1 select-none rounded-md border px-3 py-3 text-sm font-medium ${claseSlot(
+                                slotNegras
+                              )}`}
                             >
                               {nombreDe(e.negrasId)}
                             </button>
