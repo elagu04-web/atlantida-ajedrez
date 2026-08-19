@@ -26,6 +26,7 @@ export type Torneo = {
   jugadoresIds: string[];
   rondas: RondaTorneo[];
   estado: EstadoTorneo;
+  rondasObjetivo: number | null;
 };
 
 export const DESEMPATES_DISPONIBLES = [
@@ -141,6 +142,29 @@ export function generarRondaSuiza(
 
 export function rondaCompleta(ronda: RondaTorneo): boolean {
   return ronda.emparejamientos.every((e) => e.resultado !== null);
+}
+
+/**
+ * Intercambia blancas/negras de una partida ya emparejada. Si ya tenía
+ * resultado cargado, invierte 1-0 <-> 0-1 para que el ganador real no
+ * cambie (las tablas quedan igual). No se usa con partidas de descanso.
+ */
+export function corregirColorEmparejamiento(
+  emparejamiento: EmparejamientoTorneo
+): EmparejamientoTorneo {
+  if (!emparejamiento.negrasId) return emparejamiento;
+  const resultado =
+    emparejamiento.resultado === "1-0"
+      ? "0-1"
+      : emparejamiento.resultado === "0-1"
+      ? "1-0"
+      : emparejamiento.resultado;
+  return {
+    ...emparejamiento,
+    blancasId: emparejamiento.negrasId,
+    negrasId: emparejamiento.blancasId,
+    resultado,
+  };
 }
 
 /**

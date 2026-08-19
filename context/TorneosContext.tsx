@@ -12,6 +12,7 @@ import {
   generarRondaSuiza,
   calcularStandings,
   puedeEditarJugadores,
+  corregirColorEmparejamiento,
 } from "@/lib/tournaments";
 import { useJugadores } from "@/context/JugadoresContext";
 import { calcularEloYHistorialEnVivo } from "@/lib/elo";
@@ -25,6 +26,7 @@ type FilaTorneo = {
   jugadores_ids: string[];
   rondas: RondaTorneo[];
   estado: EstadoTorneo;
+  rondas_objetivo: number | null;
 };
 
 type TorneosContextType = {
@@ -34,7 +36,8 @@ type TorneosContextType = {
     nombre: string,
     formato: FormatoTorneo,
     jugadoresIds: string[],
-    desempates: string[]
+    desempates: string[],
+    rondasObjetivo: number | null
   ) => Promise<string>;
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -46,6 +49,12 @@ type TorneosContextType = {
     emparejamientoNumero: number,
     resultado: ResultadoPartida | null
   ) => Promise<void>;
+  corregirColor: (
+    torneoId: string,
+    rondaNumero: number,
+    emparejamientoNumero: number
+  ) => Promise<void>;
+  eliminarUltimaRonda: (torneoId: string) => Promise<void>;
   finalizarTorneo: (torneoId: string) => Promise<void>;
   standingsDeTorneo: (torneoId: string) => Standing[];
 };
@@ -61,6 +70,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     jugadoresIds: fila.jugadores_ids ?? [],
     rondas: fila.rondas ?? [],
     estado: fila.estado,
+    rondasObjetivo: fila.rondas_objetivo ?? null,
   };
 }
 
@@ -85,7 +95,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     nombre: string,
     formato: FormatoTorneo,
     jugadoresIds: string[],
-    desempates: string[]
+    desempates: string[],
+    rondasObjetivo: number | null
   ) {
     const { data, error } = await supabase
       .from("torneos")
@@ -96,6 +107,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         jugadores_ids: jugadoresIds,
         rondas: [],
         estado: "armado",
+        rondas_objetivo: rondasObjetivo,
       })
       .select()
       .single();
@@ -142,6 +154,9 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       if (torneo.rondas.length > 0) return;
       nuevasRondas = generarRoundRobin(torneo.jugadoresIds);
     } else {
+      if (torneo.rondasObjetivo && torneo.rondas.length >= torneo.rondasObjetivo) {
+        return; // ya se jugaron todas las rondas planificadas
+      }
       const ultimaRonda = torneo.rondas[torneo.rondas.length - 1];
       if (ultimaRonda && ultimaRonda.emparejamientos.some((e) => e.resultado === null)) {
         return; // faltan resultados por cargar
@@ -186,6 +201,44 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
   }
 
+  async function corregirColor(
+    torneoId: string,
+    rondaNumero: number,
+    emparejamientoNumero: number
+  ) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo) return;
+    const nuevasRondas = torneo.rondas.map((r) => {
+      if (r.numero !== rondaNumero) return r;
+      return {
+        ...r,
+        emparejamientos: r.emparejamientos.map((e) =>
+          e.numero === emparejamientoNumero ? corregirColorEmparejamiento(e) : e
+        ),
+      };
+    });
+    setTorneos((actuales) =>
+      actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
+    );
+    await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+  }
+
+  async function eliminarUltimaRonda(torneoId: string) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo || torneo.rondas.length === 0) return;
+    const nuevasRondas = torneo.rondas.slice(0, -1);
+    const nuevoEstado: EstadoTorneo = nuevasRondas.length === 0 ? "armado" : "en_curso";
+    setTorneos((actuales) =>
+      actuales.map((t) =>
+        t.id === torneoId ? { ...t, rondas: nuevasRondas, estado: nuevoEstado } : t
+      )
+    );
+    await supabase
+      .from("torneos")
+      .update({ rondas: nuevasRondas, estado: nuevoEstado })
+      .eq("id", torneoId);
+  }
+
   async function finalizarTorneo(torneoId: string) {
     setTorneos((actuales) =>
       actuales.map((t) => (t.id === torneoId ? { ...t, estado: "finalizado" } : t))
@@ -210,6 +263,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         quitarJugadorDeTorneo,
         generarRondas,
         registrarResultado,
+        corregirColor,
+        eliminarUltimaRonda,
         finalizarTorneo,
         standingsDeTorneo,
       }}

@@ -2,10 +2,11 @@ import { Jugador, Partida, Resultado } from "./players";
 import { Torneo } from "./tournaments";
 
 export const K_FACTOR = 20;
+export const ELO_MINIMO = 1400;
 
 function nuevoElo(ratingPropio: number, ratingRival: number, resultado: number): number {
   const esperado = 1 / (1 + Math.pow(10, (ratingRival - ratingPropio) / 400));
-  return Math.round(ratingPropio + K_FACTOR * (resultado - esperado));
+  return Math.max(ELO_MINIMO, Math.round(ratingPropio + K_FACTOR * (resultado - esperado)));
 }
 
 export type JugadorEnVivo = Jugador & {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
 import { ResultadoPartida, rondaCompleta, puedeEditarJugadores } from "@/lib/tournaments";
@@ -20,6 +21,7 @@ const formatoLabel: Record<string, string> = {
 
 export default function TorneoPage() {
   const { id } = useParams<{ id: string }>();
+  const { agregarJugador } = useJugadores();
   const jugadores = useJugadoresEnVivo();
   const {
     obtenerTorneo,
@@ -27,11 +29,15 @@ export default function TorneoPage() {
     quitarJugadorDeTorneo,
     generarRondas,
     registrarResultado,
+    corregirColor,
+    eliminarUltimaRonda,
     finalizarTorneo,
     standingsDeTorneo,
   } = useTorneos();
 
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
+  const [nombreNuevo, setNombreNuevo] = useState("");
+  const [eloNuevo, setEloNuevo] = useState("1500");
 
   const torneo = obtenerTorneo(id);
 
@@ -50,14 +56,39 @@ export default function TorneoPage() {
     return jugadores.find((j) => j.id === jugadorId)?.nombre ?? "?";
   }
 
+  async function handleNuevoJugador(e: React.FormEvent) {
+    e.preventDefault();
+    const nombreLimpio = nombreNuevo.trim();
+    if (!nombreLimpio) return;
+    const eloNumero = Number(eloNuevo) || 1500;
+    const nuevoId = await agregarJugador(nombreLimpio, eloNumero);
+    if (nuevoId) await agregarJugadorATorneo(torneo!.id, nuevoId);
+    setNombreNuevo("");
+    setEloNuevo("1500");
+  }
+
+  function handleEliminarUltimaRonda() {
+    const ultima = torneo!.rondas[torneo!.rondas.length - 1];
+    if (!ultima) return;
+    const ok = window.confirm(
+      `¿Borrar la ronda ${ultima.numero}? Se pierden los resultados cargados en esa ronda (el Elo se recalcula solo).`
+    );
+    if (ok) eliminarUltimaRonda(torneo!.id);
+  }
+
   const inscriptos = torneo.jugadoresIds.map((jid) => jugadores.find((j) => j.id === jid)).filter((j) => j !== undefined);
   const disponiblesParaAgregar = jugadores.filter((j) => !torneo.jugadoresIds.includes(j.id));
   const standings = standingsDeTorneo(torneo.id);
 
   const ultimaRonda = torneo.rondas[torneo.rondas.length - 1];
+  const alcanzoRondasObjetivo =
+    torneo.formato === "suizo" &&
+    torneo.rondasObjetivo !== null &&
+    torneo.rondas.length >= torneo.rondasObjetivo;
   const puedeGenerarRondas =
     torneo.estado !== "finalizado" &&
     torneo.jugadoresIds.length >= 2 &&
+    !alcanzoRondasObjetivo &&
     (torneo.formato === "round-robin"
       ? torneo.rondas.length === 0
       : !ultimaRonda || rondaCompleta(ultimaRonda));
@@ -83,6 +114,7 @@ export default function TorneoPage() {
         </div>
         <p className="mt-1 text-sm text-zinc-500">
           {formatoLabel[torneo.formato]}
+          {torneo.rondasObjetivo && <> · {torneo.rondasObjetivo} rondas planificadas</>}
           {torneo.desempates.length > 0 && <> · Desempates: {torneo.desempates.join(", ")}</>}
         </p>
       </div>
@@ -108,30 +140,55 @@ export default function TorneoPage() {
           ))}
         </ul>
 
-        {puedeEditarJugadores(torneo) && disponiblesParaAgregar.length > 0 && (
-          <div className="mt-4 flex items-center gap-2 border-t border-zinc-100 pt-4">
-            <select
-              value={jugadorAAgregar}
-              onChange={(e) => setJugadorAAgregar(e.target.value)}
-              className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
-            >
-              <option value="">Elegir jugador...</option>
-              {disponiblesParaAgregar.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.nombre}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => {
-                if (!jugadorAAgregar) return;
-                agregarJugadorATorneo(torneo.id, jugadorAAgregar);
-                setJugadorAAgregar("");
-              }}
-              className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700"
-            >
-              Agregar
-            </button>
+        {puedeEditarJugadores(torneo) && (
+          <div className="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4">
+            {disponiblesParaAgregar.length > 0 && (
+              <div className="flex items-center gap-2">
+                <select
+                  value={jugadorAAgregar}
+                  onChange={(e) => setJugadorAAgregar(e.target.value)}
+                  className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
+                >
+                  <option value="">Elegir jugador...</option>
+                  {disponiblesParaAgregar.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.nombre}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => {
+                    if (!jugadorAAgregar) return;
+                    agregarJugadorATorneo(torneo.id, jugadorAAgregar);
+                    setJugadorAAgregar("");
+                  }}
+                  className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700"
+                >
+                  Agregar
+                </button>
+              </div>
+            )}
+            <form onSubmit={handleNuevoJugador} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={nombreNuevo}
+                onChange={(e) => setNombreNuevo(e.target.value)}
+                placeholder="Nombre de jugador nuevo"
+                className="w-52 rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
+              />
+              <input
+                type="number"
+                value={eloNuevo}
+                onChange={(e) => setEloNuevo(e.target.value)}
+                className="w-24 rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
+              />
+              <button
+                type="submit"
+                className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+              >
+                Crear y agregar
+              </button>
+            </form>
           </div>
         )}
         {!puedeEditarJugadores(torneo) && (
@@ -143,13 +200,21 @@ export default function TorneoPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {puedeGenerarRondas && (
           <button
             onClick={() => generarRondas(torneo.id)}
             className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
           >
             {textoBotonRondas}
+          </button>
+        )}
+        {torneo.rondas.length > 0 && torneo.estado !== "finalizado" && (
+          <button
+            onClick={handleEliminarUltimaRonda}
+            className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          >
+            Eliminar ronda {torneo.rondas.length}
           </button>
         )}
         {torneo.estado === "en_curso" && (
@@ -160,11 +225,17 @@ export default function TorneoPage() {
             Finalizar torneo
           </button>
         )}
+        {alcanzoRondasObjetivo && (
+          <p className="text-sm text-zinc-500">
+            Se jugaron las {torneo.rondasObjetivo} rondas planificadas.
+          </p>
+        )}
         {torneo.formato === "suizo" &&
           torneo.estado === "en_curso" &&
+          !alcanzoRondasObjetivo &&
           ultimaRonda &&
           !rondaCompleta(ultimaRonda) && (
-            <p className="self-center text-sm text-zinc-500">
+            <p className="text-sm text-zinc-500">
               Cargá todos los resultados de la ronda {ultimaRonda.numero} para generar la siguiente.
             </p>
           )}
@@ -210,6 +281,7 @@ export default function TorneoPage() {
                   <th className="px-4 py-2 font-medium">Blancas</th>
                   <th className="px-4 py-2 font-medium">Negras</th>
                   <th className="px-4 py-2 font-medium">Resultado</th>
+                  <th className="px-4 py-2 font-medium"></th>
                 </tr>
               </thead>
               <tbody>
@@ -240,6 +312,17 @@ export default function TorneoPage() {
                         </select>
                       ) : (
                         <span className="text-zinc-400">punto libre</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      {e.negrasId && (
+                        <button
+                          onClick={() => corregirColor(torneo.id, ronda.numero, e.numero)}
+                          className="text-xs text-blue-600 hover:underline"
+                          title="Intercambiar quién jugó con blancas y quién con negras"
+                        >
+                          ↔ Corregir colores
+                        </button>
                       )}
                     </td>
                   </tr>

@@ -25,6 +25,7 @@ export default function TorneosPage() {
 
   const [nombre, setNombre] = useState("");
   const [formato, setFormato] = useState<FormatoTorneo>("suizo");
+  const [rondasObjetivo, setRondasObjetivo] = useState("");
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [desempates, setDesempates] = useState<Set<string>>(new Set());
 
@@ -50,7 +51,14 @@ export default function TorneosPage() {
     e.preventDefault();
     const nombreLimpio = nombre.trim();
     if (!nombreLimpio || seleccionados.size < 2) return;
-    const id = await crearTorneo(nombreLimpio, formato, [...seleccionados], [...desempates]);
+    const rondas = formato === "suizo" && rondasObjetivo ? Number(rondasObjetivo) : null;
+    const id = await crearTorneo(
+      nombreLimpio,
+      formato,
+      [...seleccionados],
+      [...desempates],
+      rondas && rondas > 0 ? rondas : null
+    );
     if (id) router.push(`/torneos/${id}`);
   }
 
@@ -104,6 +112,26 @@ export default function TorneosPage() {
             </label>
           </div>
         </div>
+
+        {formato === "suizo" && (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="rondasObjetivo" className="text-xs font-medium text-zinc-600">
+              Cantidad de rondas (opcional)
+            </label>
+            <input
+              id="rondasObjetivo"
+              type="number"
+              min={1}
+              value={rondasObjetivo}
+              onChange={(e) => setRondasObjetivo(e.target.value)}
+              placeholder="Ej: 5"
+              className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            />
+            <span className="text-xs text-zinc-400">
+              Si la dejás vacía, vas generando rondas de a una sin límite fijo.
+            </span>
+          </div>
+        )}
 
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium text-zinc-600">

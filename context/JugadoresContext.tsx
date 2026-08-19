@@ -13,7 +13,7 @@ type FilaJugador = {
 type JugadoresContextType = {
   jugadores: Jugador[];
   cargando: boolean;
-  agregarJugador: (nombre: string, eloInicial: number) => Promise<void>;
+  agregarJugador: (nombre: string, eloInicial: number) => Promise<string>;
   eliminarJugador: (id: string) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
 };
@@ -51,9 +51,10 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
       .insert({ nombre, elo_inicial: eloInicial })
       .select()
       .single();
-    if (!error && data) {
-      setJugadores((actuales) => [...actuales, filaAJugador(data)]);
-    }
+    if (error || !data) return "";
+    const nuevo = filaAJugador(data);
+    setJugadores((actuales) => [...actuales, nuevo]);
+    return nuevo.id;
   }
 
   async function eliminarJugador(id: string) {
