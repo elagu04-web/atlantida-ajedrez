@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
+import { useAuth } from "@/context/AuthContext";
 import { DESEMPATES_DISPONIBLES, FormatoTorneo } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
 
@@ -23,6 +24,8 @@ export default function TorneosPage() {
   const router = useRouter();
   const jugadoresConStats = useJugadoresEnVivo();
   const { torneos, crearTorneo, eliminarTorneo } = useTorneos();
+  const { session } = useAuth();
+  const puedeEditar = Boolean(session);
 
   const [nombre, setNombre] = useState("");
   const [formato, setFormato] = useState<FormatoTorneo>("suizo");
@@ -86,6 +89,12 @@ export default function TorneosPage() {
         </p>
       </div>
 
+      {!puedeEditar && (
+        <p className="text-sm text-zinc-500">
+          Iniciá sesión para crear torneos o borrarlos.
+        </p>
+      )}
+      {puedeEditar && (
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-5"
@@ -242,6 +251,7 @@ export default function TorneosPage() {
           Crear torneo
         </button>
       </form>
+      )}
 
       <div className="flex flex-col gap-3">
         <h2 className="font-semibold">Torneos creados</h2>
@@ -263,16 +273,18 @@ export default function TorneosPage() {
               <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
                 {estadoLabel[t.estado]}
               </span>
-              <button
-                onClick={() => {
-                  if (window.confirm(`¿Borrar el torneo "${t.nombre}"? Esto no se puede deshacer.`)) {
-                    eliminarTorneo(t.id);
-                  }
-                }}
-                className="text-xs text-red-600 hover:underline"
-              >
-                Eliminar
-              </button>
+              {puedeEditar && (
+                <button
+                  onClick={() => {
+                    if (window.confirm(`¿Borrar el torneo "${t.nombre}"? Esto no se puede deshacer.`)) {
+                      eliminarTorneo(t.id);
+                    }
+                  }}
+                  className="text-xs text-red-600 hover:underline"
+                >
+                  Eliminar
+                </button>
+              )}
             </div>
           </div>
         ))}

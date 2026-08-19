@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   rondaCompleta,
   puedeEditarJugadores,
@@ -41,6 +42,8 @@ export default function TorneoPage() {
     finalizarTorneo,
     standingsDeTorneo,
   } = useTorneos();
+  const { session } = useAuth();
+  const puedeEditar = Boolean(session);
 
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
   const [nombreNuevo, setNombreNuevo] = useState("");
@@ -190,7 +193,7 @@ export default function TorneoPage() {
                 {nombreVisible(j!)}{" "}
                 <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
               </span>
-              {puedeEditarJugadores(torneo) && (
+              {puedeEditarJugadores(torneo) && puedeEditar && (
                 <button
                   onClick={() => quitarJugadorDeTorneo(torneo.id, j!.id)}
                   className="text-xs text-red-600 hover:underline"
@@ -202,7 +205,7 @@ export default function TorneoPage() {
           ))}
         </ul>
 
-        {puedeEditarJugadores(torneo) && (
+        {puedeEditarJugadores(torneo) && puedeEditar && (
           <div className="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4">
             {disponiblesParaAgregar.length > 0 && (
               <div className="flex items-center gap-2">
@@ -263,7 +266,7 @@ export default function TorneoPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        {puedeGenerarRondas && (
+        {puedeGenerarRondas && puedeEditar && (
           <button
             onClick={() => generarRondas(torneo.id)}
             className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
@@ -271,7 +274,7 @@ export default function TorneoPage() {
             {textoBotonRondas}
           </button>
         )}
-        {torneo.rondas.length > 0 && torneo.estado !== "finalizado" && (
+        {torneo.rondas.length > 0 && torneo.estado !== "finalizado" && puedeEditar && (
           <button
             onClick={handleEliminarUltimaRonda}
             className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
@@ -279,7 +282,7 @@ export default function TorneoPage() {
             Eliminar ronda {torneo.rondas.length}
           </button>
         )}
-        {torneo.estado === "en_curso" && (
+        {torneo.estado === "en_curso" && puedeEditar && (
           <button
             onClick={() => finalizarTorneo(torneo.id)}
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
@@ -347,7 +350,7 @@ export default function TorneoPage() {
                     </span>
                   )}
                 </h3>
-                {esUltima && puedeEditarEstaRonda && (
+                {esUltima && puedeEditarEstaRonda && puedeEditar && (
                   <button
                     onClick={() => {
                       setModoEdicion((v) => !v);
@@ -445,6 +448,28 @@ export default function TorneoPage() {
                       <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-500">
                         <span>{nombreDe(e.blancasId)}</span>
                         <span className="text-zinc-400">— descansa (punto libre) —</span>
+                      </div>
+                    );
+                  }
+
+                  if (!puedeEditar) {
+                    return (
+                      <div key={e.numero} className="flex items-center justify-between gap-3 p-4 text-sm">
+                        <span className={e.resultado === "1-0" ? "font-semibold text-green-700" : ""}>
+                          {nombreDe(e.blancasId)}
+                        </span>
+                        <span className="text-xs text-zinc-400">
+                          {e.resultado === "1-0"
+                            ? "1 – 0"
+                            : e.resultado === "0-1"
+                            ? "0 – 1"
+                            : e.resultado === "1/2-1/2"
+                            ? "½ – ½"
+                            : "vs"}
+                        </span>
+                        <span className={e.resultado === "0-1" ? "font-semibold text-green-700" : ""}>
+                          {nombreDe(e.negrasId)}
+                        </span>
                       </div>
                     );
                   }

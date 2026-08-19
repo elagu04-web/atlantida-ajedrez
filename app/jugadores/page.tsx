@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
+import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
 import type { JugadorEnVivo } from "@/lib/elo";
 
@@ -12,14 +13,20 @@ type Orden = "elo" | "partidas";
 function ApodoCelda({
   jugadorId,
   apodoActual,
+  puedeEditar,
   onGuardar,
 }: {
   jugadorId: string;
   apodoActual: string | null;
+  puedeEditar: boolean;
   onGuardar: (id: string, apodo: string) => void;
 }) {
   const [editando, setEditando] = useState(false);
   const [valor, setValor] = useState(apodoActual ?? "");
+
+  if (!puedeEditar) {
+    return apodoActual ? <span className="text-xs text-zinc-400">{apodoActual}</span> : null;
+  }
 
   if (!editando) {
     return apodoActual ? (
@@ -61,13 +68,19 @@ function ApodoCelda({
 function FideIdCelda({
   jugadorId,
   fideIdActual,
+  puedeEditar,
   onGuardar,
 }: {
   jugadorId: string;
   fideIdActual: string | null;
+  puedeEditar: boolean;
   onGuardar: (id: string, fideId: string) => void;
 }) {
   const [valor, setValor] = useState(fideIdActual ?? "");
+
+  if (!puedeEditar) {
+    return <span className="text-xs text-zinc-500">{fideIdActual ?? ""}</span>;
+  }
 
   return (
     <input
@@ -87,6 +100,8 @@ export default function JugadoresPage() {
   const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId, actualizarJugador } =
     useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
+  const { session } = useAuth();
+  const puedeEditar = Boolean(session);
 
   const [nombre, setNombre] = useState("");
   const [apodo, setApodo] = useState("");
@@ -141,6 +156,7 @@ export default function JugadoresPage() {
         </p>
       </div>
 
+      {puedeEditar && (
       <form
         onSubmit={handleSubmit}
         className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4"
@@ -190,6 +206,7 @@ export default function JugadoresPage() {
           Agregar jugador
         </button>
       </form>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <input
@@ -237,7 +254,7 @@ export default function JugadoresPage() {
           </thead>
           <tbody>
             {lista.map((j, i) =>
-              editandoId === j.id ? (
+              editandoId === j.id && puedeEditar ? (
                 <tr key={j.id} className="border-b border-zinc-100 bg-zinc-50 last:border-0">
                   <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
                   <td className="px-4 py-3" colSpan={2}>
@@ -283,11 +300,21 @@ export default function JugadoresPage() {
                       {nombreVisible(j)}
                     </Link>
                     <div>
-                      <ApodoCelda jugadorId={j.id} apodoActual={j.apodo} onGuardar={actualizarApodo} />
+                      <ApodoCelda
+                        jugadorId={j.id}
+                        apodoActual={j.apodo}
+                        puedeEditar={puedeEditar}
+                        onGuardar={actualizarApodo}
+                      />
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <FideIdCelda jugadorId={j.id} fideIdActual={j.fideId} onGuardar={actualizarFideId} />
+                    <FideIdCelda
+                      jugadorId={j.id}
+                      fideIdActual={j.fideId}
+                      puedeEditar={puedeEditar}
+                      onGuardar={actualizarFideId}
+                    />
                   </td>
                   <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
                   <td className="px-4 py-3">{j.jugadas}</td>
@@ -295,18 +322,22 @@ export default function JugadoresPage() {
                   <td className="px-4 py-3 text-zinc-500">{j.empates}</td>
                   <td className="px-4 py-3 text-red-700">{j.derrotas}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <button
-                      onClick={() => empezarEdicion(j)}
-                      className="mr-3 text-xs text-blue-600 hover:underline"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => eliminarJugador(j.id)}
-                      className="text-xs text-red-600 hover:underline"
-                    >
-                      Eliminar
-                    </button>
+                    {puedeEditar && (
+                      <>
+                        <button
+                          onClick={() => empezarEdicion(j)}
+                          className="mr-3 text-xs text-blue-600 hover:underline"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => eliminarJugador(j.id)}
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          Eliminar
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               )
