@@ -14,6 +14,7 @@ export type Jugador = {
   nombre: string;
   apodo: string | null;
   fideId: string | null;
+  fotoUrl: string | null;
   eloAtlantida: number;
   partidas: Partida[];
 };

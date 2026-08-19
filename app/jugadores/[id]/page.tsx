@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
+import { useJugadores } from "@/context/JugadoresContext";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 import { nombreVisible } from "@/lib/players";
+
+const FOTOS_BUCKET = "fotos-jugadores";
 
 const resultadoColor: Record<string, string> = {
   victoria: "text-green-700",
@@ -22,6 +27,33 @@ export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
+  const { actualizarFoto } = useJugadores();
+  const { session } = useAuth();
+  const puedeEditar = Boolean(session);
+  const inputFotoRef = useRef<HTMLInputElement>(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [errorFoto, setErrorFoto] = useState<string | null>(null);
+
+  async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !jugador) return;
+    setSubiendoFoto(true);
+    setErrorFoto(null);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${jugador.id}.${ext}`;
+    const { error } = await supabase.storage
+      .from(FOTOS_BUCKET)
+      .upload(path, file, { upsert: true, cacheControl: "3600" });
+    if (error) {
+      setErrorFoto(`No se pudo subir la foto: ${error.message}`);
+      setSubiendoFoto(false);
+      return;
+    }
+    const { data } = supabase.storage.from(FOTOS_BUCKET).getPublicUrl(path);
+    await actualizarFoto(jugador.id, `${data.publicUrl}?v=${Date.now()}`);
+    setSubiendoFoto(false);
+  }
 
   const cabezaACabeza = useMemo(() => {
     if (!jugador) return [];
@@ -68,10 +100,46 @@ export default function JugadorPage() {
         <Link href="/jugadores" className="text-sm text-blue-600 hover:underline">
           ← Volver a jugadores
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          {nombreVisible(jugador)}
-        </h1>
-        {jugador.apodo && <p className="text-sm text-zinc-400">{jugador.nombre}</p>}
+        <div className="mt-2 flex items-center gap-4">
+          <div className="relative shrink-0">
+            {jugador.fotoUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={jugador.fotoUrl}
+                alt={nombreVisible(jugador)}
+                className="h-20 w-20 rounded-full border border-zinc-200 object-cover"
+              />
+            ) : (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-2xl font-semibold text-zinc-400">
+                {nombreVisible(jugador).charAt(0).toUpperCase()}
+              </div>
+            )}
+            {puedeEditar && (
+              <button
+                onClick={() => inputFotoRef.current?.click()}
+                disabled={subiendoFoto}
+                className="absolute -bottom-1 -right-1 rounded-full border border-zinc-300 bg-white px-1.5 py-1 text-xs shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+                title="Cambiar foto"
+              >
+                {subiendoFoto ? "..." : "✏️"}
+              </button>
+            )}
+            <input
+              ref={inputFotoRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFotoChange}
+              className="hidden"
+            />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {nombreVisible(jugador)}
+            </h1>
+            {jugador.apodo && <p className="text-sm text-zinc-400">{jugador.nombre}</p>}
+          </div>
+        </div>
+        {errorFoto && <p className="mt-2 text-sm text-red-600">{errorFoto}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

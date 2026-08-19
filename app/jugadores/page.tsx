@@ -299,7 +299,19 @@ export default function JugadoresPage() {
                 <tr key={j.id} className="border-b border-zinc-100 last:border-0">
                   <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
                   <td className="px-4 py-3 font-medium">
-                    <Link href={`/jugadores/${j.id}`} className="hover:underline">
+                    <Link href={`/jugadores/${j.id}`} className="flex items-center gap-2 hover:underline">
+                      {j.fotoUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={j.fotoUrl}
+                          alt=""
+                          className="h-7 w-7 shrink-0 rounded-full border border-zinc-200 object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-400">
+                          {nombreVisible(j).charAt(0).toUpperCase()}
+                        </span>
+                      )}
                       {nombreVisible(j)}
                     </Link>
                     <div>
