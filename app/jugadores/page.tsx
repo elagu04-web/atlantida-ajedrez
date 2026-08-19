@@ -9,7 +9,7 @@ import type { JugadorEnVivo } from "@/lib/elo";
 
 type Orden = "elo" | "partidas";
 
-function ApodoInput({
+function ApodoCelda({
   jugadorId,
   apodoActual,
   onGuardar,
@@ -18,7 +18,56 @@ function ApodoInput({
   apodoActual: string | null;
   onGuardar: (id: string, apodo: string) => void;
 }) {
+  const [editando, setEditando] = useState(false);
   const [valor, setValor] = useState(apodoActual ?? "");
+
+  if (!editando) {
+    return apodoActual ? (
+      <button
+        onClick={() => setEditando(true)}
+        className="text-xs text-zinc-400 hover:text-blue-600 hover:underline"
+      >
+        editar apodo
+      </button>
+    ) : (
+      <button
+        onClick={() => setEditando(true)}
+        className="text-xs text-zinc-400 hover:text-blue-600 hover:underline"
+      >
+        + agregar apodo
+      </button>
+    );
+  }
+
+  return (
+    <input
+      type="text"
+      autoFocus
+      value={valor}
+      onChange={(e) => setValor(e.target.value)}
+      onBlur={() => {
+        setEditando(false);
+        if (valor.trim() !== (apodoActual ?? "")) onGuardar(jugadorId, valor);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+      }}
+      placeholder="Apodo..."
+      className="w-32 rounded border border-zinc-300 bg-white px-1 py-0.5 text-xs"
+    />
+  );
+}
+
+function FideIdCelda({
+  jugadorId,
+  fideIdActual,
+  onGuardar,
+}: {
+  jugadorId: string;
+  fideIdActual: string | null;
+  onGuardar: (id: string, fideId: string) => void;
+}) {
+  const [valor, setValor] = useState(fideIdActual ?? "");
 
   return (
     <input
@@ -26,16 +75,16 @@ function ApodoInput({
       value={valor}
       onChange={(e) => setValor(e.target.value)}
       onBlur={() => {
-        if (valor.trim() !== (apodoActual ?? "")) onGuardar(jugadorId, valor);
+        if (valor.trim() !== (fideIdActual ?? "")) onGuardar(jugadorId, valor);
       }}
-      placeholder="Agregar apodo..."
-      className="w-32 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 hover:border-zinc-200 focus:border-zinc-300 focus:bg-white focus:outline-none"
+      placeholder="ID FIDE..."
+      className="w-24 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 hover:border-zinc-200 focus:border-zinc-300 focus:bg-white focus:outline-none"
     />
   );
 }
 
 export default function JugadoresPage() {
-  const { agregarJugador, eliminarJugador, actualizarApodo } = useJugadores();
+  const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId } = useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
 
   const [nombre, setNombre] = useState("");
@@ -154,12 +203,13 @@ export default function JugadoresPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
             <tr>
               <th className="px-4 py-3 font-medium">#</th>
               <th className="px-4 py-3 font-medium">Nombre</th>
+              <th className="px-4 py-3 font-medium">ID FIDE</th>
               <th className="px-4 py-3 font-medium">Elo Atlántida</th>
               <th className="px-4 py-3 font-medium">Partidas</th>
               <th className="px-4 py-3 font-medium">V</th>
@@ -177,8 +227,11 @@ export default function JugadoresPage() {
                     {nombreVisible(j)}
                   </Link>
                   <div>
-                    <ApodoInput jugadorId={j.id} apodoActual={j.apodo} onGuardar={actualizarApodo} />
+                    <ApodoCelda jugadorId={j.id} apodoActual={j.apodo} onGuardar={actualizarApodo} />
                   </div>
+                </td>
+                <td className="px-4 py-3">
+                  <FideIdCelda jugadorId={j.id} fideIdActual={j.fideId} onGuardar={actualizarFideId} />
                 </td>
                 <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
                 <td className="px-4 py-3">{j.jugadas}</td>
@@ -197,7 +250,7 @@ export default function JugadoresPage() {
             ))}
             {lista.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-zinc-400">
+                <td colSpan={9} className="px-4 py-6 text-center text-zinc-400">
                   {busqueda ? "No hay jugadores que coincidan con la búsqueda." : "No hay jugadores todavía."}
                 </td>
               </tr>

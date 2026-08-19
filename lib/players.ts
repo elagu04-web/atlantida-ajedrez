@@ -13,6 +13,7 @@ export type Jugador = {
   id: string;
   nombre: string;
   apodo: string | null;
+  fideId: string | null;
   eloAtlantida: number;
   partidas: Partida[];
 };
