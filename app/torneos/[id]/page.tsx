@@ -7,6 +7,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
 import { useAuth } from "@/context/AuthContext";
+import { ELO_MINIMO } from "@/lib/elo";
 import {
   rondaCompleta,
   puedeEditarJugadores,
@@ -77,7 +78,7 @@ export default function TorneoPage() {
     e.preventDefault();
     const nombreLimpio = nombreNuevo.trim();
     if (!nombreLimpio) return;
-    const eloNumero = Number(eloNuevo) || 1500;
+    const eloNumero = Math.max(ELO_MINIMO, Number(eloNuevo) || 1500);
     const nuevoId = await agregarJugador(nombreLimpio, eloNumero);
     if (nuevoId) await agregarJugadorATorneo(torneo!.id, nuevoId);
     setNombreNuevo("");
@@ -243,6 +244,7 @@ export default function TorneoPage() {
               />
               <input
                 type="number"
+                min={ELO_MINIMO}
                 value={eloNuevo}
                 onChange={(e) => setEloNuevo(e.target.value)}
                 className="w-24 rounded-md border border-zinc-300 px-2 py-1.5 text-sm"

@@ -6,7 +6,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
-import type { JugadorEnVivo } from "@/lib/elo";
+import { ELO_MINIMO, type JugadorEnVivo } from "@/lib/elo";
 
 type Orden = "elo" | "partidas";
 
@@ -121,7 +121,8 @@ export default function JugadoresPage() {
   function guardarEdicion() {
     if (!editandoId) return;
     const eloNumero = Number(editElo);
-    actualizarJugador(editandoId, editNombre, Number.isFinite(eloNumero) ? eloNumero : 1500);
+    const eloValido = Number.isFinite(eloNumero) ? eloNumero : 1500;
+    actualizarJugador(editandoId, editNombre, Math.max(ELO_MINIMO, eloValido));
     setEditandoId(null);
   }
 
@@ -129,7 +130,7 @@ export default function JugadoresPage() {
     e.preventDefault();
     const nombreLimpio = nombre.trim();
     if (!nombreLimpio) return;
-    const eloNumero = Number(elo) || 1500;
+    const eloNumero = Math.max(ELO_MINIMO, Number(elo) || 1500);
     agregarJugador(nombreLimpio, eloNumero, apodo);
     setNombre("");
     setApodo("");
@@ -194,6 +195,7 @@ export default function JugadoresPage() {
           <input
             id="elo"
             type="number"
+            min={ELO_MINIMO}
             value={elo}
             onChange={(e) => setElo(e.target.value)}
             className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -268,6 +270,7 @@ export default function JugadoresPage() {
                   <td className="px-4 py-3">
                     <input
                       type="number"
+                      min={ELO_MINIMO}
                       value={editElo}
                       onChange={(e) => setEditElo(e.target.value)}
                       className="w-24 rounded border border-zinc-300 px-2 py-1 text-sm"
