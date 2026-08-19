@@ -29,6 +29,11 @@ export type Torneo = {
   estado: EstadoTorneo;
   rondasObjetivo: number | null;
   creadoEn: string;
+  // true en torneos históricos importados cuyos resultados no deben
+  // recalcular el Elo actual (para no duplicar un efecto ya reflejado en el
+  // Elo inicial), pero sí deben contar para historial de partidas,
+  // estadísticas y Copa de Campeones.
+  excluirDeElo?: boolean;
 };
 
 export const DESEMPATES_DISPONIBLES = [

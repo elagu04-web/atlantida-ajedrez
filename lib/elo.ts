@@ -22,6 +22,7 @@ type PartidaOrdenada = {
   blancasId: string;
   negrasId: string;
   resultado: "1-0" | "0-1" | "1/2-1/2";
+  excluirDeElo: boolean;
 };
 
 /**
@@ -51,6 +52,7 @@ export function calcularEloYHistorialEnVivo(
           blancasId: e.blancasId,
           negrasId: e.negrasId,
           resultado: e.resultado,
+          excluirDeElo: t.excluirDeElo === true,
         });
       });
     });
@@ -68,8 +70,10 @@ export function calcularEloYHistorialEnVivo(
     const puntosBlancas = p.resultado === "1-0" ? 1 : p.resultado === "0-1" ? 0 : 0.5;
     const puntosNegras = 1 - puntosBlancas;
 
-    elo.set(p.blancasId, nuevoElo(eloBlancas, eloNegras, puntosBlancas));
-    elo.set(p.negrasId, nuevoElo(eloNegras, eloBlancas, puntosNegras));
+    if (!p.excluirDeElo) {
+      elo.set(p.blancasId, nuevoElo(eloBlancas, eloNegras, puntosBlancas));
+      elo.set(p.negrasId, nuevoElo(eloNegras, eloBlancas, puntosNegras));
+    }
 
     const resultadoBlancas: Resultado =
       p.resultado === "1-0" ? "victoria" : p.resultado === "0-1" ? "derrota" : "empate";
