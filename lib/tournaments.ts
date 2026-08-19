@@ -28,6 +28,7 @@ export type Torneo = {
   rondas: RondaTorneo[];
   estado: EstadoTorneo;
   rondasObjetivo: number | null;
+  creadoEn: string;
 };
 
 export const DESEMPATES_DISPONIBLES = [
@@ -188,6 +189,45 @@ export function generarRondaSuiza(
 
 export function rondaCompleta(ronda: RondaTorneo): boolean {
   return ronda.emparejamientos.every((e) => e.resultado !== null);
+}
+
+export type ResultadoCampeon =
+  | { tipo: "campeon"; jugadorId: string }
+  | { tipo: "empate"; jugadorIds: string[] };
+
+/**
+ * El campeón de un torneo finalizado es quien más puntos hizo. Si hay
+ * empate a dos entre el 1° y el 2°, se resuelve por enfrentamiento directo
+ * (mano a mano) dentro del propio torneo, si jugaron entre sí y no fueron
+ * tablas. Empates de tres o más, o sin enfrentamiento directo decisivo,
+ * quedan como "empate" sin campeón único.
+ */
+export function determinarCampeon(torneo: Torneo): ResultadoCampeon | null {
+  if (torneo.estado !== "finalizado" || torneo.rondas.length === 0) return null;
+  const standings = [...calcularStandings(torneo).values()].sort((a, b) => b.puntos - a.puntos);
+  if (standings.length === 0) return null;
+
+  const maxPuntos = standings[0].puntos;
+  const empatados = standings.filter((s) => s.puntos === maxPuntos);
+  if (empatados.length === 1) {
+    return { tipo: "campeon", jugadorId: empatados[0].jugadorId };
+  }
+
+  if (empatados.length === 2) {
+    const [a, b] = empatados;
+    for (const ronda of torneo.rondas) {
+      for (const emp of ronda.emparejamientos) {
+        if (!emp.negrasId || !emp.resultado || emp.resultado === "1/2-1/2") continue;
+        const esAvsB = emp.blancasId === a.jugadorId && emp.negrasId === b.jugadorId;
+        const esBvsA = emp.blancasId === b.jugadorId && emp.negrasId === a.jugadorId;
+        if (!esAvsB && !esBvsA) continue;
+        const ganadorId = emp.resultado === "1-0" ? emp.blancasId : emp.negrasId;
+        return { tipo: "campeon", jugadorId: ganadorId };
+      }
+    }
+  }
+
+  return { tipo: "empate", jugadorIds: empatados.map((s) => s.jugadorId) };
 }
 
 /**

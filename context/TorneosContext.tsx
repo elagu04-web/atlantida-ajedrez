@@ -31,6 +31,7 @@ type FilaTorneo = {
   rondas: RondaTorneo[];
   estado: EstadoTorneo;
   rondas_objetivo: number | null;
+  created_at: string;
 };
 
 type TorneosContextType = {
@@ -83,6 +84,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     rondas: fila.rondas ?? [],
     estado: fila.estado,
     rondasObjetivo: fila.rondas_objetivo ?? null,
+    creadoEn: fila.created_at,
   };
 }
 
