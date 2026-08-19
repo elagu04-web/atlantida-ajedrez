@@ -12,6 +12,11 @@ export type Partida = {
 export type Jugador = {
   id: string;
   nombre: string;
+  apodo: string | null;
   eloAtlantida: number;
   partidas: Partida[];
 };
+
+export function nombreVisible(j: { nombre: string; apodo: string | null }): string {
+  return j.apodo?.trim() || j.nombre;
+}

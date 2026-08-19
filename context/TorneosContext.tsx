@@ -55,6 +55,7 @@ type TorneosContextType = {
     emparejamientoNumero: number
   ) => Promise<void>;
   eliminarUltimaRonda: (torneoId: string) => Promise<void>;
+  eliminarTorneo: (torneoId: string) => Promise<void>;
   finalizarTorneo: (torneoId: string) => Promise<void>;
   standingsDeTorneo: (torneoId: string) => Standing[];
 };
@@ -239,6 +240,11 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       .eq("id", torneoId);
   }
 
+  async function eliminarTorneo(torneoId: string) {
+    setTorneos((actuales) => actuales.filter((t) => t.id !== torneoId));
+    await supabase.from("torneos").delete().eq("id", torneoId);
+  }
+
   async function finalizarTorneo(torneoId: string) {
     setTorneos((actuales) =>
       actuales.map((t) => (t.id === torneoId ? { ...t, estado: "finalizado" } : t))
@@ -265,6 +271,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         registrarResultado,
         corregirColor,
         eliminarUltimaRonda,
+        eliminarTorneo,
         finalizarTorneo,
         standingsDeTorneo,
       }}

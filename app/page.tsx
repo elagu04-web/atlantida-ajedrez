@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
+import { nombreVisible } from "@/lib/players";
 
 export default function Home() {
   const jugadoresEnVivo = useJugadoresEnVivo();
@@ -14,8 +15,7 @@ export default function Home() {
           Bienvenido al sistema de torneos de Atlántida
         </h1>
         <p className="mt-2 text-zinc-600">
-          Este es un borrador con jugadores ficticios para ir probando las
-          pantallas. Todavía no hay datos reales cargados.
+          Ranking, torneos y estadísticas del club de ajedrez Atlántida.
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export default function Home() {
             <li key={j.id} className="flex items-center justify-between text-sm">
               <span>
                 <span className="mr-2 text-zinc-400">{i + 1}.</span>
-                {j.nombre}
+                {nombreVisible(j)}
               </span>
               <span className="font-mono font-semibold">{j.eloAtlantida}</span>
             </li>

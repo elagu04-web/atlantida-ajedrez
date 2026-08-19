@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
 import { DESEMPATES_DISPONIBLES, FormatoTorneo } from "@/lib/tournaments";
+import { nombreVisible } from "@/lib/players";
 
 const estadoLabel: Record<string, string> = {
   armado: "Armado",
@@ -21,13 +22,21 @@ const formatoLabel: Record<string, string> = {
 export default function TorneosPage() {
   const router = useRouter();
   const jugadoresConStats = useJugadoresEnVivo();
-  const { torneos, crearTorneo } = useTorneos();
+  const { torneos, crearTorneo, eliminarTorneo } = useTorneos();
 
   const [nombre, setNombre] = useState("");
   const [formato, setFormato] = useState<FormatoTorneo>("suizo");
   const [rondasObjetivo, setRondasObjetivo] = useState("");
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [desempates, setDesempates] = useState<Set<string>>(new Set());
+  const [busquedaJugadores, setBusquedaJugadores] = useState("");
+
+  const jugadoresFiltrados = useMemo(() => {
+    const q = busquedaJugadores.trim().toLowerCase();
+    const base = [...jugadoresConStats].sort((a, b) => b.eloAtlantida - a.eloAtlantida);
+    if (!q) return base;
+    return base.filter((j) => `${j.nombre} ${j.apodo ?? ""}`.toLowerCase().includes(q));
+  }, [jugadoresConStats, busquedaJugadores]);
 
   function toggleJugador(id: string) {
     setSeleccionados((actuales) => {
@@ -52,6 +61,12 @@ export default function TorneosPage() {
     const nombreLimpio = nombre.trim();
     if (!nombreLimpio || seleccionados.size < 2) return;
     const rondas = formato === "suizo" && rondasObjetivo ? Number(rondasObjetivo) : null;
+    const confirmado = window.confirm(
+      `¿Crear el torneo "${nombreLimpio}"?\n\nFormato: ${formatoLabel[formato]}\nJugadores: ${seleccionados.size}${
+        rondas ? `\nRondas planificadas: ${rondas}` : ""
+      }`
+    );
+    if (!confirmado) return;
     const id = await crearTorneo(
       nombreLimpio,
       formato,
@@ -133,10 +148,33 @@ export default function TorneosPage() {
           </div>
         )}
 
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-zinc-600">
-            Jugadores ({seleccionados.size} seleccionados)
-          </span>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-medium text-zinc-600">
+              Jugadores ({seleccionados.size} seleccionados)
+            </span>
+            {jugadoresConStats.length > 0 && (
+              <div className="flex items-center gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSeleccionados(new Set(jugadoresFiltrados.map((j) => j.id)))
+                  }
+                  className="text-blue-600 hover:underline"
+                >
+                  Seleccionar {busquedaJugadores ? "filtrados" : "todos"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSeleccionados(new Set())}
+                  className="text-blue-600 hover:underline"
+                >
+                  Deseleccionar todos
+                </button>
+              </div>
+            )}
+          </div>
+
           {jugadoresConStats.length === 0 ? (
             <p className="text-sm text-zinc-400">
               No hay jugadores cargados todavía —{" "}
@@ -146,21 +184,35 @@ export default function TorneosPage() {
               .
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
-              {jugadoresConStats.map((j) => (
-                <label key={j.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={seleccionados.has(j.id)}
-                    onChange={() => toggleJugador(j.id)}
-                  />
-                  {j.nombre}{" "}
-                  <span className="font-mono text-xs text-zinc-400">
-                    {j.eloAtlantida}
-                  </span>
-                </label>
-              ))}
-            </div>
+            <>
+              <input
+                type="text"
+                value={busquedaJugadores}
+                onChange={(e) => setBusquedaJugadores(e.target.value)}
+                placeholder="Buscar jugador..."
+                className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              />
+              <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-md border border-zinc-100 p-2 sm:grid-cols-3">
+                {jugadoresFiltrados.map((j) => (
+                  <label key={j.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={seleccionados.has(j.id)}
+                      onChange={() => toggleJugador(j.id)}
+                    />
+                    {nombreVisible(j)}{" "}
+                    <span className="font-mono text-xs text-zinc-400">
+                      {j.eloAtlantida}
+                    </span>
+                  </label>
+                ))}
+                {jugadoresFiltrados.length === 0 && (
+                  <p className="col-span-full py-2 text-center text-sm text-zinc-400">
+                    Ningún jugador coincide con la búsqueda.
+                  </p>
+                )}
+              </div>
+            </>
           )}
         </div>
 
@@ -197,21 +249,32 @@ export default function TorneosPage() {
           <p className="text-sm text-zinc-400">Todavía no creaste ningún torneo.</p>
         )}
         {torneos.map((t) => (
-          <Link
+          <div
             key={t.id}
-            href={`/torneos/${t.id}`}
             className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
           >
-            <div>
+            <Link href={`/torneos/${t.id}`} className="flex-1">
               <div className="font-medium">{t.nombre}</div>
               <div className="text-sm text-zinc-500">
                 {formatoLabel[t.formato]} · {t.jugadoresIds.length} jugadores
               </div>
+            </Link>
+            <div className="flex items-center gap-3">
+              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+                {estadoLabel[t.estado]}
+              </span>
+              <button
+                onClick={() => {
+                  if (window.confirm(`¿Borrar el torneo "${t.nombre}"? Esto no se puede deshacer.`)) {
+                    eliminarTorneo(t.id);
+                  }
+                }}
+                className="text-xs text-red-600 hover:underline"
+              >
+                Eliminar
+              </button>
             </div>
-            <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
-              {estadoLabel[t.estado]}
-            </span>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

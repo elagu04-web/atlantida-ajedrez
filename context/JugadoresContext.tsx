@@ -7,14 +7,16 @@ import { supabase } from "@/lib/supabase";
 type FilaJugador = {
   id: string;
   nombre: string;
+  apodo: string | null;
   elo_inicial: number;
 };
 
 type JugadoresContextType = {
   jugadores: Jugador[];
   cargando: boolean;
-  agregarJugador: (nombre: string, eloInicial: number) => Promise<string>;
+  agregarJugador: (nombre: string, eloInicial: number, apodo?: string) => Promise<string>;
   eliminarJugador: (id: string) => Promise<void>;
+  actualizarApodo: (id: string, apodo: string) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
 };
 
@@ -24,6 +26,7 @@ function filaAJugador(fila: FilaJugador): Jugador {
   return {
     id: fila.id,
     nombre: fila.nombre,
+    apodo: fila.apodo,
     eloAtlantida: fila.elo_inicial,
     partidas: [],
   };
@@ -45,10 +48,10 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
     cargar();
   }, []);
 
-  async function agregarJugador(nombre: string, eloInicial: number) {
+  async function agregarJugador(nombre: string, eloInicial: number, apodo?: string) {
     const { data, error } = await supabase
       .from("jugadores")
-      .insert({ nombre, elo_inicial: eloInicial })
+      .insert({ nombre, elo_inicial: eloInicial, apodo: apodo?.trim() || null })
       .select()
       .single();
     if (error || !data) return "";
@@ -64,13 +67,28 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function actualizarApodo(id: string, apodo: string) {
+    const apodoLimpio = apodo.trim() || null;
+    setJugadores((actuales) =>
+      actuales.map((j) => (j.id === id ? { ...j, apodo: apodoLimpio } : j))
+    );
+    await supabase.from("jugadores").update({ apodo: apodoLimpio }).eq("id", id);
+  }
+
   function obtenerJugador(id: string) {
     return jugadores.find((j) => j.id === id);
   }
 
   return (
     <JugadoresContext.Provider
-      value={{ jugadores, cargando, agregarJugador, eliminarJugador, obtenerJugador }}
+      value={{
+        jugadores,
+        cargando,
+        agregarJugador,
+        eliminarJugador,
+        actualizarApodo,
+        obtenerJugador,
+      }}
     >
       {children}
     </JugadoresContext.Provider>

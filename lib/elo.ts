@@ -1,4 +1,4 @@
-import { Jugador, Partida, Resultado } from "./players";
+import { Jugador, Partida, Resultado, nombreVisible } from "./players";
 import { Torneo } from "./tournaments";
 
 export const K_FACTOR = 20;
@@ -58,7 +58,7 @@ export function calcularEloYHistorialEnVivo(
   partidas.sort((a, b) => a.orden - b.orden);
 
   const hoy = new Date().toISOString().slice(0, 10);
-  const nombrePorId = new Map(jugadoresBase.map((j) => [j.id, j.nombre]));
+  const nombrePorId = new Map(jugadoresBase.map((j) => [j.id, nombreVisible(j)]));
 
   for (const p of partidas) {
     const eloBlancas = elo.get(p.blancasId);

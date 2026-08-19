@@ -7,6 +7,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
 import { ResultadoPartida, rondaCompleta, puedeEditarJugadores } from "@/lib/tournaments";
+import { nombreVisible } from "@/lib/players";
 
 const estadoLabel: Record<string, string> = {
   armado: "Armado",
@@ -53,7 +54,8 @@ export default function TorneoPage() {
   }
 
   function nombreDe(jugadorId: string) {
-    return jugadores.find((j) => j.id === jugadorId)?.nombre ?? "?";
+    const j = jugadores.find((j) => j.id === jugadorId);
+    return j ? nombreVisible(j) : "?";
   }
 
   async function handleNuevoJugador(e: React.FormEvent) {
@@ -125,7 +127,7 @@ export default function TorneoPage() {
           {inscriptos.map((j) => (
             <li key={j!.id} className="flex items-center justify-between text-sm">
               <span>
-                {j!.nombre}{" "}
+                {nombreVisible(j!)}{" "}
                 <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
               </span>
               {puedeEditarJugadores(torneo) && (
@@ -152,7 +154,7 @@ export default function TorneoPage() {
                   <option value="">Elegir jugador...</option>
                   {disponiblesParaAgregar.map((j) => (
                     <option key={j.id} value={j.id}>
-                      {j.nombre}
+                      {nombreVisible(j)}
                     </option>
                   ))}
                 </select>

@@ -1,25 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
+import { nombreVisible } from "@/lib/players";
+import type { JugadorEnVivo } from "@/lib/elo";
+
+type Orden = "elo" | "partidas";
+
+function ApodoInput({
+  jugadorId,
+  apodoActual,
+  onGuardar,
+}: {
+  jugadorId: string;
+  apodoActual: string | null;
+  onGuardar: (id: string, apodo: string) => void;
+}) {
+  const [valor, setValor] = useState(apodoActual ?? "");
+
+  return (
+    <input
+      type="text"
+      value={valor}
+      onChange={(e) => setValor(e.target.value)}
+      onBlur={() => {
+        if (valor.trim() !== (apodoActual ?? "")) onGuardar(jugadorId, valor);
+      }}
+      placeholder="Agregar apodo..."
+      className="w-32 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 hover:border-zinc-200 focus:border-zinc-300 focus:bg-white focus:outline-none"
+    />
+  );
+}
 
 export default function JugadoresPage() {
-  const { agregarJugador, eliminarJugador } = useJugadores();
+  const { agregarJugador, eliminarJugador, actualizarApodo } = useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
+
   const [nombre, setNombre] = useState("");
+  const [apodo, setApodo] = useState("");
   const [elo, setElo] = useState("1500");
+  const [busqueda, setBusqueda] = useState("");
+  const [orden, setOrden] = useState<Orden>("elo");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const nombreLimpio = nombre.trim();
     if (!nombreLimpio) return;
     const eloNumero = Number(elo) || 1500;
-    agregarJugador(nombreLimpio, eloNumero);
+    agregarJugador(nombreLimpio, eloNumero, apodo);
     setNombre("");
+    setApodo("");
     setElo("1500");
   }
+
+  const lista = useMemo(() => {
+    const filtrados = busqueda.trim()
+      ? jugadoresConStats.filter((j: JugadorEnVivo) =>
+          `${j.nombre} ${j.apodo ?? ""}`.toLowerCase().includes(busqueda.trim().toLowerCase())
+        )
+      : jugadoresConStats;
+    return [...filtrados].sort((a, b) =>
+      orden === "elo" ? b.eloAtlantida - a.eloAtlantida : b.jugadas - a.jugadas
+    );
+  }, [jugadoresConStats, busqueda, orden]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,7 +89,20 @@ export default function JugadoresPage() {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Ej: Ana Rodríguez"
-            className="w-56 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-48 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="apodo" className="text-xs font-medium text-zinc-600">
+            Apodo (opcional)
+          </label>
+          <input
+            id="apodo"
+            type="text"
+            value={apodo}
+            onChange={(e) => setApodo(e.target.value)}
+            placeholder="Ej: Fonchi"
+            className="w-36 rounded-md border border-zinc-300 px-3 py-2 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -67,6 +125,35 @@ export default function JugadoresPage() {
         </button>
       </form>
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <input
+          type="text"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          placeholder="Buscar jugador..."
+          className="w-64 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+        />
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-xs font-medium text-zinc-500">Ordenar por:</span>
+          <button
+            onClick={() => setOrden("elo")}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium ${
+              orden === "elo" ? "bg-zinc-900 text-white" : "border border-zinc-300 hover:bg-zinc-50"
+            }`}
+          >
+            Elo
+          </button>
+          <button
+            onClick={() => setOrden("partidas")}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium ${
+              orden === "partidas" ? "bg-zinc-900 text-white" : "border border-zinc-300 hover:bg-zinc-50"
+            }`}
+          >
+            Partidas jugadas
+          </button>
+        </div>
+      </div>
+
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
@@ -82,13 +169,16 @@ export default function JugadoresPage() {
             </tr>
           </thead>
           <tbody>
-            {jugadoresConStats.map((j, i) => (
+            {lista.map((j, i) => (
               <tr key={j.id} className="border-b border-zinc-100 last:border-0">
                 <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
                 <td className="px-4 py-3 font-medium">
                   <Link href={`/jugadores/${j.id}`} className="hover:underline">
-                    {j.nombre}
+                    {nombreVisible(j)}
                   </Link>
+                  <div>
+                    <ApodoInput jugadorId={j.id} apodoActual={j.apodo} onGuardar={actualizarApodo} />
+                  </div>
                 </td>
                 <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
                 <td className="px-4 py-3">{j.jugadas}</td>
@@ -105,10 +195,10 @@ export default function JugadoresPage() {
                 </td>
               </tr>
             ))}
-            {jugadoresConStats.length === 0 && (
+            {lista.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-4 py-6 text-center text-zinc-400">
-                  No hay jugadores todavía.
+                  {busqueda ? "No hay jugadores que coincidan con la búsqueda." : "No hay jugadores todavía."}
                 </td>
               </tr>
             )}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
+import { nombreVisible } from "@/lib/players";
 
 const resultadoColor: Record<string, string> = {
   victoria: "text-green-700",
@@ -39,8 +40,9 @@ export default function JugadorPage() {
           ← Volver a jugadores
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          {jugador.nombre}
+          {nombreVisible(jugador)}
         </h1>
+        {jugador.apodo && <p className="text-sm text-zinc-400">{jugador.nombre}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
