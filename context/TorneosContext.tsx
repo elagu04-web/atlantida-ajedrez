@@ -9,6 +9,7 @@ import {
   ResultadoPartida,
   Standing,
   generarRoundRobin,
+  generarRondaUnoDutch,
   generarRondaSuiza,
   calcularStandings,
   puedeEditarJugadores,
@@ -165,7 +166,11 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       const enVivo = calcularEloYHistorialEnVivo(jugadores, torneos);
       const elos = new Map(enVivo.map((j) => [j.id, j.eloAtlantida]));
       const siguienteNumero = torneo.rondas.length + 1;
-      nuevasRondas = [...torneo.rondas, generarRondaSuiza(torneo, siguienteNumero, elos)];
+      const nuevaRonda =
+        siguienteNumero === 1
+          ? generarRondaUnoDutch(torneo.jugadoresIds, elos)
+          : generarRondaSuiza(torneo, siguienteNumero, elos);
+      nuevasRondas = [...torneo.rondas, nuevaRonda];
     }
 
     setTorneos((actuales) =>

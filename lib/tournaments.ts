@@ -116,6 +116,51 @@ export function calcularStandings(torneo: Torneo): Map<string, Standing> {
   return standings;
 }
 
+/**
+ * Ronda 1 del suizo según el sistema Dutch de FIDE (C.04.3): se ordena a
+ * todos por Elo, si son impares el de menor Elo descansa, y se divide el
+ * resto en dos mitades (la mitad de arriba contra la de abajo, 1 contra el
+ * primero de la mitad de abajo, 2 contra el segundo, etc.) — fuertes contra
+ * débiles. Las siguientes rondas ya no usan esto: dependen de resultados y
+ * usan el algoritmo suizo completo (evita repetir rivales, balancea
+ * colores).
+ */
+export function generarRondaUnoDutch(
+  jugadoresIds: string[],
+  elos: Map<string, number>
+): RondaTorneo {
+  const ordenados = [...jugadoresIds].sort(
+    (a, b) => (elos.get(b) ?? 0) - (elos.get(a) ?? 0)
+  );
+
+  let conBye: string | null = null;
+  if (ordenados.length % 2 !== 0) {
+    conBye = ordenados.pop()!; // menor Elo de todos, al final del orden descendente
+  }
+
+  const mitad = ordenados.length / 2;
+  const mitadFuerte = ordenados.slice(0, mitad);
+  const mitadDebil = ordenados.slice(mitad);
+
+  const emparejamientos: EmparejamientoTorneo[] = mitadFuerte.map((blancasId, i) => ({
+    numero: i + 1,
+    blancasId,
+    negrasId: mitadDebil[i],
+    resultado: null,
+  }));
+
+  if (conBye) {
+    emparejamientos.push({
+      numero: emparejamientos.length + 1,
+      blancasId: conBye,
+      negrasId: null,
+      resultado: "1-0",
+    });
+  }
+
+  return { numero: 1, emparejamientos };
+}
+
 export function generarRondaSuiza(
   torneo: Torneo,
   numeroRonda: number,
