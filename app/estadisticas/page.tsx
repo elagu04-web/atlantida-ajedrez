@@ -26,14 +26,16 @@ export default function EstadisticasPage() {
   const torneosDelPeriodo = periodoActivo ? grupos.get(periodoActivo) ?? [] : [];
   const tabla = useMemo(() => calcularTablaGeneral(torneosDelPeriodo), [torneosDelPeriodo]);
 
+  const anioActual = new Date().getFullYear();
   const campeones = useMemo(() => {
     const resultado: { torneo: Torneo; resultado: ResultadoCampeon }[] = [];
     for (const t of torneos) {
+      if (new Date(t.creadoEn).getFullYear() !== anioActual) continue;
       const r = determinarCampeon(t);
       if (r) resultado.push({ torneo: t, resultado: r });
     }
     return resultado;
-  }, [torneos]);
+  }, [torneos, anioActual]);
 
   const titulos = useMemo(() => {
     const conteo = new Map<string, number>();
@@ -140,9 +142,9 @@ export default function EstadisticasPage() {
       </div>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
-        <h2 className="mb-4 font-semibold">🏆 Copa de Campeones</h2>
+        <h2 className="mb-4 font-semibold">🏆 Copa de Campeones {anioActual}</h2>
         {campeones.length === 0 ? (
-          <p className="text-sm text-zinc-400">Todavía no hay torneos finalizados.</p>
+          <p className="text-sm text-zinc-400">Todavía no hay torneos finalizados este año.</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
