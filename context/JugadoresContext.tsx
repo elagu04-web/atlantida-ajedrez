@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Jugador } from "@/lib/players";
 import { supabase } from "@/lib/supabase";
+import { useActividad } from "@/context/ActividadContext";
 
 type FilaJugador = {
   id: string;
@@ -39,6 +40,7 @@ function filaAJugador(fila: FilaJugador): Jugador {
 export function JugadoresProvider({ children }: { children: ReactNode }) {
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
   const [cargando, setCargando] = useState(true);
+  const { registrar } = useActividad();
 
   useEffect(() => {
     async function cargar() {
@@ -61,13 +63,16 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
     if (error || !data) return "";
     const nuevo = filaAJugador(data);
     setJugadores((actuales) => [...actuales, nuevo]);
+    registrar("jugador", `Se agregó el jugador "${nuevo.nombre}" (Elo inicial ${nuevo.eloAtlantida}).`);
     return nuevo.id;
   }
 
   async function eliminarJugador(id: string) {
+    const jugador = jugadores.find((j) => j.id === id);
     const { error } = await supabase.from("jugadores").delete().eq("id", id);
     if (!error) {
       setJugadores((actuales) => actuales.filter((j) => j.id !== id));
+      registrar("jugador", `Se eliminó el jugador "${jugador?.nombre ?? id}".`);
     }
   }
 
@@ -90,6 +95,7 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
   async function actualizarJugador(id: string, nombre: string, eloInicial: number) {
     const nombreLimpio = nombre.trim();
     if (!nombreLimpio) return;
+    const anterior = jugadores.find((j) => j.id === id);
     setJugadores((actuales) =>
       actuales.map((j) =>
         j.id === id ? { ...j, nombre: nombreLimpio, eloAtlantida: eloInicial } : j
@@ -99,6 +105,10 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
       .from("jugadores")
       .update({ nombre: nombreLimpio, elo_inicial: eloInicial })
       .eq("id", id);
+    registrar(
+      "jugador",
+      `Se editó el jugador "${anterior?.nombre ?? id}" → nombre "${nombreLimpio}", Elo inicial ${eloInicial}.`
+    );
   }
 
   function obtenerJugador(id: string) {

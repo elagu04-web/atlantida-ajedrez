@@ -19,7 +19,9 @@ import {
   SlotEmparejamiento,
 } from "@/lib/tournaments";
 import { useJugadores } from "@/context/JugadoresContext";
+import { useActividad } from "@/context/ActividadContext";
 import { calcularEloYHistorialEnVivo } from "@/lib/elo";
+import { nombreVisible } from "@/lib/players";
 import { supabase } from "@/lib/supabase";
 
 type FilaTorneo = {
@@ -92,6 +94,12 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
   const [torneos, setTorneos] = useState<Torneo[]>([]);
   const [cargando, setCargando] = useState(true);
   const { jugadores } = useJugadores();
+  const { registrar } = useActividad();
+
+  function nombreDe(jugadorId: string) {
+    const j = jugadores.find((j) => j.id === jugadorId);
+    return j ? nombreVisible(j) : "?";
+  }
 
   useEffect(() => {
     async function cargar() {
@@ -128,6 +136,10 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (error || !data) return "";
     const nuevo = filaATorneo(data);
     setTorneos((actuales) => [...actuales, nuevo]);
+    registrar(
+      "torneo",
+      `Se creó el torneo "${nuevo.nombre}" (${formato === "suizo" ? "Sistema suizo" : "Round robin"}, ${jugadoresIds.length} jugadores).`
+    );
     return nuevo.id;
   }
 
@@ -145,6 +157,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       actuales.map((t) => (t.id === torneoId ? { ...t, jugadoresIds: nuevosIds } : t))
     );
     await supabase.from("torneos").update({ jugadores_ids: nuevosIds }).eq("id", torneoId);
+    registrar("torneo", `Se agregó a ${nombreDe(jugadorId)} al torneo "${torneo.nombre}".`);
   }
 
   async function quitarJugadorDeTorneo(torneoId: string, jugadorId: string) {
@@ -155,6 +168,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       actuales.map((t) => (t.id === torneoId ? { ...t, jugadoresIds: nuevosIds } : t))
     );
     await supabase.from("torneos").update({ jugadores_ids: nuevosIds }).eq("id", torneoId);
+    registrar("torneo", `Se quitó a ${nombreDe(jugadorId)} del torneo "${torneo.nombre}".`);
   }
 
   async function generarRondas(torneoId: string) {
@@ -194,6 +208,12 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       .from("torneos")
       .update({ rondas: nuevasRondas, estado: nuevoEstado })
       .eq("id", torneoId);
+    registrar(
+      "torneo",
+      torneo.formato === "round-robin"
+        ? `Se generaron todas las rondas del torneo "${torneo.nombre}".`
+        : `Se generó la ronda ${nuevasRondas.length} del torneo "${torneo.nombre}".`
+    );
   }
 
   async function registrarResultado(
@@ -217,6 +237,17 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
     );
     await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+
+    if (resultado) {
+      const ronda = torneo.rondas.find((r) => r.numero === rondaNumero);
+      const emp = ronda?.emparejamientos.find((e) => e.numero === emparejamientoNumero);
+      if (emp?.negrasId) {
+        registrar(
+          "resultado",
+          `${nombreDe(emp.blancasId)} ${resultado} ${nombreDe(emp.negrasId)} — ronda ${rondaNumero} de "${torneo.nombre}".`
+        );
+      }
+    }
   }
 
   async function corregirColor(
@@ -239,6 +270,10 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
     );
     await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+    registrar(
+      "torneo",
+      `Se corrigió el color de una partida en la ronda ${rondaNumero} de "${torneo.nombre}".`
+    );
   }
 
   async function intercambiarJugadores(
@@ -263,6 +298,12 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
     );
     await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+    registrar(
+      "torneo",
+      `Se intercambiaron jugadores en la ronda ${rondaNumero} de "${torneo.nombre}"${
+        !esValido ? " (⚠ forzado, no era válido)" : ""
+      }.`
+    );
     return true;
   }
 
@@ -280,18 +321,23 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       .from("torneos")
       .update({ rondas: nuevasRondas, estado: nuevoEstado })
       .eq("id", torneoId);
+    registrar("torneo", `Se eliminó la ronda ${torneo.rondas.length} del torneo "${torneo.nombre}".`);
   }
 
   async function eliminarTorneo(torneoId: string) {
+    const torneo = obtenerTorneo(torneoId);
     setTorneos((actuales) => actuales.filter((t) => t.id !== torneoId));
     await supabase.from("torneos").delete().eq("id", torneoId);
+    registrar("torneo", `Se eliminó el torneo "${torneo?.nombre ?? torneoId}".`);
   }
 
   async function finalizarTorneo(torneoId: string) {
+    const torneo = obtenerTorneo(torneoId);
     setTorneos((actuales) =>
       actuales.map((t) => (t.id === torneoId ? { ...t, estado: "finalizado" } : t))
     );
     await supabase.from("torneos").update({ estado: "finalizado" }).eq("id", torneoId);
+    registrar("torneo", `Se finalizó el torneo "${torneo?.nombre ?? torneoId}".`);
   }
 
   function standingsDeTorneo(torneoId: string) {

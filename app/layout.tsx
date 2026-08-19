@@ -4,6 +4,7 @@ import Link from "next/link";
 import "./globals.css";
 import { JugadoresProvider } from "@/context/JugadoresContext";
 import { TorneosProvider } from "@/context/TorneosContext";
+import { ActividadProvider } from "@/context/ActividadContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +27,7 @@ const navLinks = [
   { href: "/torneos", label: "Torneos" },
   { href: "/estadisticas", label: "Estadísticas" },
   { href: "/transmision", label: "Transmisión" },
+  { href: "/actividad", label: "Actividad" },
 ];
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -54,9 +56,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
-          <JugadoresProvider>
-            <TorneosProvider>{children}</TorneosProvider>
-          </JugadoresProvider>
+          <ActividadProvider>
+            <JugadoresProvider>
+              <TorneosProvider>{children}</TorneosProvider>
+            </JugadoresProvider>
+          </ActividadProvider>
         </main>
       </body>
     </html>
