@@ -14,6 +14,9 @@ import {
   calcularStandings,
   puedeEditarJugadores,
   corregirColorEmparejamiento,
+  intercambiarEnRonda,
+  intercambioEsValido,
+  SlotEmparejamiento,
 } from "@/lib/tournaments";
 import { useJugadores } from "@/context/JugadoresContext";
 import { calcularEloYHistorialEnVivo } from "@/lib/elo";
@@ -56,6 +59,13 @@ type TorneosContextType = {
     emparejamientoNumero: number
   ) => Promise<void>;
   eliminarUltimaRonda: (torneoId: string) => Promise<void>;
+  intercambiarJugadores: (
+    torneoId: string,
+    rondaNumero: number,
+    slotA: SlotEmparejamiento,
+    slotB: SlotEmparejamiento,
+    forzar: boolean
+  ) => Promise<boolean>;
   eliminarTorneo: (torneoId: string) => Promise<void>;
   finalizarTorneo: (torneoId: string) => Promise<void>;
   standingsDeTorneo: (torneoId: string) => Standing[];
@@ -229,6 +239,31 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
   }
 
+  async function intercambiarJugadores(
+    torneoId: string,
+    rondaNumero: number,
+    slotA: SlotEmparejamiento,
+    slotB: SlotEmparejamiento,
+    forzar: boolean
+  ) {
+    const torneo = obtenerTorneo(torneoId);
+    const ronda = torneo?.rondas.find((r) => r.numero === rondaNumero);
+    if (!torneo || !ronda) return false;
+
+    const esValido = intercambioEsValido(torneo, ronda, slotA, slotB);
+    if (!esValido && !forzar) return false;
+
+    const rondaNueva = intercambiarEnRonda(ronda, slotA, slotB);
+    if (!esValido) rondaNueva.advertenciaManual = true;
+
+    const nuevasRondas = torneo.rondas.map((r) => (r.numero === rondaNumero ? rondaNueva : r));
+    setTorneos((actuales) =>
+      actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
+    );
+    await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+    return true;
+  }
+
   async function eliminarUltimaRonda(torneoId: string) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo || torneo.rondas.length === 0) return;
@@ -276,6 +311,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         registrarResultado,
         corregirColor,
         eliminarUltimaRonda,
+        intercambiarJugadores,
         eliminarTorneo,
         finalizarTorneo,
         standingsDeTorneo,

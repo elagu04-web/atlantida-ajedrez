@@ -6,7 +6,12 @@ import { useParams } from "next/navigation";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
-import { rondaCompleta, puedeEditarJugadores } from "@/lib/tournaments";
+import {
+  rondaCompleta,
+  puedeEditarJugadores,
+  puedeEditarEmparejamientos,
+  SlotEmparejamiento,
+} from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
 
 const estadoLabel: Record<string, string> = {
@@ -32,6 +37,7 @@ export default function TorneoPage() {
     registrarResultado,
     corregirColor,
     eliminarUltimaRonda,
+    intercambiarJugadores,
     finalizarTorneo,
     standingsDeTorneo,
   } = useTorneos();
@@ -39,6 +45,10 @@ export default function TorneoPage() {
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
   const [nombreNuevo, setNombreNuevo] = useState("");
   const [eloNuevo, setEloNuevo] = useState("1500");
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [modoEmergencia, setModoEmergencia] = useState(false);
+  const [slotSeleccionado, setSlotSeleccionado] = useState<SlotEmparejamiento | null>(null);
+  const [mensajeEdicion, setMensajeEdicion] = useState<string | null>(null);
 
   const torneo = obtenerTorneo(id);
 
@@ -69,6 +79,34 @@ export default function TorneoPage() {
     setEloNuevo("1500");
   }
 
+  async function handleSlotClick(rondaNumero: number, slot: SlotEmparejamiento) {
+    setMensajeEdicion(null);
+    if (!slotSeleccionado) {
+      setSlotSeleccionado(slot);
+      return;
+    }
+    if (
+      slotSeleccionado.emparejamientoNumero === slot.emparejamientoNumero &&
+      slotSeleccionado.color === slot.color
+    ) {
+      setSlotSeleccionado(null);
+      return;
+    }
+    const ok = await intercambiarJugadores(
+      torneo!.id,
+      rondaNumero,
+      slotSeleccionado,
+      slot,
+      modoEmergencia
+    );
+    if (!ok) {
+      setMensajeEdicion(
+        "Esos dos jugadores ya se enfrentaron antes en este torneo — activá el modo de emergencia para forzarlo igual."
+      );
+    }
+    setSlotSeleccionado(null);
+  }
+
   function handleEliminarUltimaRonda() {
     const ultima = torneo!.rondas[torneo!.rondas.length - 1];
     if (!ultima) return;
@@ -83,6 +121,7 @@ export default function TorneoPage() {
   const standings = standingsDeTorneo(torneo.id);
 
   const ultimaRonda = torneo.rondas[torneo.rondas.length - 1];
+  const puedeEditarEstaRonda = Boolean(ultimaRonda && puedeEditarEmparejamientos(ultimaRonda));
   const alcanzoRondasObjetivo =
     torneo.formato === "suizo" &&
     torneo.rondasObjetivo !== null &&
@@ -272,86 +311,176 @@ export default function TorneoPage() {
       )}
 
       <div className="flex flex-col gap-4">
-        {[...torneo.rondas].reverse().map((ronda) => (
-          <div key={ronda.numero} className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-            <h3 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 font-semibold">
-              Ronda {ronda.numero}
-            </h3>
-            <div className="flex flex-col divide-y divide-zinc-100">
-              {ronda.emparejamientos.map((e) =>
-                e.negrasId ? (
-                  <div key={e.numero} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="grid flex-1 grid-cols-3 gap-2">
+        {[...torneo.rondas].reverse().map((ronda) => {
+          const esUltima = ronda.numero === ultimaRonda?.numero;
+          const editandoEstaRonda = esUltima && modoEdicion && puedeEditarEstaRonda;
+
+          return (
+            <div key={ronda.numero} className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 bg-zinc-50 px-4 py-3">
+                <h3 className="font-semibold">
+                  Ronda {ronda.numero}
+                  {ronda.advertenciaManual && (
+                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      ⚠ emparejamiento forzado manualmente
+                    </span>
+                  )}
+                </h3>
+                {esUltima && puedeEditarEstaRonda && (
+                  <button
+                    onClick={() => {
+                      setModoEdicion((v) => !v);
+                      setSlotSeleccionado(null);
+                      setMensajeEdicion(null);
+                    }}
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium ${
+                      modoEdicion
+                        ? "bg-zinc-900 text-white"
+                        : "border border-zinc-300 hover:bg-zinc-50"
+                    }`}
+                  >
+                    {modoEdicion ? "Listo" : "✏️ Editar emparejamientos"}
+                  </button>
+                )}
+              </div>
+
+              {editandoEstaRonda && (
+                <div className="flex flex-col gap-2 border-b border-zinc-100 bg-amber-50 px-4 py-3 text-sm">
+                  <p className="text-zinc-600">
+                    Tocá un jugador y después a otro para intercambiarlos (también cambia el color).
+                  </p>
+                  <label className="flex items-center gap-2 font-medium text-amber-800">
+                    <input
+                      type="checkbox"
+                      checked={modoEmergencia}
+                      onChange={(ev) => setModoEmergencia(ev.target.checked)}
+                    />
+                    ⚠ Modo de emergencia: forzar el intercambio aunque no sea válido
+                  </label>
+                  {mensajeEdicion && <p className="text-red-600">{mensajeEdicion}</p>}
+                </div>
+              )}
+
+              <div className="flex flex-col divide-y divide-zinc-100">
+                {ronda.emparejamientos.map((e) => {
+                  const slotBlancas: SlotEmparejamiento = { emparejamientoNumero: e.numero, color: "blancas" };
+                  const slotNegras: SlotEmparejamiento = { emparejamientoNumero: e.numero, color: "negras" };
+                  const esSeleccionado = (slot: SlotEmparejamiento) =>
+                    slotSeleccionado?.emparejamientoNumero === slot.emparejamientoNumero &&
+                    slotSeleccionado?.color === slot.color;
+
+                  if (editandoEstaRonda) {
+                    return (
+                      <div key={e.numero} className="flex items-center gap-2 p-4">
+                        <button
+                          onClick={() => handleSlotClick(ronda.numero, slotBlancas)}
+                          className={`flex-1 rounded-md border px-3 py-3 text-sm font-medium ${
+                            esSeleccionado(slotBlancas)
+                              ? "border-blue-600 bg-blue-50 ring-2 ring-blue-500"
+                              : "border-zinc-300 bg-white hover:bg-zinc-50"
+                          }`}
+                        >
+                          {nombreDe(e.blancasId)}
+                        </button>
+                        {e.negrasId ? (
+                          <>
+                            <span className="text-xs text-zinc-400">vs</span>
+                            <button
+                              onClick={() => handleSlotClick(ronda.numero, slotNegras)}
+                              className={`flex-1 rounded-md border px-3 py-3 text-sm font-medium ${
+                                esSeleccionado(slotNegras)
+                                  ? "border-blue-600 bg-blue-50 ring-2 ring-blue-500"
+                                  : "border-zinc-300 bg-white hover:bg-zinc-50"
+                              }`}
+                            >
+                              {nombreDe(e.negrasId)}
+                            </button>
+                          </>
+                        ) : (
+                          <span className="flex-1 text-center text-xs text-zinc-400">— descansa —</span>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  if (!e.negrasId) {
+                    return (
+                      <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-500">
+                        <span>{nombreDe(e.blancasId)}</span>
+                        <span className="text-zinc-400">— descansa (punto libre) —</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={e.numero} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="grid flex-1 grid-cols-3 gap-2">
+                        <button
+                          onClick={() =>
+                            registrarResultado(
+                              torneo.id,
+                              ronda.numero,
+                              e.numero,
+                              e.resultado === "1-0" ? null : "1-0"
+                            )
+                          }
+                          className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                            e.resultado === "1-0"
+                              ? "border-green-600 bg-green-600 text-white"
+                              : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                          }`}
+                        >
+                          🏆 {nombreDe(e.blancasId)}
+                        </button>
+                        <button
+                          onClick={() =>
+                            registrarResultado(
+                              torneo.id,
+                              ronda.numero,
+                              e.numero,
+                              e.resultado === "1/2-1/2" ? null : "1/2-1/2"
+                            )
+                          }
+                          className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                            e.resultado === "1/2-1/2"
+                              ? "border-zinc-600 bg-zinc-600 text-white"
+                              : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                          }`}
+                        >
+                          ½ Tablas
+                        </button>
+                        <button
+                          onClick={() =>
+                            registrarResultado(
+                              torneo.id,
+                              ronda.numero,
+                              e.numero,
+                              e.resultado === "0-1" ? null : "0-1"
+                            )
+                          }
+                          className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
+                            e.resultado === "0-1"
+                              ? "border-green-600 bg-green-600 text-white"
+                              : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                          }`}
+                        >
+                          🏆 {nombreDe(e.negrasId)}
+                        </button>
+                      </div>
                       <button
-                        onClick={() =>
-                          registrarResultado(
-                            torneo.id,
-                            ronda.numero,
-                            e.numero,
-                            e.resultado === "1-0" ? null : "1-0"
-                          )
-                        }
-                        className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
-                          e.resultado === "1-0"
-                            ? "border-green-600 bg-green-600 text-white"
-                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
-                        }`}
+                        onClick={() => corregirColor(torneo.id, ronda.numero, e.numero)}
+                        className="shrink-0 text-xs text-blue-600 hover:underline sm:ml-3"
+                        title="Intercambiar quién jugó con blancas y quién con negras"
                       >
-                        🏆 {nombreDe(e.blancasId)}
-                      </button>
-                      <button
-                        onClick={() =>
-                          registrarResultado(
-                            torneo.id,
-                            ronda.numero,
-                            e.numero,
-                            e.resultado === "1/2-1/2" ? null : "1/2-1/2"
-                          )
-                        }
-                        className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
-                          e.resultado === "1/2-1/2"
-                            ? "border-zinc-600 bg-zinc-600 text-white"
-                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
-                        }`}
-                      >
-                        ½ Tablas
-                      </button>
-                      <button
-                        onClick={() =>
-                          registrarResultado(
-                            torneo.id,
-                            ronda.numero,
-                            e.numero,
-                            e.resultado === "0-1" ? null : "0-1"
-                          )
-                        }
-                        className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
-                          e.resultado === "0-1"
-                            ? "border-green-600 bg-green-600 text-white"
-                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
-                        }`}
-                      >
-                        🏆 {nombreDe(e.negrasId)}
+                        ↔ colores
                       </button>
                     </div>
-                    <button
-                      onClick={() => corregirColor(torneo.id, ronda.numero, e.numero)}
-                      className="shrink-0 text-xs text-blue-600 hover:underline sm:ml-3"
-                      title="Intercambiar quién jugó con blancas y quién con negras"
-                    >
-                      ↔ colores
-                    </button>
-                  </div>
-                ) : (
-                  <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-500">
-                    <span>{nombreDe(e.blancasId)}</span>
-                    <span className="text-zinc-400">— descansa (punto libre) —</span>
-                  </div>
-                )
-              )}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

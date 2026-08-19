@@ -14,6 +14,7 @@ export type EmparejamientoTorneo = {
 export type RondaTorneo = {
   numero: number;
   emparejamientos: EmparejamientoTorneo[];
+  advertenciaManual?: boolean;
 };
 
 export type EstadoTorneo = "armado" | "en_curso" | "finalizado";
@@ -190,6 +191,14 @@ export function rondaCompleta(ronda: RondaTorneo): boolean {
 }
 
 /**
+ * Los emparejamientos de una ronda se pueden reordenar a mano solo mientras
+ * nadie jugó todavía (ningún emparejamiento real tiene resultado cargado).
+ */
+export function puedeEditarEmparejamientos(ronda: RondaTorneo): boolean {
+  return ronda.emparejamientos.every((e) => !e.negrasId || e.resultado === null);
+}
+
+/**
  * Intercambia blancas/negras de una partida ya emparejada. Si ya tenía
  * resultado cargado, invierte 1-0 <-> 0-1 para que el ganador real no
  * cambie (las tablas quedan igual). No se usa con partidas de descanso.
@@ -210,6 +219,94 @@ export function corregirColorEmparejamiento(
     negrasId: emparejamiento.blancasId,
     resultado,
   };
+}
+
+export type SlotEmparejamiento = {
+  emparejamientoNumero: number;
+  color: "blancas" | "negras";
+};
+
+function jugadorEnSlot(ronda: RondaTorneo, slot: SlotEmparejamiento): string | null {
+  const emp = ronda.emparejamientos.find((e) => e.numero === slot.emparejamientoNumero);
+  if (!emp) return null;
+  return slot.color === "blancas" ? emp.blancasId : emp.negrasId;
+}
+
+/**
+ * Intercambia dos jugadores entre dos "lugares" (emparejamiento + color) de
+ * la misma ronda. Si alguno de los emparejamientos tocados queda con
+ * resultado, se borra (la composición cambió); si queda como descanso, se
+ * le reasigna el 1-0 automático de siempre.
+ */
+export function intercambiarEnRonda(
+  ronda: RondaTorneo,
+  slotA: SlotEmparejamiento,
+  slotB: SlotEmparejamiento
+): RondaTorneo {
+  const jugadorA = jugadorEnSlot(ronda, slotA);
+  const jugadorB = jugadorEnSlot(ronda, slotB);
+  if (!jugadorA || !jugadorB || jugadorA === jugadorB) return ronda;
+
+  return {
+    ...ronda,
+    emparejamientos: ronda.emparejamientos.map((e) => {
+      let blancasId = e.blancasId;
+      let negrasId = e.negrasId;
+      let tocado = false;
+
+      if (e.numero === slotA.emparejamientoNumero) {
+        if (slotA.color === "blancas") blancasId = jugadorB;
+        else negrasId = jugadorB;
+        tocado = true;
+      }
+      if (e.numero === slotB.emparejamientoNumero) {
+        if (slotB.color === "blancas") blancasId = jugadorA;
+        else negrasId = jugadorA;
+        tocado = true;
+      }
+
+      if (!tocado) return e;
+      return { ...e, blancasId, negrasId, resultado: negrasId ? null : "1-0" };
+    }),
+  };
+}
+
+/**
+ * Si dos jugadores ya se enfrentaron en rondas anteriores del torneo (sin
+ * contar la ronda que se está editando).
+ */
+export function yaSeEnfrentaron(
+  torneo: Torneo,
+  rondaEnEdicion: number,
+  jugadorA: string,
+  jugadorB: string
+): boolean {
+  const historial: Torneo = {
+    ...torneo,
+    rondas: torneo.rondas.filter((r) => r.numero !== rondaEnEdicion),
+  };
+  const standings = calcularStandings(historial);
+  return standings.get(jugadorA)?.avoid.includes(jugadorB) ?? false;
+}
+
+/**
+ * Valida que, después de un intercambio, ninguno de los dos emparejamientos
+ * tocados enfrente a dos jugadores que ya jugaron entre sí antes en este
+ * torneo.
+ */
+export function intercambioEsValido(
+  torneo: Torneo,
+  ronda: RondaTorneo,
+  slotA: SlotEmparejamiento,
+  slotB: SlotEmparejamiento
+): boolean {
+  const nuevaRonda = intercambiarEnRonda(ronda, slotA, slotB);
+  const numerosTocados = new Set([slotA.emparejamientoNumero, slotB.emparejamientoNumero]);
+  for (const emp of nuevaRonda.emparejamientos) {
+    if (!numerosTocados.has(emp.numero) || !emp.negrasId) continue;
+    if (yaSeEnfrentaron(torneo, ronda.numero, emp.blancasId, emp.negrasId)) return false;
+  }
+  return true;
 }
 
 /**
