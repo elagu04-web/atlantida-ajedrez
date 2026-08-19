@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { nombreVisible } from "@/lib/players";
@@ -21,6 +22,34 @@ export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
+
+  const cabezaACabeza = useMemo(() => {
+    if (!jugador) return [];
+    const porRival = new Map<
+      string,
+      { victorias: number; empates: number; derrotas: number }
+    >();
+    for (const p of jugador.partidas) {
+      if (!porRival.has(p.rival)) {
+        porRival.set(p.rival, { victorias: 0, empates: 0, derrotas: 0 });
+      }
+      const r = porRival.get(p.rival)!;
+      if (p.resultado === "victoria") r.victorias += 1;
+      else if (p.resultado === "empate") r.empates += 1;
+      else r.derrotas += 1;
+    }
+    return [...porRival.entries()]
+      .map(([rival, r]) => {
+        const rivalJugador = jugadoresEnVivo.find((j) => nombreVisible(j) === rival);
+        return {
+          rival,
+          rivalId: rivalJugador?.id,
+          ...r,
+          jugadas: r.victorias + r.empates + r.derrotas,
+        };
+      })
+      .sort((a, b) => b.jugadas - a.jugadas || a.rival.localeCompare(b.rival));
+  }, [jugador, jugadoresEnVivo]);
 
   if (!jugador) {
     return (
@@ -96,6 +125,49 @@ export default function JugadorPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div>
+        <h2 className="mb-3 font-semibold">Cabeza a cabeza</h2>
+        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+          <table className="w-full text-sm">
+            <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+              <tr>
+                <th className="px-4 py-3 font-medium">Rival</th>
+                <th className="px-4 py-3 text-center font-medium">PJ</th>
+                <th className="px-4 py-3 text-center font-medium">V</th>
+                <th className="px-4 py-3 text-center font-medium">E</th>
+                <th className="px-4 py-3 text-center font-medium">D</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cabezaACabeza.map((h) => (
+                <tr key={h.rival} className="border-b border-zinc-100 last:border-0">
+                  <td className="px-4 py-3 font-medium">
+                    {h.rivalId ? (
+                      <Link href={`/jugadores/${h.rivalId}`} className="hover:underline">
+                        {h.rival}
+                      </Link>
+                    ) : (
+                      h.rival
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center font-mono">{h.jugadas}</td>
+                  <td className="px-4 py-3 text-center font-mono text-green-700">{h.victorias}</td>
+                  <td className="px-4 py-3 text-center font-mono text-zinc-500">{h.empates}</td>
+                  <td className="px-4 py-3 text-center font-mono text-red-700">{h.derrotas}</td>
+                </tr>
+              ))}
+              {cabezaACabeza.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
+                    Todavía no enfrentó a ningún rival.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
