@@ -84,7 +84,8 @@ function FideIdCelda({
 }
 
 export default function JugadoresPage() {
-  const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId } = useJugadores();
+  const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId, actualizarJugador } =
+    useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
 
   const [nombre, setNombre] = useState("");
@@ -92,6 +93,22 @@ export default function JugadoresPage() {
   const [elo, setElo] = useState("1500");
   const [busqueda, setBusqueda] = useState("");
   const [orden, setOrden] = useState<Orden>("elo");
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [editNombre, setEditNombre] = useState("");
+  const [editElo, setEditElo] = useState("");
+
+  function empezarEdicion(j: JugadorEnVivo) {
+    setEditandoId(j.id);
+    setEditNombre(j.nombre);
+    setEditElo(String(j.eloAtlantida));
+  }
+
+  function guardarEdicion() {
+    if (!editandoId) return;
+    const eloNumero = Number(editElo);
+    actualizarJugador(editandoId, editNombre, Number.isFinite(eloNumero) ? eloNumero : 1500);
+    setEditandoId(null);
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -219,35 +236,81 @@ export default function JugadoresPage() {
             </tr>
           </thead>
           <tbody>
-            {lista.map((j, i) => (
-              <tr key={j.id} className="border-b border-zinc-100 last:border-0">
-                <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
-                <td className="px-4 py-3 font-medium">
-                  <Link href={`/jugadores/${j.id}`} className="hover:underline">
-                    {nombreVisible(j)}
-                  </Link>
-                  <div>
-                    <ApodoCelda jugadorId={j.id} apodoActual={j.apodo} onGuardar={actualizarApodo} />
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <FideIdCelda jugadorId={j.id} fideIdActual={j.fideId} onGuardar={actualizarFideId} />
-                </td>
-                <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
-                <td className="px-4 py-3">{j.jugadas}</td>
-                <td className="px-4 py-3 text-green-700">{j.victorias}</td>
-                <td className="px-4 py-3 text-zinc-500">{j.empates}</td>
-                <td className="px-4 py-3 text-red-700">{j.derrotas}</td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => eliminarJugador(j.id)}
-                    className="text-xs text-red-600 hover:underline"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {lista.map((j, i) =>
+              editandoId === j.id ? (
+                <tr key={j.id} className="border-b border-zinc-100 bg-zinc-50 last:border-0">
+                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-3" colSpan={2}>
+                    <input
+                      type="text"
+                      value={editNombre}
+                      onChange={(e) => setEditNombre(e.target.value)}
+                      className="w-48 rounded border border-zinc-300 px-2 py-1 text-sm"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="number"
+                      value={editElo}
+                      onChange={(e) => setEditElo(e.target.value)}
+                      className="w-24 rounded border border-zinc-300 px-2 py-1 text-sm"
+                    />
+                    <div className="mt-0.5 text-[10px] text-zinc-400">Elo inicial</div>
+                  </td>
+                  <td className="px-4 py-3 text-zinc-400" colSpan={3}>
+                    Cambiar el nombre o el Elo inicial recalcula todo su historial.
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <button
+                      onClick={guardarEdicion}
+                      className="mr-3 text-xs font-medium text-blue-600 hover:underline"
+                    >
+                      Guardar
+                    </button>
+                    <button
+                      onClick={() => setEditandoId(null)}
+                      className="text-xs text-zinc-500 hover:underline"
+                    >
+                      Cancelar
+                    </button>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={j.id} className="border-b border-zinc-100 last:border-0">
+                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link href={`/jugadores/${j.id}`} className="hover:underline">
+                      {nombreVisible(j)}
+                    </Link>
+                    <div>
+                      <ApodoCelda jugadorId={j.id} apodoActual={j.apodo} onGuardar={actualizarApodo} />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <FideIdCelda jugadorId={j.id} fideIdActual={j.fideId} onGuardar={actualizarFideId} />
+                  </td>
+                  <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
+                  <td className="px-4 py-3">{j.jugadas}</td>
+                  <td className="px-4 py-3 text-green-700">{j.victorias}</td>
+                  <td className="px-4 py-3 text-zinc-500">{j.empates}</td>
+                  <td className="px-4 py-3 text-red-700">{j.derrotas}</td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => empezarEdicion(j)}
+                      className="mr-3 text-xs text-blue-600 hover:underline"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => eliminarJugador(j.id)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              )
+            )}
             {lista.length === 0 && (
               <tr>
                 <td colSpan={9} className="px-4 py-6 text-center text-zinc-400">

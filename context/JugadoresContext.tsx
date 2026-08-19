@@ -19,6 +19,7 @@ type JugadoresContextType = {
   eliminarJugador: (id: string) => Promise<void>;
   actualizarApodo: (id: string, apodo: string) => Promise<void>;
   actualizarFideId: (id: string, fideId: string) => Promise<void>;
+  actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
 };
 
@@ -86,6 +87,20 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
     await supabase.from("jugadores").update({ fide_id: fideIdLimpio }).eq("id", id);
   }
 
+  async function actualizarJugador(id: string, nombre: string, eloInicial: number) {
+    const nombreLimpio = nombre.trim();
+    if (!nombreLimpio) return;
+    setJugadores((actuales) =>
+      actuales.map((j) =>
+        j.id === id ? { ...j, nombre: nombreLimpio, eloAtlantida: eloInicial } : j
+      )
+    );
+    await supabase
+      .from("jugadores")
+      .update({ nombre: nombreLimpio, elo_inicial: eloInicial })
+      .eq("id", id);
+  }
+
   function obtenerJugador(id: string) {
     return jugadores.find((j) => j.id === id);
   }
@@ -99,6 +114,7 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
         eliminarJugador,
         actualizarApodo,
         actualizarFideId,
+        actualizarJugador,
         obtenerJugador,
       }}
     >
