@@ -48,7 +48,15 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
   });
 
   cb.onLog("Conectando...");
-  const server = await device.gatt.connect();
+  const server = await Promise.race([
+    device.gatt.connect(),
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Se agotó el tiempo de espera conectando al tablero (15s).")),
+        15000
+      )
+    ),
+  ]);
   cb.onLog("Conectado. Buscando el servicio...");
   const service = await server.getPrimaryService(SERVICE_UUID);
 
