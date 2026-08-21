@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Chess } from "chess.js";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +13,14 @@ import { EditorPosicion } from "@/components/EditorPosicion";
 import type { ResultadoPartida } from "@/lib/tournaments";
 
 export default function TransmitirPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-zinc-400">Cargando...</p>}>
+      <TransmitirContenido />
+    </Suspense>
+  );
+}
+
+function TransmitirContenido() {
   const { session } = useAuth();
   const puedeUsar = Boolean(session);
   const parametros = useSearchParams();
@@ -65,8 +73,9 @@ export default function TransmitirPage() {
   useEffect(() => {
     // Si llegamos con un enlace de "Transmitir" de un torneo, esos datos de la
     // URL mandan sobre lo que haya quedado guardado de una transmisión
-    // anterior — si no, retomamos blancas/negras de la última transmisión
-    // (por ejemplo, si se recargó la página a mitad de una partida).
+    // anterior. Si no, solo retomamos blancas/negras cuando la transmisión
+    // anterior sigue activa (por ejemplo, si se recargó la página a mitad de
+    // una partida) — si ya terminó, arrancamos en blanco.
     const vieneDeTorneo = Boolean(parametros.get("torneo"));
 
     async function cargar() {
@@ -75,7 +84,7 @@ export default function TransmitirPage() {
         setTransmisionId(data.id);
         setTransmitiendo(data.activa);
         transmitiendoRef.current = data.activa;
-        if (!vieneDeTorneo) {
+        if (!vieneDeTorneo && data.activa) {
           setBlancas(data.blancas ?? "");
           setNegras(data.negras ?? "");
           blancasRef.current = data.blancas ?? "";
