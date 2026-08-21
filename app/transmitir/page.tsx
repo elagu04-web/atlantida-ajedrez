@@ -28,6 +28,7 @@ function TransmitirContenido() {
   const jugadoresEnVivo = useJugadoresEnVivo();
 
   const chessRef = useRef(new Chess());
+  const desconectarRef = useRef<(() => void) | null>(null);
   const [log, setLog] = useState<string[]>([]);
   const [conectado, setConectado] = useState(false);
   const [conectando, setConectando] = useState(false);
@@ -69,6 +70,20 @@ function TransmitirContenido() {
   const negrasEloRef = useRef<number | null>(null);
   const [resultado, setResultadoState] = useState<ResultadoPartida | null>(null);
   const [pgn, setPgn] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Si salimos de la página (navegando, recargando o cerrando la pestaña)
+    // con el tablero todavía conectado, lo desconectamos prolijamente para
+    // que no quede "pensando" que sigue enganchado la próxima vez.
+    function desconectarAntesDeSalir() {
+      desconectarRef.current?.();
+    }
+    window.addEventListener("beforeunload", desconectarAntesDeSalir);
+    return () => {
+      window.removeEventListener("beforeunload", desconectarAntesDeSalir);
+      desconectarRef.current?.();
+    };
+  }, []);
 
   useEffect(() => {
     // Si llegamos con un enlace de "Transmitir" de un torneo, esos datos de la
@@ -292,17 +307,25 @@ function TransmitirContenido() {
   async function handleConectar() {
     setConectando(true);
     try {
-      await conectarPegasus({
+      const { desconectar } = await conectarPegasus({
         onLog: agregarLog,
         onPiezaLevantada: manejarLevantada,
         onPiezaApoyada: manejarApoyada,
         onVolcadoTablero: manejarVolcado,
       });
+      desconectarRef.current = desconectar;
       setConectado(true);
     } catch (err) {
       agregarLog(`❌ Error: ${err instanceof Error ? err.message : String(err)}`);
     }
     setConectando(false);
+  }
+
+  function handleDesconectar() {
+    desconectarRef.current?.();
+    desconectarRef.current = null;
+    setConectado(false);
+    agregarLog("Tablero desconectado prolijamente.");
   }
 
   function handleReiniciar() {
@@ -519,6 +542,14 @@ function TransmitirContenido() {
         >
           {conectado ? "Conectado" : conectando ? "Conectando..." : "Conectar tablero"}
         </button>
+        {conectado && (
+          <button
+            onClick={handleDesconectar}
+            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+          >
+            Desconectar tablero
+          </button>
+        )}
         <button
           onClick={handleReiniciar}
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"

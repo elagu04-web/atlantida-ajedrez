@@ -103,7 +103,7 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
     }
   });
 
-  setInterval(pedirEstado, 500);
+  const intervalo = setInterval(pedirEstado, 500);
 
   cb.onLog("Inicializando el tablero...");
   await tx.writeValue(DEVELOPER_KEY);
@@ -111,4 +111,15 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
   await tx.writeValue(CMD_BITBOARD);
   await tx.writeValue(CMD_SEND_UPDATES);
   cb.onLog("✅ Listo. Mové una pieza para probar.");
+
+  return {
+    desconectar() {
+      clearInterval(intervalo);
+      try {
+        device.gatt?.disconnect();
+      } catch {
+        // no hay mucho que hacer si esto falla
+      }
+    },
+  };
 }
