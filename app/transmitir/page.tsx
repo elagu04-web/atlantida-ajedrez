@@ -46,6 +46,7 @@ function TransmitirContenido() {
 
   const pickupsRef = useRef(0);
   const ultimoVolcadoRef = useRef<boolean[] | null>(null);
+  const repeticionesEstableRef = useRef(0);
   const desincronizadoRef = useRef(false);
   const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
     null
@@ -244,14 +245,18 @@ function TransmitirContenido() {
   function manejarVolcado(ocupado: boolean[]) {
     // No confiamos en el orden exacto de "se levantó / se apoyó" (jugar
     // rápido o comer piezas puede mezclarlo). En cambio: esperamos a que el
-    // tablero se quede quieto en dos fotos completas seguidas, y ahí
-    // buscamos, entre todas las jugadas legales posibles desde la posición
-    // actual, cuál es la única que explica ese resultado.
-    const estable =
+    // tablero se quede quieto un ratito (varias fotos seguidas iguales, no
+    // solo dos — una comida real suele tener una pausa natural entre levantar
+    // la pieza comida y levantar la propia, y no queremos confundir esa
+    // pausa con "ya terminó"), y ahí buscamos, entre todas las jugadas
+    // legales posibles desde la posición actual, cuál es la única que
+    // explica ese resultado.
+    const igualQueAntes =
       ultimoVolcadoRef.current !== null &&
       ultimoVolcadoRef.current.every((v, i) => v === ocupado[i]);
     ultimoVolcadoRef.current = ocupado;
-    if (!estable) return;
+    repeticionesEstableRef.current = igualQueAntes ? repeticionesEstableRef.current + 1 : 0;
+    if (repeticionesEstableRef.current < 3) return;
 
     const tablero = chessRef.current.board();
     if (ocupacionCoincide(tablero, ocupado)) {
@@ -308,6 +313,7 @@ function TransmitirContenido() {
     chessRef.current.load(fen);
     pickupsRef.current = 0;
     ultimoVolcadoRef.current = null;
+    repeticionesEstableRef.current = 0;
     desincronizadoRef.current = false;
     setUltimaPromocion(null);
     setEditandoPosicion(false);
@@ -349,6 +355,7 @@ function TransmitirContenido() {
     pickupsRef.current = 0;
     desincronizadoRef.current = false;
     ultimoVolcadoRef.current = null;
+    repeticionesEstableRef.current = 0;
     chessRef.current = new Chess();
     actualizarDesdeChess();
     agregarLog("Se reinició la partida (el tablero físico sigue conectado).");
