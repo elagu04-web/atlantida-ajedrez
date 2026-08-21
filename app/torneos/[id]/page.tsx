@@ -533,7 +533,7 @@ export default function TorneoPage() {
                       </div>
                       <div className="flex shrink-0 items-center gap-3 sm:ml-3">
                         <Link
-                          href={`/transmitir?torneo=${torneo.id}&ronda=${ronda.numero}&emp=${e.numero}&blancas=${encodeURIComponent(nombreDe(e.blancasId))}&negras=${encodeURIComponent(nombreDe(e.negrasId))}`}
+                          href={`/transmitir?torneo=${torneo.id}&ronda=${ronda.numero}&emp=${e.numero}&blancas=${encodeURIComponent(nombreDe(e.blancasId))}&negras=${encodeURIComponent(nombreDe(e.negrasId))}&blancasId=${e.blancasId}&negrasId=${e.negrasId}`}
                           className="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
                           title="Transmitir esta partida en vivo desde el tablero"
                         >

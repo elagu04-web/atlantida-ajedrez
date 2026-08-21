@@ -10,6 +10,10 @@ type EstadoTransmision = {
   jugadas: string[];
   blancas: string | null;
   negras: string | null;
+  blancasFoto: string | null;
+  negrasFoto: string | null;
+  blancasElo: number | null;
+  negrasElo: number | null;
   resultado: string | null;
   pgn: string | null;
 };
@@ -30,6 +34,10 @@ export default function TransmisionPage() {
           jugadas: data.jugadas ?? [],
           blancas: data.blancas,
           negras: data.negras,
+          blancasFoto: data.blancas_foto,
+          negrasFoto: data.negras_foto,
+          blancasElo: data.blancas_elo,
+          negrasElo: data.negras_elo,
           resultado: data.resultado,
           pgn: data.pgn,
         });
@@ -61,10 +69,28 @@ export default function TransmisionPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="mb-3 flex items-center justify-between text-sm font-medium">
-              <span>♔ {estado.blancas || "Blancas"}</span>
-              <span className="text-zinc-400">vs</span>
-              <span>♚ {estado.negras || "Negras"}</span>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              {[
+                { foto: estado.blancasFoto, nombre: estado.blancas || "Blancas", elo: estado.blancasElo, icono: "♔" },
+                { foto: estado.negrasFoto, nombre: estado.negras || "Negras", elo: estado.negrasElo, icono: "♚" },
+              ].map(({ foto, nombre, elo, icono }, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm font-medium">
+                  {foto ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={foto}
+                      alt={nombre}
+                      className="h-8 w-8 rounded-full border border-zinc-200 object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg">{icono}</span>
+                  )}
+                  <span>
+                    {nombre}
+                    {elo != null && <span className="ml-1 font-mono text-xs text-zinc-400">{elo}</span>}
+                  </span>
+                </div>
+              ))}
             </div>
             <TableroMini fen={estado.fen} />
             {estado.resultado && (

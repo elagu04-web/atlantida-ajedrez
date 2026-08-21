@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Chess } from "chess.js";
 import { useAuth } from "@/context/AuthContext";
 import { useTorneos } from "@/context/TorneosContext";
+import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { supabase } from "@/lib/supabase";
 import { conectarPegasus } from "@/lib/pegasus";
 import { TableroMini } from "@/components/TableroMini";
@@ -16,6 +17,7 @@ export default function TransmitirPage() {
   const puedeUsar = Boolean(session);
   const parametros = useSearchParams();
   const { torneos, registrarResultado } = useTorneos();
+  const jugadoresEnVivo = useJugadoresEnVivo();
 
   const chessRef = useRef(new Chess());
   const [log, setLog] = useState<string[]>([]);
@@ -46,6 +48,17 @@ export default function TransmitirPage() {
   const torneoIdRef = useRef<string | null>(null);
   const rondaNumeroRef = useRef<number | null>(null);
   const empNumeroRef = useRef<number | null>(null);
+
+  const [jugadorBlancas, setJugadorBlancas] = useState<{ fotoUrl: string | null; eloAtlantida: number } | null>(
+    null
+  );
+  const [jugadorNegras, setJugadorNegras] = useState<{ fotoUrl: string | null; eloAtlantida: number } | null>(
+    null
+  );
+  const blancasFotoRef = useRef<string | null>(null);
+  const negrasFotoRef = useRef<string | null>(null);
+  const blancasEloRef = useRef<number | null>(null);
+  const negrasEloRef = useRef<number | null>(null);
   const [resultado, setResultadoState] = useState<ResultadoPartida | null>(null);
   const [pgn, setPgn] = useState<string | null>(null);
 
@@ -92,14 +105,44 @@ export default function TransmitirPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (jugadoresEnVivo.length === 0) return;
+    const idBlancas = parametros.get("blancasId");
+    const idNegras = parametros.get("negrasId");
+
+    if (idBlancas) {
+      const j = jugadoresEnVivo.find((x) => x.id === idBlancas);
+      if (j) {
+        setJugadorBlancas({ fotoUrl: j.fotoUrl, eloAtlantida: j.eloAtlantida });
+        blancasFotoRef.current = j.fotoUrl;
+        blancasEloRef.current = j.eloAtlantida;
+      }
+    }
+    if (idNegras) {
+      const j = jugadoresEnVivo.find((x) => x.id === idNegras);
+      if (j) {
+        setJugadorNegras({ fotoUrl: j.fotoUrl, eloAtlantida: j.eloAtlantida });
+        negrasFotoRef.current = j.fotoUrl;
+        negrasEloRef.current = j.eloAtlantida;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jugadoresEnVivo]);
+
   function cambiarBlancas(valor: string) {
     setBlancas(valor);
     blancasRef.current = valor;
+    setJugadorBlancas(null);
+    blancasFotoRef.current = null;
+    blancasEloRef.current = null;
   }
 
   function cambiarNegras(valor: string) {
     setNegras(valor);
     negrasRef.current = valor;
+    setJugadorNegras(null);
+    negrasFotoRef.current = null;
+    negrasEloRef.current = null;
   }
 
   function agregarLog(linea: string) {
@@ -121,6 +164,10 @@ export default function TransmitirPage() {
         jugadas: chessRef.current.history(),
         blancas: blancasRef.current.trim() || null,
         negras: negrasRef.current.trim() || null,
+        blancas_foto: blancasFotoRef.current,
+        negras_foto: negrasFotoRef.current,
+        blancas_elo: blancasEloRef.current,
+        negras_elo: negrasEloRef.current,
         torneo_id: torneoIdRef.current,
         ronda_numero: rondaNumeroRef.current,
         emparejamiento_numero: empNumeroRef.current,
@@ -326,6 +373,38 @@ export default function TransmitirPage() {
           </p>
         )}
       </div>
+
+      {(jugadorBlancas || jugadorNegras) && (
+        <div className="flex flex-wrap items-center justify-center gap-6 rounded-lg border border-zinc-200 bg-white p-4">
+          {[
+            { jugador: jugadorBlancas, nombre: blancas, color: "Blancas" },
+            { jugador: jugadorNegras, nombre: negras, color: "Negras" },
+          ].map(({ jugador, nombre, color }) =>
+            jugador ? (
+              <div key={color} className="flex items-center gap-3">
+                {jugador.fotoUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={jugador.fotoUrl}
+                    alt={nombre}
+                    className="h-12 w-12 rounded-full border border-zinc-200 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-lg font-semibold text-zinc-400">
+                    {nombre.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium">{nombre}</p>
+                  <p className="text-xs text-zinc-500">
+                    {color} · Elo {jugador.eloAtlantida}
+                  </p>
+                </div>
+              </div>
+            ) : null
+          )}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4">
         <div className="flex flex-col gap-1">
