@@ -55,13 +55,13 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
     cb.onLog("⚠ Se desconectó el tablero.");
   });
 
-  cb.onLog("Conectando...");
+  cb.onLog("Conectando... (puede tardar hasta un minuto en esta compu)");
   const server = await Promise.race([
     device.gatt.connect(),
     new Promise<never>((_, reject) =>
       setTimeout(
-        () => reject(new Error("Se agotó el tiempo de espera conectando al tablero (15s).")),
-        15000
+        () => reject(new Error("Se agotó el tiempo de espera conectando al tablero (60s).")),
+        60000
       )
     ),
   ]);
