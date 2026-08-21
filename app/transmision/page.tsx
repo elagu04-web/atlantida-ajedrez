@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { TableroMini } from "@/components/TableroMini";
+import { AnalisisMotor } from "@/components/AnalisisMotor";
 
 type EstadoTransmision = {
   activa: boolean;
@@ -111,6 +112,9 @@ export default function TransmisionPage() {
               elo={estado.blancasElo}
               icono="♔"
             />
+            <div className="mt-3">
+              <AnalisisMotor fen={estado.fen} />
+            </div>
             {estado.resultado && (
               <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 px-3 py-2">
                 <span className="text-sm font-semibold text-green-800">
