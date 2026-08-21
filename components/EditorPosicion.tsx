@@ -51,15 +51,57 @@ export function EditorPosicion({
   const [seleccion, setSeleccion] = useState<{ type: PieceSymbol; color: Color } | "vaciar" | null>(
     null
   );
+  const [piezaLevantada, setPiezaLevantada] = useState<{ fila: number; columna: number } | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
 
-  function tocarCasilla(fila: number, columna: number) {
-    if (!seleccion) return;
+  function moverPieza(origen: { fila: number; columna: number }, destino: { fila: number; columna: number }) {
+    if (origen.fila === destino.fila && origen.columna === destino.columna) return;
     setTablero((actual) => {
       const copia = actual.map((f) => [...f]);
-      copia[fila][columna] = seleccion === "vaciar" ? null : { ...seleccion };
+      copia[destino.fila][destino.columna] = copia[origen.fila][origen.columna];
+      copia[origen.fila][origen.columna] = null;
       return copia;
     });
+  }
+
+  function tocarCasilla(fila: number, columna: number) {
+    // Paleta activa: coloca o vacía esa casilla, como antes.
+    if (seleccion) {
+      setTablero((actual) => {
+        const copia = actual.map((f) => [...f]);
+        copia[fila][columna] = seleccion === "vaciar" ? null : { ...seleccion };
+        return copia;
+      });
+      setPiezaLevantada(null);
+      return;
+    }
+
+    // Sin paleta: click en una pieza para levantarla, click en otra casilla
+    // para moverla ahí (y click en la misma casilla para cancelar).
+    if (piezaLevantada) {
+      if (piezaLevantada.fila === fila && piezaLevantada.columna === columna) {
+        setPiezaLevantada(null);
+        return;
+      }
+      moverPieza(piezaLevantada, { fila, columna });
+      setPiezaLevantada(null);
+      return;
+    }
+
+    if (tablero[fila][columna]) {
+      setPiezaLevantada({ fila, columna });
+    }
+  }
+
+  function manejarSoltar(fila: number, columna: number, ev: React.DragEvent) {
+    ev.preventDefault();
+    const texto = ev.dataTransfer.getData("text/plain");
+    if (!texto) return;
+    const origen = JSON.parse(texto) as { fila: number; columna: number };
+    moverPieza(origen, { fila, columna });
+    setPiezaLevantada(null);
   }
 
   function aplicar() {
@@ -88,7 +130,10 @@ export function EditorPosicion({
         {PALETA.map((p, i) => (
           <button
             key={i}
-            onClick={() => setSeleccion(p)}
+            onClick={() => {
+              setSeleccion(p);
+              setPiezaLevantada(null);
+            }}
             className={`flex h-10 w-10 items-center justify-center rounded border text-2xl ${
               seleccion !== "vaciar" &&
               seleccion?.type === p.type &&
@@ -101,7 +146,10 @@ export function EditorPosicion({
           </button>
         ))}
         <button
-          onClick={() => setSeleccion("vaciar")}
+          onClick={() => {
+            setSeleccion("vaciar");
+            setPiezaLevantada(null);
+          }}
           className={`flex h-10 w-16 items-center justify-center rounded border text-xs font-medium ${
             seleccion === "vaciar"
               ? "border-amber-600 bg-amber-200"
@@ -110,18 +158,43 @@ export function EditorPosicion({
         >
           Vaciar
         </button>
+        {seleccion && (
+          <button
+            onClick={() => setSeleccion(null)}
+            className="flex h-10 items-center justify-center rounded border border-zinc-300 bg-white px-3 text-xs font-medium hover:bg-zinc-50"
+          >
+            Soltar paleta
+          </button>
+        )}
       </div>
+      <p className="text-xs text-amber-700">
+        Sin paleta seleccionada: tocá una pieza para levantarla y tocá la casilla destino para
+        moverla — o arrastrala directamente con el mouse.
+      </p>
 
       <div className="mx-auto grid w-fit grid-cols-8 border border-zinc-400">
         {tablero.map((fila, i) =>
           fila.map((casilla, j) => {
             const oscura = (i + j) % 2 === 1;
+            const levantada = piezaLevantada?.fila === i && piezaLevantada?.columna === j;
             return (
               <button
                 key={`${i}-${j}`}
                 onClick={() => tocarCasilla(i, j)}
+                draggable={Boolean(casilla) && !seleccion}
+                onDragStart={(ev) => {
+                  ev.dataTransfer.setData("text/plain", JSON.stringify({ fila: i, columna: j }));
+                  setPiezaLevantada({ fila: i, columna: j });
+                }}
+                onDragEnd={() => setPiezaLevantada(null)}
+                onDragOver={(ev) => ev.preventDefault()}
+                onDrop={(ev) => manejarSoltar(i, j, ev)}
                 className={`flex h-10 w-10 items-center justify-center text-2xl ${
-                  oscura ? "bg-zinc-300 hover:bg-amber-200" : "bg-zinc-50 hover:bg-amber-100"
+                  levantada
+                    ? "bg-amber-300 ring-2 ring-inset ring-amber-600"
+                    : oscura
+                    ? "bg-zinc-300 hover:bg-amber-200"
+                    : "bg-zinc-50 hover:bg-amber-100"
                 }`}
                 title={`${ARCHIVOS[j]}${8 - i}`}
               >

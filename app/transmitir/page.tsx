@@ -63,19 +63,28 @@ export default function TransmitirPage() {
   const [pgn, setPgn] = useState<string | null>(null);
 
   useEffect(() => {
+    // Si llegamos con un enlace de "Transmitir" de un torneo, esos datos de la
+    // URL mandan sobre lo que haya quedado guardado de una transmisión
+    // anterior — si no, retomamos blancas/negras de la última transmisión
+    // (por ejemplo, si se recargó la página a mitad de una partida).
+    const vieneDeTorneo = Boolean(parametros.get("torneo"));
+
     async function cargar() {
       const { data } = await supabase.from("transmision").select("*").limit(1).single();
       if (data) {
         setTransmisionId(data.id);
         setTransmitiendo(data.activa);
         transmitiendoRef.current = data.activa;
-        setBlancas(data.blancas ?? "");
-        setNegras(data.negras ?? "");
-        blancasRef.current = data.blancas ?? "";
-        negrasRef.current = data.negras ?? "";
+        if (!vieneDeTorneo) {
+          setBlancas(data.blancas ?? "");
+          setNegras(data.negras ?? "");
+          blancasRef.current = data.blancas ?? "";
+          negrasRef.current = data.negras ?? "";
+        }
       }
     }
     cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
