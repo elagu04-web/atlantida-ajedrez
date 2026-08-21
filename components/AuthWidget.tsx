@@ -54,7 +54,7 @@ export function AuthWidget() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-1.5">
       <input
         type="email"
         required
