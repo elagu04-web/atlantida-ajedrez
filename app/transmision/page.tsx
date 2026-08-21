@@ -18,6 +18,33 @@ type EstadoTransmision = {
   pgn: string | null;
 };
 
+function JugadorFila({
+  foto,
+  nombre,
+  elo,
+  icono,
+}: {
+  foto: string | null;
+  nombre: string;
+  elo: number | null;
+  icono: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-sm font-medium">
+      {foto ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={foto} alt={nombre} className="h-8 w-8 rounded-full border border-zinc-200 object-cover" />
+      ) : (
+        <span className="text-lg">{icono}</span>
+      )}
+      <span>
+        {nombre}
+        {elo != null && <span className="ml-1 font-mono text-xs text-zinc-400">{elo}</span>}
+      </span>
+    </div>
+  );
+}
+
 export default function TransmisionPage() {
   const [estado, setEstado] = useState<EstadoTransmision | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -69,30 +96,21 @@ export default function TransmisionPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              {[
-                { foto: estado.blancasFoto, nombre: estado.blancas || "Blancas", elo: estado.blancasElo, icono: "♔" },
-                { foto: estado.negrasFoto, nombre: estado.negras || "Negras", elo: estado.negrasElo, icono: "♚" },
-              ].map(({ foto, nombre, elo, icono }, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm font-medium">
-                  {foto ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={foto}
-                      alt={nombre}
-                      className="h-8 w-8 rounded-full border border-zinc-200 object-cover"
-                    />
-                  ) : (
-                    <span className="text-lg">{icono}</span>
-                  )}
-                  <span>
-                    {nombre}
-                    {elo != null && <span className="ml-1 font-mono text-xs text-zinc-400">{elo}</span>}
-                  </span>
-                </div>
-              ))}
+            <JugadorFila
+              foto={estado.negrasFoto}
+              nombre={estado.negras || "Negras"}
+              elo={estado.negrasElo}
+              icono="♚"
+            />
+            <div className="my-2">
+              <TableroMini fen={estado.fen} />
             </div>
-            <TableroMini fen={estado.fen} />
+            <JugadorFila
+              foto={estado.blancasFoto}
+              nombre={estado.blancas || "Blancas"}
+              elo={estado.blancasElo}
+              icono="♔"
+            />
             {estado.resultado && (
               <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 px-3 py-2">
                 <span className="text-sm font-semibold text-green-800">
