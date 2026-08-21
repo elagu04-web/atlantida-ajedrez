@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { conectarPegasus } from "@/lib/pegasus";
 import { TableroMini } from "@/components/TableroMini";
+import { EditorPosicion } from "@/components/EditorPosicion";
 
 export default function TransmitirPage() {
   const { session } = useAuth();
@@ -32,6 +33,7 @@ export default function TransmitirPage() {
   const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
     null
   );
+  const [editandoPosicion, setEditandoPosicion] = useState(false);
 
   useEffect(() => {
     async function cargar() {
@@ -157,6 +159,18 @@ export default function TransmitirPage() {
     setUltimaPromocion(null);
   }
 
+  function aplicarPosicionCorregida(fen: string) {
+    chessRef.current.load(fen);
+    pickupsRef.current = 0;
+    origenRef.current = "";
+    desincronizadoRef.current = false;
+    setUltimaPromocion(null);
+    setEditandoPosicion(false);
+    agregarLog("🛠 Se aplicó una posición corregida a mano. La lista de jugadas arranca de nuevo desde acá.");
+    actualizarDesdeChess();
+    if (transmitiendoRef.current) publicarEstado(true);
+  }
+
   async function handleConectar() {
     setConectando(true);
     try {
@@ -269,7 +283,23 @@ export default function TransmitirPage() {
         >
           Reiniciar partida
         </button>
+        {!editandoPosicion && (
+          <button
+            onClick={() => setEditandoPosicion(true)}
+            className="rounded-md border border-amber-400 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50"
+          >
+            🛠 Corregir posición a mano
+          </button>
+        )}
       </div>
+
+      {editandoPosicion && (
+        <EditorPosicion
+          chess={chessRef.current}
+          onAplicar={aplicarPosicionCorregida}
+          onCancelar={() => setEditandoPosicion(false)}
+        />
+      )}
 
       {ultimaPromocion && (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4">

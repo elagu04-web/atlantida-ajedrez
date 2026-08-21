@@ -2,7 +2,7 @@
 
 import { Chess } from "chess.js";
 
-const PIEZA_UNICODE: Record<string, string> = {
+export const PIEZA_UNICODE: Record<string, string> = {
   wp: "♙", wn: "♘", wb: "♗", wr: "♖", wq: "♕", wk: "♔",
   bp: "♟", bn: "♞", bb: "♝", br: "♜", bq: "♛", bk: "♚",
 };
