@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Chess } from "chess.js";
+import { Chess, type Square } from "chess.js";
 import { useAuth } from "@/context/AuthContext";
 import { useTorneos } from "@/context/TorneosContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
@@ -45,8 +45,6 @@ function TransmitirContenido() {
   const negrasRef = useRef("");
 
   const pickupsRef = useRef(0);
-  const ultimoVolcadoRef = useRef<boolean[] | null>(null);
-  const repeticionesEstableRef = useRef(0);
   const desincronizadoRef = useRef(false);
   const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
     null
@@ -215,7 +213,15 @@ function TransmitirContenido() {
 
   function manejarLevantada(casilla: string) {
     agregarLog(`↑ se levantó una pieza de ${casilla}`);
-    pickupsRef.current++;
+    // Solo contamos como "en mano" la pieza de quien mueve: esa sí se vuelve
+    // a apoyar en algún lado. Una pieza comida se levanta y se saca del
+    // tablero para siempre, nunca genera un "se apoyó" — si la contáramos
+    // igual, el contador quedaría trabado después de cada comida y no
+    // reconocería más jugadas.
+    const pieza = chessRef.current.get(casilla as Square);
+    if (pieza && pieza.color === chessRef.current.turn()) {
+      pickupsRef.current++;
+    }
   }
 
   function manejarApoyada(casilla: string) {
@@ -242,26 +248,43 @@ function TransmitirContenido() {
     return distintas;
   }
 
+  const PROFUNDIDAD_MAXIMA_BUSQUEDA = 3;
+
+  /**
+   * Busca, desde la posición dada, una secuencia de exactamente `restante`
+   * jugadas legales cuyo resultado final coincida con `ocupado`. Prioriza
+   * coronar a Dama cuando hay varias piezas de coronación posibles (todas
+   * pisan las mismas casillas, así que la ocupación no las distingue).
+   */
+  function buscarSecuenciaExacta(
+    chess: Chess,
+    ocupado: boolean[],
+    restante: number
+  ): { san: string; promotion?: string }[] | null {
+    if (restante === 0) {
+      return ocupacionCoincide(chess.board(), ocupado) ? [] : null;
+    }
+    const candidatos = chess.moves({ verbose: true }).slice().sort((a, b) => {
+      if (a.promotion === b.promotion) return 0;
+      if (a.promotion === "q") return -1;
+      if (b.promotion === "q") return 1;
+      return 0;
+    });
+    for (const c of candidatos) {
+      const prueba = new Chess(chess.fen());
+      prueba.move(c.san);
+      const resto = buscarSecuenciaExacta(prueba, ocupado, restante - 1);
+      if (resto !== null) return [c, ...resto];
+    }
+    return null;
+  }
+
   function manejarVolcado(ocupado: boolean[]) {
-    // No confiamos en el orden exacto de "se levantó / se apoyó" (jugar
-    // rápido o comer piezas puede mezclarlo). En cambio: esperamos a que el
-    // tablero se quede quieto un ratito (varias fotos seguidas iguales, no
-    // solo dos — una comida real suele tener una pausa natural entre levantar
-    // la pieza comida y levantar la propia, y no queremos confundir esa
-    // pausa con "ya terminó"), y ahí buscamos, entre todas las jugadas
-    // legales posibles desde la posición actual, cuál es la única que
-    // explica ese resultado.
-    const igualQueAntes =
-      ultimoVolcadoRef.current !== null &&
-      ultimoVolcadoRef.current.every((v, i) => v === ocupado[i]);
-    ultimoVolcadoRef.current = ocupado;
-    repeticionesEstableRef.current = igualQueAntes ? repeticionesEstableRef.current + 1 : 0;
-    if (repeticionesEstableRef.current < 3) return;
     // Si hay una pieza en el aire (levantada, todavía sin apoyar en ningún
     // lado), una captura en curso se ve idéntica a una captura ya terminada
     // — comer no cambia si la casilla destino está ocupada, así que solo
     // desaparece la casilla de origen. No adivinamos nada hasta que no
-    // quede nada en la mano.
+    // quede nada en la mano de quien mueve.
     if (pickupsRef.current !== 0) return;
 
     const tablero = chessRef.current.board();
@@ -270,21 +293,26 @@ function TransmitirContenido() {
       return;
     }
 
-    const candidatos = chessRef.current.moves({ verbose: true });
-    const coincidencias = candidatos.filter((c) => {
-      const prueba = new Chess(chessRef.current.fen());
-      prueba.move(c.san);
-      return ocupacionCoincide(prueba.board(), ocupado);
-    });
+    // Probamos primero con una sola jugada (el caso normal). Si el tablero
+    // físico ya venía de varias jugadas seguidas muy rápidas y esta foto
+    // llegó tarde, subimos de a poco la cantidad de jugadas encadenadas que
+    // probamos, sin esperar a que el tablero se quede quieto — así cada
+    // jugada se reconoce apenas se completa, en vez de acumularse.
+    for (let profundidad = 1; profundidad <= PROFUNDIDAD_MAXIMA_BUSQUEDA; profundidad++) {
+      const secuencia = buscarSecuenciaExacta(new Chess(chessRef.current.fen()), ocupado, profundidad);
+      if (!secuencia) continue;
 
-    if (coincidencias.length > 0) {
-      const elegido = coincidencias.find((c) => c.promotion === "q") ?? coincidencias[0];
-      const mov = chessRef.current.move(elegido.san);
-      agregarLog(`♟ Jugada detectada: ${mov.san}`);
+      const jugadas = secuencia.map((c) => chessRef.current.move(c.san));
+      const ultima = jugadas[jugadas.length - 1];
+      agregarLog(
+        jugadas.length === 1
+          ? `♟ Jugada detectada: ${ultima.san}`
+          : `♟ ${jugadas.length} jugadas rápidas detectadas: ${jugadas.map((m) => m.san).join(", ")}`
+      );
       actualizarDesdeChess();
       if (transmitiendoRef.current) publicarEstado(true);
-      if (mov.promotion) {
-        setUltimaPromocion({ origen: mov.from, destino: mov.to });
+      if (ultima.promotion) {
+        setUltimaPromocion({ origen: ultima.from, destino: ultima.to });
         agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
       } else {
         setUltimaPromocion(null);
@@ -293,43 +321,11 @@ function TransmitirContenido() {
       return;
     }
 
-    // Si jugaron rápido puede que se nos haya pasado una jugada entera antes
-    // de llegar a esta foto estable — probamos si DOS jugadas seguidas (la
-    // tuya y la del rival) explican el cambio antes de avisar de desajuste.
-    for (const c1 of candidatos) {
-      const prueba1 = new Chess(chessRef.current.fen());
-      prueba1.move(c1.san);
-      const candidatos2 = prueba1.moves({ verbose: true });
-      const c2 = candidatos2.find((c) => {
-        const prueba2 = new Chess(prueba1.fen());
-        prueba2.move(c.san);
-        return ocupacionCoincide(prueba2.board(), ocupado);
-      });
-      if (c2) {
-        const elegido2 = c2.promotion && c2.promotion !== "q"
-          ? candidatos2.find((c) => c.from === c2.from && c.to === c2.to && c.promotion === "q") ?? c2
-          : c2;
-        const mov1 = chessRef.current.move(c1.san);
-        const mov2 = chessRef.current.move(elegido2.san);
-        agregarLog(`♟ Dos jugadas rápidas detectadas: ${mov1.san}, ${mov2.san}`);
-        actualizarDesdeChess();
-        if (transmitiendoRef.current) publicarEstado(true);
-        if (mov2.promotion) {
-          setUltimaPromocion({ origen: mov2.from, destino: mov2.to });
-          agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
-        } else {
-          setUltimaPromocion(null);
-        }
-        desincronizadoRef.current = false;
-        return;
-      }
-    }
-
     if (!desincronizadoRef.current) {
       desincronizadoRef.current = true;
       const distintas = casillasQueNoCoinciden(tablero, ocupado);
       agregarLog(
-        `⚠ El tablero físico no coincide con ninguna jugada (ni dos seguidas) desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
+        `⚠ El tablero físico no coincide con ninguna jugada (hasta ${PROFUNDIDAD_MAXIMA_BUSQUEDA} seguidas) desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
       );
     }
   }
@@ -357,8 +353,6 @@ function TransmitirContenido() {
       return;
     }
     pickupsRef.current = 0;
-    ultimoVolcadoRef.current = null;
-    repeticionesEstableRef.current = 0;
     desincronizadoRef.current = false;
     setUltimaPromocion(null);
     // Si la partida ya se había dado por terminada, deshacer una jugada la
@@ -377,8 +371,6 @@ function TransmitirContenido() {
   function aplicarPosicionCorregida(fen: string) {
     chessRef.current.load(fen);
     pickupsRef.current = 0;
-    ultimoVolcadoRef.current = null;
-    repeticionesEstableRef.current = 0;
     desincronizadoRef.current = false;
     setUltimaPromocion(null);
     setEditandoPosicion(false);
@@ -419,8 +411,6 @@ function TransmitirContenido() {
     setPgn(null);
     pickupsRef.current = 0;
     desincronizadoRef.current = false;
-    ultimoVolcadoRef.current = null;
-    repeticionesEstableRef.current = 0;
     chessRef.current = new Chess();
     actualizarDesdeChess();
     agregarLog("Se reinició la partida (el tablero físico sigue conectado).");
