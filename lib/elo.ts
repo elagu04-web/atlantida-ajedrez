@@ -19,6 +19,7 @@ export type JugadorEnVivo = Jugador & {
 type PartidaOrdenada = {
   orden: number;
   torneoNombre: string;
+  torneoFecha: string;
   blancasId: string;
   negrasId: string;
   resultado: "1-0" | "0-1" | "1/2-1/2";
@@ -49,6 +50,7 @@ export function calcularEloYHistorialEnVivo(
         partidas.push({
           orden: torneoIndex * 1_000_000 + ronda.numero * 1_000 + i,
           torneoNombre: t.nombre,
+          torneoFecha: t.creadoEn.slice(0, 10),
           blancasId: e.blancasId,
           negrasId: e.negrasId,
           resultado: e.resultado,
@@ -59,7 +61,6 @@ export function calcularEloYHistorialEnVivo(
   });
   partidas.sort((a, b) => a.orden - b.orden);
 
-  const hoy = new Date().toISOString().slice(0, 10);
   const nombrePorId = new Map(jugadoresBase.map((j) => [j.id, nombreVisible(j)]));
 
   for (const p of partidas) {
@@ -84,14 +85,14 @@ export function calcularEloYHistorialEnVivo(
       rival: nombrePorId.get(p.negrasId) ?? "?",
       color: "blancas",
       resultado: resultadoBlancas,
-      fecha: hoy,
+      fecha: p.torneoFecha,
       torneo: p.torneoNombre,
     });
     historialExtra.get(p.negrasId)?.push({
       rival: nombrePorId.get(p.blancasId) ?? "?",
       color: "negras",
       resultado: resultadoNegras,
-      fecha: hoy,
+      fecha: p.torneoFecha,
       torneo: p.torneoNombre,
     });
   }
