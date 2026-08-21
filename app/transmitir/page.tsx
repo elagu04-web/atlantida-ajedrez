@@ -29,6 +29,9 @@ export default function TransmitirPage() {
   const pickupsRef = useRef(0);
   const origenRef = useRef("");
   const desincronizadoRef = useRef(false);
+  const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
+    null
+  );
 
   useEffect(() => {
     async function cargar() {
@@ -104,6 +107,12 @@ export default function TransmitirPage() {
         agregarLog(`♟ Jugada: ${mov.san} (${origen} → ${casilla})`);
         actualizarDesdeChess();
         if (transmitiendoRef.current) publicarEstado(true);
+        if (mov.promotion) {
+          setUltimaPromocion({ origen, destino: casilla });
+          agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
+        } else {
+          setUltimaPromocion(null);
+        }
       } catch {
         agregarLog(`⚠ No pude interpretar ${origen} → ${casilla} como jugada válida.`);
       }
@@ -132,6 +141,22 @@ export default function TransmitirPage() {
     if (coincide) desincronizadoRef.current = false;
   }
 
+  const NOMBRE_PIEZA: Record<string, string> = { q: "Dama", r: "Torre", b: "Alfil", n: "Caballo" };
+
+  function corregirPromocion(piezaCorrecta: "r" | "b" | "n") {
+    if (!ultimaPromocion) return;
+    chessRef.current.undo();
+    const mov = chessRef.current.move({
+      from: ultimaPromocion.origen,
+      to: ultimaPromocion.destino,
+      promotion: piezaCorrecta,
+    });
+    agregarLog(`✏️ Corregido: coronó a ${NOMBRE_PIEZA[piezaCorrecta]} (${mov.san}).`);
+    actualizarDesdeChess();
+    if (transmitiendoRef.current) publicarEstado(true);
+    setUltimaPromocion(null);
+  }
+
   async function handleConectar() {
     setConectando(true);
     try {
@@ -149,6 +174,7 @@ export default function TransmitirPage() {
   }
 
   function handleReiniciar() {
+    setUltimaPromocion(null);
     pickupsRef.current = 0;
     desincronizadoRef.current = false;
     origenRef.current = "";
@@ -244,6 +270,35 @@ export default function TransmitirPage() {
           Reiniciar partida
         </button>
       </div>
+
+      {ultimaPromocion && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4">
+          <p className="text-sm text-amber-800">
+            👑 Se registró como coronación a <strong>Dama</strong>. Si en la mesa fue otra pieza,
+            corregilo acá:
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => corregirPromocion("r")}
+              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium hover:bg-amber-100"
+            >
+              Torre
+            </button>
+            <button
+              onClick={() => corregirPromocion("b")}
+              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium hover:bg-amber-100"
+            >
+              Alfil
+            </button>
+            <button
+              onClick={() => corregirPromocion("n")}
+              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium hover:bg-amber-100"
+            >
+              Caballo
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
