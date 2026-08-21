@@ -290,11 +290,46 @@ function TransmitirContenido() {
         setUltimaPromocion(null);
       }
       desincronizadoRef.current = false;
-    } else if (!desincronizadoRef.current) {
+      return;
+    }
+
+    // Si jugaron rápido puede que se nos haya pasado una jugada entera antes
+    // de llegar a esta foto estable — probamos si DOS jugadas seguidas (la
+    // tuya y la del rival) explican el cambio antes de avisar de desajuste.
+    for (const c1 of candidatos) {
+      const prueba1 = new Chess(chessRef.current.fen());
+      prueba1.move(c1.san);
+      const candidatos2 = prueba1.moves({ verbose: true });
+      const c2 = candidatos2.find((c) => {
+        const prueba2 = new Chess(prueba1.fen());
+        prueba2.move(c.san);
+        return ocupacionCoincide(prueba2.board(), ocupado);
+      });
+      if (c2) {
+        const elegido2 = c2.promotion && c2.promotion !== "q"
+          ? candidatos2.find((c) => c.from === c2.from && c.to === c2.to && c.promotion === "q") ?? c2
+          : c2;
+        const mov1 = chessRef.current.move(c1.san);
+        const mov2 = chessRef.current.move(elegido2.san);
+        agregarLog(`♟ Dos jugadas rápidas detectadas: ${mov1.san}, ${mov2.san}`);
+        actualizarDesdeChess();
+        if (transmitiendoRef.current) publicarEstado(true);
+        if (mov2.promotion) {
+          setUltimaPromocion({ origen: mov2.from, destino: mov2.to });
+          agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
+        } else {
+          setUltimaPromocion(null);
+        }
+        desincronizadoRef.current = false;
+        return;
+      }
+    }
+
+    if (!desincronizadoRef.current) {
       desincronizadoRef.current = true;
       const distintas = casillasQueNoCoinciden(tablero, ocupado);
       agregarLog(
-        `⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
+        `⚠ El tablero físico no coincide con ninguna jugada (ni dos seguidas) desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
       );
     }
   }

@@ -12,7 +12,7 @@ export type AnalisisPosicion = {
 
 export class MotorAjedrez {
   private worker: Worker;
-  private listo: Promise<void>;
+  listo: Promise<void>;
   private onActualizar: (a: AnalisisPosicion) => void;
   private turnoActual: "w" | "b" = "w";
   private parcial: AnalisisPosicion = {

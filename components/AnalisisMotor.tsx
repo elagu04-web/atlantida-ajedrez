@@ -21,19 +21,26 @@ function notacionLegible(fen: string, uci: string | null): string | null {
 
 export function AnalisisMotor({ fen }: { fen: string }) {
   const [activo, setActivo] = useState(false);
+  const [cargandoMotor, setCargandoMotor] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [analisis, setAnalisis] = useState<AnalisisPosicion | null>(null);
   const motorRef = useRef<MotorAjedrez | null>(null);
 
   useEffect(() => {
     if (!activo) return;
-    setCargando(true);
-    motorRef.current = new MotorAjedrez((a) => {
+    setCargandoMotor(true);
+    let cancelado = false;
+    const motor = new MotorAjedrez((a) => {
       setAnalisis(a);
       setCargando(false);
     });
+    motorRef.current = motor;
+    motor.listo.then(() => {
+      if (!cancelado) setCargandoMotor(false);
+    });
     return () => {
-      motorRef.current?.destruir();
+      cancelado = true;
+      motor.destruir();
       motorRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -43,7 +50,9 @@ export function AnalisisMotor({ fen }: { fen: string }) {
     if (!activo || !motorRef.current) return;
     const turno = fen.split(" ")[1] === "b" ? "b" : "w";
     setCargando(true);
-    motorRef.current.analizar(fen, turno);
+    // Movetime corto: en la transmisión pública priorizamos que responda
+    // rápido a cada jugada nueva por sobre la profundidad del análisis.
+    motorRef.current.analizar(fen, turno, 400);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activo, fen]);
 
@@ -84,7 +93,8 @@ export function AnalisisMotor({ fen }: { fen: string }) {
         />
       </div>
       <span className="font-mono font-semibold text-zinc-700">{etiqueta}</span>
-      {cargando && <span className="text-zinc-400">pensando...</span>}
+      {cargandoMotor && <span className="text-zinc-400">cargando motor (puede tardar unos segundos)...</span>}
+      {!cargandoMotor && cargando && <span className="text-zinc-400">pensando...</span>}
       {jugadaSugerida && (
         <span className="text-zinc-500">
           Sugiere: <span className="font-medium text-zinc-700">{jugadaSugerida}</span>
