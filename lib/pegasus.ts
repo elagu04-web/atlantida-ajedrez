@@ -31,6 +31,8 @@ export type PegasusCallbacks = {
   onLog: (linea: string) => void;
   onPiezaLevantada: (casilla: string) => void;
   onPiezaApoyada: (casilla: string) => void;
+  /** Foto completa de qué casillas tienen pieza ahora mismo (índice = casillaDesdeIndice). */
+  onVolcadoTablero: (ocupado: boolean[]) => void;
 };
 
 export async function conectarPegasus(cb: PegasusCallbacks) {
@@ -91,6 +93,13 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
       if (esLevantada) cb.onPiezaLevantada(casilla);
       if (esApoyada) cb.onPiezaApoyada(casilla);
       pedirEstado();
+    }
+
+    if (tipo === 134 && value.byteLength >= 3 + 64) {
+      // 0x86: foto completa de las 64 casillas (1 = ocupada, 0 = vacía)
+      const ocupado: boolean[] = [];
+      for (let i = 0; i < 64; i++) ocupado.push(value.getUint8(3 + i) !== 0);
+      cb.onVolcadoTablero(ocupado);
     }
   });
 

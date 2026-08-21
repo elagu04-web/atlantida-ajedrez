@@ -28,6 +28,7 @@ export default function TransmitirPage() {
 
   const pickupsRef = useRef(0);
   const origenRef = useRef("");
+  const desincronizadoRef = useRef(false);
 
   useEffect(() => {
     async function cargar() {
@@ -109,6 +110,28 @@ export default function TransmitirPage() {
     }
   }
 
+  function manejarVolcado(ocupado: boolean[]) {
+    // Solo comparamos cuando no hay ninguna pieza en el aire — mientras se
+    // está haciendo una jugada, el tablero real y el modelo van a diferir
+    // momentáneamente y eso es normal.
+    if (pickupsRef.current !== 0) return;
+    const tablero = chessRef.current.board();
+    let coincide = true;
+    for (let i = 0; i < 64 && coincide; i++) {
+      const fila = Math.floor(i / 8);
+      const columna = i - fila * 8;
+      const hayPiezaEnModelo = Boolean(tablero[fila][columna]);
+      if (ocupado[i] !== hayPiezaEnModelo) coincide = false;
+    }
+    if (!coincide && !desincronizadoRef.current) {
+      desincronizadoRef.current = true;
+      agregarLog(
+        "⚠ El tablero físico no coincide con la partida registrada — puede haber una jugada perdida (Bluetooth). Si hace falta, corregí a mano o reiniciá la partida."
+      );
+    }
+    if (coincide) desincronizadoRef.current = false;
+  }
+
   async function handleConectar() {
     setConectando(true);
     try {
@@ -116,6 +139,7 @@ export default function TransmitirPage() {
         onLog: agregarLog,
         onPiezaLevantada: manejarLevantada,
         onPiezaApoyada: manejarApoyada,
+        onVolcadoTablero: manejarVolcado,
       });
       setConectado(true);
     } catch (err) {
@@ -126,6 +150,7 @@ export default function TransmitirPage() {
 
   function handleReiniciar() {
     pickupsRef.current = 0;
+    desincronizadoRef.current = false;
     origenRef.current = "";
     chessRef.current = new Chess();
     actualizarDesdeChess();
