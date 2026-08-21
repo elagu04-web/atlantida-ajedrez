@@ -24,6 +24,9 @@ export default function TransmitirPage() {
   const [blancas, setBlancas] = useState("");
   const [negras, setNegras] = useState("");
 
+  const pickupsRef = useRef(0);
+  const origenRef = useRef("");
+
   useEffect(() => {
     async function cargar() {
       const { data } = await supabase.from("transmision").select("*").limit(1).single();
@@ -62,21 +65,43 @@ export default function TransmitirPage() {
       .eq("id", transmisionId);
   }
 
+  function manejarLevantada(casilla: string) {
+    agregarLog(`↑ se levantó una pieza de ${casilla}`);
+    // Si la pieza que estaba en esa casilla es del jugador que le toca mover,
+    // es el origen real de la jugada. Si es del rival (o la casilla ya
+    // figuraba vacía en nuestro modelo), es una pieza capturada saliendo del
+    // tablero: no cuenta para el seguimiento del movimiento.
+    const pieza = chessRef.current.get(casilla as any);
+    if (pieza && pieza.color === chessRef.current.turn()) {
+      pickupsRef.current++;
+      origenRef.current = casilla;
+    }
+  }
+
+  function manejarApoyada(casilla: string) {
+    agregarLog(`↓ se apoyó una pieza en ${casilla}`);
+    if (pickupsRef.current > 0) pickupsRef.current--;
+    if (pickupsRef.current === 0 && origenRef.current !== "") {
+      const origen = origenRef.current;
+      origenRef.current = "";
+      try {
+        const mov = chessRef.current.move({ from: origen, to: casilla, promotion: "q" });
+        agregarLog(`♟ Jugada: ${mov.san} (${origen} → ${casilla})`);
+        actualizarDesdeChess();
+        if (transmitiendoRef.current) publicarEstado(true);
+      } catch {
+        agregarLog(`⚠ No pude interpretar ${origen} → ${casilla} como jugada válida.`);
+      }
+    }
+  }
+
   async function handleConectar() {
     setConectando(true);
     try {
       await conectarPegasus({
         onLog: agregarLog,
-        onIntentoDeMovimiento: (origen, destino) => {
-          try {
-            const mov = chessRef.current.move({ from: origen, to: destino, promotion: "q" });
-            agregarLog(`♟ Jugada: ${mov.san} (${origen} → ${destino})`);
-            actualizarDesdeChess();
-            if (transmitiendoRef.current) publicarEstado(true);
-          } catch {
-            agregarLog(`⚠ No pude interpretar ${origen} → ${destino} como jugada válida.`);
-          }
-        },
+        onPiezaLevantada: manejarLevantada,
+        onPiezaApoyada: manejarApoyada,
       });
       setConectado(true);
     } catch (err) {
@@ -86,6 +111,8 @@ export default function TransmitirPage() {
   }
 
   function handleReiniciar() {
+    pickupsRef.current = 0;
+    origenRef.current = "";
     chessRef.current = new Chess();
     actualizarDesdeChess();
     agregarLog("Se reinició la partida (el tablero físico sigue conectado).");

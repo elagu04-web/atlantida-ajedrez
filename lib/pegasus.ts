@@ -29,7 +29,8 @@ export function casillaDesdeIndice(indice: number): string {
 
 export type PegasusCallbacks = {
   onLog: (linea: string) => void;
-  onIntentoDeMovimiento: (origen: string, destino: string) => void;
+  onPiezaLevantada: (casilla: string) => void;
+  onPiezaApoyada: (casilla: string) => void;
 };
 
 export async function conectarPegasus(cb: PegasusCallbacks) {
@@ -69,9 +70,6 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
   cb.onLog("Activando notificaciones...");
   await rx.startNotifications();
 
-  let pickups = 0;
-  let origenLevantado = "";
-
   async function pedirEstado() {
     try {
       await tx.writeValue(CMD_BITBOARD);
@@ -90,19 +88,8 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
       const esLevantada = value.getUint8(4) === 0;
       const esApoyada = value.getUint8(4) === 1;
 
-      if (esLevantada) {
-        pickups++;
-        origenLevantado = casilla;
-        cb.onLog(`↑ se levantó una pieza de ${casilla}`);
-      }
-      if (esApoyada) {
-        pickups = Math.max(0, pickups - 1);
-        cb.onLog(`↓ se apoyó una pieza en ${casilla}`);
-        if (pickups === 0 && origenLevantado !== "") {
-          cb.onIntentoDeMovimiento(origenLevantado, casilla);
-          origenLevantado = "";
-        }
-      }
+      if (esLevantada) cb.onPiezaLevantada(casilla);
+      if (esApoyada) cb.onPiezaApoyada(casilla);
       pedirEstado();
     }
   });
