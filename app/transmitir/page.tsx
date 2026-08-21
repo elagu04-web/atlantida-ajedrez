@@ -43,7 +43,7 @@ function TransmitirContenido() {
   const negrasRef = useRef("");
 
   const pickupsRef = useRef(0);
-  const origenRef = useRef("");
+  const ultimoVolcadoRef = useRef<boolean[] | null>(null);
   const desincronizadoRef = useRef(false);
   const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
     null
@@ -198,60 +198,67 @@ function TransmitirContenido() {
 
   function manejarLevantada(casilla: string) {
     agregarLog(`↑ se levantó una pieza de ${casilla}`);
-    // Si la pieza que estaba en esa casilla es del jugador que le toca mover,
-    // es el origen real de la jugada. Si es del rival (o la casilla ya
-    // figuraba vacía en nuestro modelo), es una pieza capturada saliendo del
-    // tablero: no cuenta para el seguimiento del movimiento.
-    const pieza = chessRef.current.get(casilla as any);
-    if (pieza && pieza.color === chessRef.current.turn()) {
-      pickupsRef.current++;
-      origenRef.current = casilla;
-    }
+    pickupsRef.current++;
   }
 
   function manejarApoyada(casilla: string) {
     agregarLog(`↓ se apoyó una pieza en ${casilla}`);
-    if (pickupsRef.current > 0) pickupsRef.current--;
-    if (pickupsRef.current === 0 && origenRef.current !== "") {
-      const origen = origenRef.current;
-      origenRef.current = "";
-      try {
-        const mov = chessRef.current.move({ from: origen, to: casilla, promotion: "q" });
-        agregarLog(`♟ Jugada: ${mov.san} (${origen} → ${casilla})`);
-        actualizarDesdeChess();
-        if (transmitiendoRef.current) publicarEstado(true);
-        if (mov.promotion) {
-          setUltimaPromocion({ origen, destino: casilla });
-          agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
-        } else {
-          setUltimaPromocion(null);
-        }
-      } catch {
-        agregarLog(`⚠ No pude interpretar ${origen} → ${casilla} como jugada válida.`);
-      }
+    pickupsRef.current = Math.max(0, pickupsRef.current - 1);
+  }
+
+  function ocupacionCoincide(tablero: ({ type: string; color: string } | null)[][], ocupado: boolean[]) {
+    for (let i = 0; i < 64; i++) {
+      const fila = Math.floor(i / 8);
+      const columna = i - fila * 8;
+      if (ocupado[i] !== Boolean(tablero[fila][columna])) return false;
     }
+    return true;
   }
 
   function manejarVolcado(ocupado: boolean[]) {
-    // Solo comparamos cuando no hay ninguna pieza en el aire — mientras se
-    // está haciendo una jugada, el tablero real y el modelo van a diferir
-    // momentáneamente y eso es normal.
-    if (pickupsRef.current !== 0) return;
+    // No confiamos en el orden exacto de "se levantó / se apoyó" (jugar
+    // rápido o comer piezas puede mezclarlo). En cambio: esperamos a que el
+    // tablero se quede quieto en dos fotos completas seguidas, y ahí
+    // buscamos, entre todas las jugadas legales posibles desde la posición
+    // actual, cuál es la única que explica ese resultado.
+    const estable =
+      ultimoVolcadoRef.current !== null &&
+      ultimoVolcadoRef.current.every((v, i) => v === ocupado[i]);
+    ultimoVolcadoRef.current = ocupado;
+    if (!estable) return;
+
     const tablero = chessRef.current.board();
-    let coincide = true;
-    for (let i = 0; i < 64 && coincide; i++) {
-      const fila = Math.floor(i / 8);
-      const columna = i - fila * 8;
-      const hayPiezaEnModelo = Boolean(tablero[fila][columna]);
-      if (ocupado[i] !== hayPiezaEnModelo) coincide = false;
+    if (ocupacionCoincide(tablero, ocupado)) {
+      desincronizadoRef.current = false;
+      return;
     }
-    if (!coincide && !desincronizadoRef.current) {
+
+    const candidatos = chessRef.current.moves({ verbose: true });
+    const coincidencias = candidatos.filter((c) => {
+      const prueba = new Chess(chessRef.current.fen());
+      prueba.move(c.san);
+      return ocupacionCoincide(prueba.board(), ocupado);
+    });
+
+    if (coincidencias.length > 0) {
+      const elegido = coincidencias.find((c) => c.promotion === "q") ?? coincidencias[0];
+      const mov = chessRef.current.move(elegido.san);
+      agregarLog(`♟ Jugada detectada: ${mov.san}`);
+      actualizarDesdeChess();
+      if (transmitiendoRef.current) publicarEstado(true);
+      if (mov.promotion) {
+        setUltimaPromocion({ origen: mov.from, destino: mov.to });
+        agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
+      } else {
+        setUltimaPromocion(null);
+      }
+      desincronizadoRef.current = false;
+    } else if (!desincronizadoRef.current) {
       desincronizadoRef.current = true;
       agregarLog(
-        "⚠ El tablero físico no coincide con la partida registrada — puede haber una jugada perdida (Bluetooth). Si hace falta, corregí a mano o reiniciá la partida."
+        "⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Corregí a mano o reiniciá la partida."
       );
     }
-    if (coincide) desincronizadoRef.current = false;
   }
 
   const NOMBRE_PIEZA: Record<string, string> = { q: "Dama", r: "Torre", b: "Alfil", n: "Caballo" };
@@ -273,7 +280,7 @@ function TransmitirContenido() {
   function aplicarPosicionCorregida(fen: string) {
     chessRef.current.load(fen);
     pickupsRef.current = 0;
-    origenRef.current = "";
+    ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
     setUltimaPromocion(null);
     setEditandoPosicion(false);
@@ -304,7 +311,7 @@ function TransmitirContenido() {
     setPgn(null);
     pickupsRef.current = 0;
     desincronizadoRef.current = false;
-    origenRef.current = "";
+    ultimoVolcadoRef.current = null;
     chessRef.current = new Chess();
     actualizarDesdeChess();
     agregarLog("Se reinició la partida (el tablero físico sigue conectado).");
