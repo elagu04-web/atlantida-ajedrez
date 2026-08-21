@@ -309,6 +309,24 @@ function TransmitirContenido() {
     setUltimaPromocion(null);
   }
 
+  function handleDeshacer() {
+    const deshecha = chessRef.current.undo();
+    if (!deshecha) {
+      agregarLog("No hay ninguna jugada para deshacer.");
+      return;
+    }
+    pickupsRef.current = 0;
+    ultimoVolcadoRef.current = null;
+    repeticionesEstableRef.current = 0;
+    desincronizadoRef.current = false;
+    setUltimaPromocion(null);
+    actualizarDesdeChess();
+    if (transmitiendoRef.current) publicarEstado(true);
+    agregarLog(
+      `⏪ Se deshizo la jugada "${deshecha.san}". Acomodá las piezas en el tablero real para que coincida con esta posición antes de seguir.`
+    );
+  }
+
   function aplicarPosicionCorregida(fen: string) {
     chessRef.current.load(fen);
     pickupsRef.current = 0;
@@ -578,6 +596,13 @@ function TransmitirContenido() {
             🔋 {bateria}%
           </span>
         )}
+        <button
+          onClick={handleDeshacer}
+          disabled={jugadas.length === 0}
+          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          ⏪ Deshacer última jugada
+        </button>
         <button
           onClick={handleReiniciar}
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
