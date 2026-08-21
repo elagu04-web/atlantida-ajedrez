@@ -7,6 +7,7 @@ export type Partida = {
   resultado: Resultado;
   fecha: string;
   torneo: string;
+  eloDespues?: number;
 };
 
 export type Jugador = {

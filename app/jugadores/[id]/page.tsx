@@ -8,6 +8,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { nombreVisible } from "@/lib/players";
+import { GraficoElo } from "@/components/GraficoElo";
 
 const FOTOS_BUCKET = "fotos-jugadores";
 
@@ -33,6 +34,7 @@ export default function JugadorPage() {
   const inputFotoRef = useRef<HTMLInputElement>(null);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);
+  const [verTodasLasPartidas, setVerTodasLasPartidas] = useState(false);
 
   async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -82,6 +84,49 @@ export default function JugadorPage() {
       })
       .sort((a, b) => b.jugadas - a.jugadas || a.rival.localeCompare(b.rival));
   }, [jugador, jugadoresEnVivo]);
+
+  const puntosElo = useMemo(() => {
+    if (!jugador) return [];
+    return jugador.partidas
+      .filter((p) => p.eloDespues !== undefined)
+      .map((p) => ({ fecha: p.fecha, elo: p.eloDespues as number, torneo: p.torneo }));
+  }, [jugador]);
+
+  const rachaActual = useMemo(() => {
+    if (!jugador || jugador.partidas.length === 0) return null;
+    const ultimas = jugador.partidas;
+    const tipo = ultimas[ultimas.length - 1].resultado;
+    let cantidad = 0;
+    for (let i = ultimas.length - 1; i >= 0 && ultimas[i].resultado === tipo; i--) cantidad++;
+    return { tipo, cantidad };
+  }, [jugador]);
+
+  const mejorVictoria = useMemo(() => {
+    if (!jugador) return null;
+    let mejor: { rival: string; elo: number } | null = null;
+    for (const p of jugador.partidas) {
+      if (p.resultado !== "victoria") continue;
+      const rivalJugador = jugadoresEnVivo.find((j) => nombreVisible(j) === p.rival);
+      if (!rivalJugador) continue;
+      if (!mejor || rivalJugador.eloAtlantida > mejor.elo) {
+        mejor = { rival: p.rival, elo: rivalJugador.eloAtlantida };
+      }
+    }
+    return mejor;
+  }, [jugador, jugadoresEnVivo]);
+
+  const rendimientoPorColor = useMemo(() => {
+    if (!jugador) return null;
+    function calcular(color: "blancas" | "negras") {
+      const partidasColor = jugador!.partidas.filter((p) => p.color === color);
+      const victorias = partidasColor.filter((p) => p.resultado === "victoria").length;
+      return {
+        jugadas: partidasColor.length,
+        porcentaje: partidasColor.length > 0 ? Math.round((victorias / partidasColor.length) * 100) : 0,
+      };
+    }
+    return { blancas: calcular("blancas"), negras: calcular("negras") };
+  }, [jugador]);
 
   if (!jugador) {
     return (
@@ -161,6 +206,66 @@ export default function JugadorPage() {
         ))}
       </div>
 
+      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+        <h2 className="mb-3 font-semibold">Evolución de Elo</h2>
+        <GraficoElo puntos={puntosElo} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <div className="text-xs text-zinc-500">Racha actual</div>
+          <div className="mt-1 text-xl font-semibold">
+            {rachaActual ? (
+              <span className={resultadoColor[rachaActual.tipo]}>
+                {rachaActual.cantidad} {resultadoLabel[rachaActual.tipo].toLowerCase()}
+                {rachaActual.cantidad > 1 ? "s" : ""} seguida
+                {rachaActual.cantidad > 1 ? "s" : ""}
+              </span>
+            ) : (
+              <span className="text-zinc-400 text-base">Sin partidas</span>
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <div className="text-xs text-zinc-500">Mejor victoria</div>
+          <div className="mt-1 text-xl font-semibold">
+            {mejorVictoria ? (
+              <>
+                {mejorVictoria.rival}{" "}
+                <span className="font-mono text-sm text-zinc-400">{mejorVictoria.elo}</span>
+              </>
+            ) : (
+              <span className="text-zinc-400 text-base">Sin victorias todavía</span>
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <div className="text-xs text-zinc-500">Rendimiento por color</div>
+          {rendimientoPorColor && (rendimientoPorColor.blancas.jugadas > 0 || rendimientoPorColor.negras.jugadas > 0) ? (
+            <div className="mt-1 flex gap-4 text-sm">
+              <span>
+                ♔ {rendimientoPorColor.blancas.porcentaje}%{" "}
+                <span className="text-zinc-400">({rendimientoPorColor.blancas.jugadas})</span>
+              </span>
+              <span>
+                ♚ {rendimientoPorColor.negras.porcentaje}%{" "}
+                <span className="text-zinc-400">({rendimientoPorColor.negras.jugadas})</span>
+              </span>
+            </div>
+          ) : (
+            <div className="mt-1 text-base text-zinc-400">Sin partidas</div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <button
+          onClick={() => setVerTodasLasPartidas((v) => !v)}
+          className="mb-3 text-sm font-medium text-blue-600 hover:underline"
+        >
+          {verTodasLasPartidas ? "▾" : "▸"} Ver todas las partidas ({jugador.partidas.length})
+        </button>
+        {verTodasLasPartidas && (
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
@@ -193,6 +298,8 @@ export default function JugadorPage() {
             )}
           </tbody>
         </table>
+      </div>
+        )}
       </div>
 
       <div>

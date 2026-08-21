@@ -86,6 +86,7 @@ export function calcularEloYHistorialEnVivo(
       color: "blancas",
       resultado: resultadoBlancas,
       fecha: p.torneoFecha,
+      eloDespues: elo.get(p.blancasId),
       torneo: p.torneoNombre,
     });
     historialExtra.get(p.negrasId)?.push({
@@ -93,6 +94,7 @@ export function calcularEloYHistorialEnVivo(
       color: "negras",
       resultado: resultadoNegras,
       fecha: p.torneoFecha,
+      eloDespues: elo.get(p.negrasId),
       torneo: p.torneoNombre,
     });
   }
