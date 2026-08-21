@@ -178,7 +178,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (!torneo || torneo.jugadoresIds.length < 2) return;
 
     let nuevasRondas: RondaTorneo[];
-    let nuevoEstado: EstadoTorneo = "en_curso";
+    const nuevoEstado: EstadoTorneo = "en_curso";
 
     if (torneo.formato === "round-robin") {
       if (torneo.rondas.length > 0) return;

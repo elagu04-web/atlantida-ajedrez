@@ -25,21 +25,21 @@ function ApodoCelda({
   const [valor, setValor] = useState(apodoActual ?? "");
 
   if (!puedeEditar) {
-    return apodoActual ? <span className="text-xs text-zinc-400">{apodoActual}</span> : null;
+    return apodoActual ? <span className="text-xs text-zinc-500">{apodoActual}</span> : null;
   }
 
   if (!editando) {
     return apodoActual ? (
       <button
         onClick={() => setEditando(true)}
-        className="text-xs text-zinc-400 hover:text-blue-600 hover:underline"
+        className="text-xs text-zinc-500 hover:text-blue-600 hover:underline"
       >
         editar apodo
       </button>
     ) : (
       <button
         onClick={() => setEditando(true)}
-        className="text-xs text-zinc-400 hover:text-blue-600 hover:underline"
+        className="text-xs text-zinc-500 hover:text-blue-600 hover:underline"
       >
         + agregar apodo
       </button>
@@ -258,7 +258,7 @@ export default function JugadoresPage() {
             {lista.map((j, i) =>
               editandoId === j.id && puedeEditar ? (
                 <tr key={j.id} className="border-b border-zinc-100 bg-zinc-50 last:border-0">
-                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-3 text-zinc-500">{i + 1}</td>
                   <td className="px-4 py-3" colSpan={2}>
                     <input
                       type="text"
@@ -275,9 +275,9 @@ export default function JugadoresPage() {
                       onChange={(e) => setEditElo(e.target.value)}
                       className="w-24 rounded border border-zinc-300 px-2 py-1 text-sm"
                     />
-                    <div className="mt-0.5 text-[10px] text-zinc-400">Elo inicial</div>
+                    <div className="mt-0.5 text-[10px] text-zinc-500">Elo inicial</div>
                   </td>
-                  <td className="px-4 py-3 text-zinc-400" colSpan={3}>
+                  <td className="px-4 py-3 text-zinc-500" colSpan={3}>
                     Cambiar el nombre o el Elo inicial recalcula todo su historial.
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -297,7 +297,7 @@ export default function JugadoresPage() {
                 </tr>
               ) : (
                 <tr key={j.id} className="border-b border-zinc-100 last:border-0">
-                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-3 text-zinc-500">{i + 1}</td>
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/jugadores/${j.id}`} className="flex items-center gap-2 hover:underline">
                       {j.fotoUrl ? (
@@ -308,7 +308,7 @@ export default function JugadoresPage() {
                           className="h-7 w-7 shrink-0 rounded-full border border-zinc-200 object-cover"
                         />
                       ) : (
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-400">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-500">
                           {nombreVisible(j).charAt(0).toUpperCase()}
                         </span>
                       )}
@@ -359,7 +359,7 @@ export default function JugadoresPage() {
             )}
             {lista.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-zinc-400">
+                <td colSpan={9} className="px-4 py-6 text-center text-zinc-500">
                   {busqueda ? "No hay jugadores que coincidan con la búsqueda." : "No hay jugadores todavía."}
                 </td>
               </tr>

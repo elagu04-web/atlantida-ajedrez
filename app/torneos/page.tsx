@@ -151,7 +151,7 @@ export default function TorneosPage() {
               placeholder="Ej: 5"
               className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm"
             />
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-zinc-500">
               Si la dejás vacía, vas generando rondas de a una sin límite fijo.
             </span>
           </div>
@@ -185,7 +185,7 @@ export default function TorneosPage() {
           </div>
 
           {jugadoresConStats.length === 0 ? (
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-zinc-500">
               No hay jugadores cargados todavía —{" "}
               <Link href="/jugadores" className="text-blue-600 hover:underline">
                 agregá algunos primero
@@ -210,13 +210,13 @@ export default function TorneosPage() {
                       onChange={() => toggleJugador(j.id)}
                     />
                     {nombreVisible(j)}{" "}
-                    <span className="font-mono text-xs text-zinc-400">
+                    <span className="font-mono text-xs text-zinc-500">
                       {j.eloAtlantida}
                     </span>
                   </label>
                 ))}
                 {jugadoresFiltrados.length === 0 && (
-                  <p className="col-span-full py-2 text-center text-sm text-zinc-400">
+                  <p className="col-span-full py-2 text-center text-sm text-zinc-500">
                     Ningún jugador coincide con la búsqueda.
                   </p>
                 )}
@@ -256,7 +256,7 @@ export default function TorneosPage() {
       <div className="flex flex-col gap-3">
         <h2 className="font-semibold">Torneos creados</h2>
         {torneos.length === 0 && (
-          <p className="text-sm text-zinc-400">Todavía no creaste ningún torneo.</p>
+          <p className="text-sm text-zinc-500">Todavía no creaste ningún torneo.</p>
         )}
         {[...torneos].reverse().map((t) => (
           <div

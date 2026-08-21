@@ -8,7 +8,7 @@ export function GraficoElo({ puntos }: { puntos: Punto[] }) {
   const [activo, setActivo] = useState<number | null>(null);
 
   if (puntos.length < 2) {
-    return <p className="text-sm text-zinc-400">Todavía no hay suficientes partidas para graficar.</p>;
+    return <p className="text-sm text-zinc-500">Todavía no hay suficientes partidas para graficar.</p>;
   }
 
   const ancho = 640;

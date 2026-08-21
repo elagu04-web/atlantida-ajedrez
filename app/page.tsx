@@ -30,7 +30,7 @@ export default function Home() {
           {top3.map((j, i) => (
             <li key={j.id} className="flex items-center justify-between text-sm">
               <span>
-                <span className="mr-2 text-zinc-400">{i + 1}.</span>
+                <span className="mr-2 text-zinc-500">{i + 1}.</span>
                 {nombreVisible(j)}
               </span>
               <span className="font-mono font-semibold">{j.eloAtlantida}</span>

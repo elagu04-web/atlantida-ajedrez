@@ -40,7 +40,7 @@ function JugadorFila({
       )}
       <span>
         {nombre}
-        {elo != null && <span className="ml-1 font-mono text-xs text-zinc-400">{elo}</span>}
+        {elo != null && <span className="ml-1 font-mono text-xs text-zinc-500">{elo}</span>}
       </span>
     </div>
   );
@@ -89,7 +89,7 @@ export default function TransmisionPage() {
       </div>
 
       {cargando ? (
-        <p className="text-sm text-zinc-400">Cargando...</p>
+        <p className="text-sm text-zinc-500">Cargando...</p>
       ) : !estado?.activa ? (
         <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
           <p className="text-zinc-500">No hay ninguna transmisión en este momento.</p>
@@ -135,13 +135,13 @@ export default function TransmisionPage() {
           <div className="rounded-lg border border-zinc-200 bg-white p-4">
             <h2 className="mb-3 font-semibold">Jugadas</h2>
             {estado.jugadas.length === 0 ? (
-              <p className="text-sm text-zinc-400">Todavía no se jugó ninguna jugada.</p>
+              <p className="text-sm text-zinc-500">Todavía no se jugó ninguna jugada.</p>
             ) : (
               <ol className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
                 {estado.jugadas.map((j, i) => (
                   <li key={i} className="font-mono">
                     {i % 2 === 0 && (
-                      <span className="mr-1 text-zinc-400">{Math.floor(i / 2) + 1}.</span>
+                      <span className="mr-1 text-zinc-500">{Math.floor(i / 2) + 1}.</span>
                     )}
                     {j}
                   </li>

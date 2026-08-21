@@ -192,7 +192,7 @@ export default function TorneoPage() {
             <li key={j!.id} className="flex items-center justify-between text-sm">
               <span>
                 {nombreVisible(j!)}{" "}
-                <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
+                <span className="font-mono text-xs text-zinc-500">{j!.eloAtlantida}</span>
               </span>
               {puedeEditarJugadores(torneo) && puedeEditar && (
                 <button
@@ -259,7 +259,7 @@ export default function TorneoPage() {
           </div>
         )}
         {!puedeEditarJugadores(torneo) && (
-          <p className="mt-3 text-xs text-zinc-400">
+          <p className="mt-3 text-xs text-zinc-500">
             {torneo.estado === "finalizado"
               ? "El torneo ya finalizó — no se puede modificar la lista de jugadores."
               : "En round robin el calendario ya se generó completo — no se puede modificar la lista de jugadores."}
@@ -325,7 +325,7 @@ export default function TorneoPage() {
             <tbody>
               {standings.map((s, i) => (
                 <tr key={s.jugadorId} className="border-b border-zinc-100 last:border-0">
-                  <td className="px-4 py-2 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-2 text-zinc-500">{i + 1}</td>
                   <td className="px-4 py-2">{nombreDe(s.jugadorId)}</td>
                   <td className="px-4 py-2 font-mono">{s.puntos}</td>
                   <td className="px-4 py-2">{s.partidasJugadas}</td>
@@ -423,7 +423,7 @@ export default function TorneoPage() {
                         </button>
                         {e.negrasId ? (
                           <>
-                            <span className="text-xs text-zinc-400">vs</span>
+                            <span className="text-xs text-zinc-500">vs</span>
                             <button
                               data-emp={e.numero}
                               data-color="negras"
@@ -439,7 +439,7 @@ export default function TorneoPage() {
                             </button>
                           </>
                         ) : (
-                          <span className="flex-1 text-center text-xs text-zinc-400">— descansa —</span>
+                          <span className="flex-1 text-center text-xs text-zinc-500">— descansa —</span>
                         )}
                       </div>
                     );
@@ -449,7 +449,7 @@ export default function TorneoPage() {
                     return (
                       <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-500">
                         <span>{nombreDe(e.blancasId)}</span>
-                        <span className="text-zinc-400">— descansa (punto libre) —</span>
+                        <span className="text-zinc-500">— descansa (punto libre) —</span>
                       </div>
                     );
                   }
@@ -460,7 +460,7 @@ export default function TorneoPage() {
                         <span className={e.resultado === "1-0" ? "font-semibold text-green-700" : ""}>
                           {nombreDe(e.blancasId)}
                         </span>
-                        <span className="text-xs text-zinc-400">
+                        <span className="text-xs text-zinc-500">
                           {e.resultado === "1-0"
                             ? "1 – 0"
                             : e.resultado === "0-1"

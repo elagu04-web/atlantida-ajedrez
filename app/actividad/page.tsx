@@ -33,9 +33,9 @@ export default function ActividadPage() {
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
         {cargando ? (
-          <p className="px-4 py-6 text-center text-sm text-zinc-400">Cargando...</p>
+          <p className="px-4 py-6 text-center text-sm text-zinc-500">Cargando...</p>
         ) : actividades.length === 0 ? (
-          <p className="px-4 py-6 text-center text-sm text-zinc-400">Todavía no hay actividad registrada.</p>
+          <p className="px-4 py-6 text-center text-sm text-zinc-500">Todavía no hay actividad registrada.</p>
         ) : (
           <ul className="flex flex-col divide-y divide-zinc-100">
             {actividades.map((a) => (
@@ -43,7 +43,7 @@ export default function ActividadPage() {
                 <span className="text-lg leading-none">{iconoPorTipo[a.tipo] ?? "•"}</span>
                 <div className="flex-1">
                   <p className="text-zinc-800">{a.descripcion}</p>
-                  <p className="mt-0.5 text-xs text-zinc-400">{formatearFecha(a.creadoEn)}</p>
+                  <p className="mt-0.5 text-xs text-zinc-500">{formatearFecha(a.creadoEn)}</p>
                 </div>
               </li>
             ))}

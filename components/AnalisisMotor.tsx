@@ -28,7 +28,6 @@ export function AnalisisMotor({ fen }: { fen: string }) {
 
   useEffect(() => {
     if (!activo) return;
-    setCargandoMotor(true);
     let cancelado = false;
     const motor = new MotorAjedrez((a) => {
       setAnalisis(a);
@@ -43,7 +42,6 @@ export function AnalisisMotor({ fen }: { fen: string }) {
       motor.destruir();
       motorRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activo]);
 
   useEffect(() => {
@@ -53,13 +51,15 @@ export function AnalisisMotor({ fen }: { fen: string }) {
     // Movetime corto: en la transmisión pública priorizamos que responda
     // rápido a cada jugada nueva por sobre la profundidad del análisis.
     motorRef.current.analizar(fen, turno, 400);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activo, fen]);
 
   if (!activo) {
     return (
       <button
-        onClick={() => setActivo(true)}
+        onClick={() => {
+          setCargandoMotor(true);
+          setActivo(true);
+        }}
         className="text-xs font-medium text-blue-600 hover:underline"
       >
         🔍 Mostrar análisis (motor de ajedrez)
@@ -93,8 +93,8 @@ export function AnalisisMotor({ fen }: { fen: string }) {
         />
       </div>
       <span className="font-mono font-semibold text-zinc-700">{etiqueta}</span>
-      {cargandoMotor && <span className="text-zinc-400">cargando motor (puede tardar unos segundos)...</span>}
-      {!cargandoMotor && cargando && <span className="text-zinc-400">pensando...</span>}
+      {cargandoMotor && <span className="text-zinc-500">cargando motor (puede tardar unos segundos)...</span>}
+      {!cargandoMotor && cargando && <span className="text-zinc-500">pensando...</span>}
       {jugadaSugerida && (
         <span className="text-zinc-500">
           Sugiere: <span className="font-medium text-zinc-700">{jugadaSugerida}</span>
@@ -105,7 +105,7 @@ export function AnalisisMotor({ fen }: { fen: string }) {
           setActivo(false);
           setAnalisis(null);
         }}
-        className="ml-auto text-zinc-400 hover:text-zinc-600"
+        className="ml-auto text-zinc-500 hover:text-zinc-600"
       >
         Ocultar
       </button>

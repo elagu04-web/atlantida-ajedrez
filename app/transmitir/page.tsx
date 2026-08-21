@@ -14,7 +14,7 @@ import type { ResultadoPartida } from "@/lib/tournaments";
 
 export default function TransmitirPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-zinc-400">Cargando...</p>}>
+    <Suspense fallback={<p className="text-sm text-zinc-500">Cargando...</p>}>
       <TransmitirContenido />
     </Suspense>
   );
@@ -514,7 +514,7 @@ function TransmitirContenido() {
                     className="h-12 w-12 rounded-full border border-zinc-200 object-cover"
                   />
                 ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-lg font-semibold text-zinc-400">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-lg font-semibold text-zinc-500">
                     {nombre.charAt(0).toUpperCase()}
                   </div>
                 )}

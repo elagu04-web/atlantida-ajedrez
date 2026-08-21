@@ -97,7 +97,7 @@ export default function EstadisticasPage() {
         </div>
 
         {tabla.columnas.length === 0 ? (
-          <p className="text-sm text-zinc-400">Todavía no hay torneos con resultados cargados.</p>
+          <p className="text-sm text-zinc-500">Todavía no hay torneos con resultados cargados.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -118,7 +118,7 @@ export default function EstadisticasPage() {
               <tbody>
                 {tabla.filas.map((f, i) => (
                   <tr key={f.jugadorId} className="border-b border-zinc-100 last:border-0">
-                    <td className="px-3 py-2 text-zinc-400">
+                    <td className="px-3 py-2 text-zinc-500">
                       {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                     </td>
                     <td className="px-3 py-2 font-medium">{nombreDe(f.jugadorId)}</td>
@@ -134,7 +134,7 @@ export default function EstadisticasPage() {
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-xs text-zinc-400">
+            <p className="mt-2 text-xs text-zinc-500">
               {tabla.columnas.map((c, i) => `T${i + 1} = ${c.nombre}`).join(" · ")}
             </p>
           </div>
@@ -144,7 +144,7 @@ export default function EstadisticasPage() {
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="mb-4 font-semibold">🏆 Copa de Campeones {anioActual}</h2>
         {campeones.length === 0 ? (
-          <p className="text-sm text-zinc-400">Todavía no hay torneos finalizados este año.</p>
+          <p className="text-sm text-zinc-500">Todavía no hay torneos finalizados este año.</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2">
             <div>

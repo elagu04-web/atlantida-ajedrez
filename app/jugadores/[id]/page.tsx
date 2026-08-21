@@ -155,7 +155,7 @@ export default function JugadorPage() {
                 className="h-20 w-20 rounded-full border border-zinc-200 object-cover"
               />
             ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-2xl font-semibold text-zinc-400">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-2xl font-semibold text-zinc-500">
                 {nombreVisible(jugador).charAt(0).toUpperCase()}
               </div>
             )}
@@ -181,7 +181,7 @@ export default function JugadorPage() {
             <h1 className="text-2xl font-semibold tracking-tight">
               {nombreVisible(jugador)}
             </h1>
-            {jugador.apodo && <p className="text-sm text-zinc-400">{jugador.nombre}</p>}
+            {jugador.apodo && <p className="text-sm text-zinc-500">{jugador.nombre}</p>}
           </div>
         </div>
         {errorFoto && <p className="mt-2 text-sm text-red-600">{errorFoto}</p>}
@@ -222,7 +222,7 @@ export default function JugadorPage() {
                 {rachaActual.cantidad > 1 ? "s" : ""}
               </span>
             ) : (
-              <span className="text-zinc-400 text-base">Sin partidas</span>
+              <span className="text-zinc-500 text-base">Sin partidas</span>
             )}
           </div>
         </div>
@@ -232,10 +232,10 @@ export default function JugadorPage() {
             {mejorVictoria ? (
               <>
                 {mejorVictoria.rival}{" "}
-                <span className="font-mono text-sm text-zinc-400">{mejorVictoria.elo}</span>
+                <span className="font-mono text-sm text-zinc-500">{mejorVictoria.elo}</span>
               </>
             ) : (
-              <span className="text-zinc-400 text-base">Sin victorias todavía</span>
+              <span className="text-zinc-500 text-base">Sin victorias todavía</span>
             )}
           </div>
         </div>
@@ -245,15 +245,15 @@ export default function JugadorPage() {
             <div className="mt-1 flex gap-4 text-sm">
               <span>
                 ♔ {rendimientoPorColor.blancas.porcentaje}%{" "}
-                <span className="text-zinc-400">({rendimientoPorColor.blancas.jugadas})</span>
+                <span className="text-zinc-500">({rendimientoPorColor.blancas.jugadas})</span>
               </span>
               <span>
                 ♚ {rendimientoPorColor.negras.porcentaje}%{" "}
-                <span className="text-zinc-400">({rendimientoPorColor.negras.jugadas})</span>
+                <span className="text-zinc-500">({rendimientoPorColor.negras.jugadas})</span>
               </span>
             </div>
           ) : (
-            <div className="mt-1 text-base text-zinc-400">Sin partidas</div>
+            <div className="mt-1 text-base text-zinc-500">Sin partidas</div>
           )}
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function JugadorPage() {
             ))}
             {jugador.partidas.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
                   Todavía no tiene partidas cargadas.
                 </td>
               </tr>
@@ -335,7 +335,7 @@ export default function JugadorPage() {
               ))}
               {cabezaACabeza.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
+                  <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
                     Todavía no enfrentó a ningún rival.
                   </td>
                 </tr>

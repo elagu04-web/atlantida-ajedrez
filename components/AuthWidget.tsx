@@ -84,7 +84,7 @@ export function AuthWidget() {
           setMostrarForm(false);
           setError(null);
         }}
-        className="text-xs text-zinc-400 hover:text-zinc-700"
+        className="text-xs text-zinc-500 hover:text-zinc-700"
       >
         Cancelar
       </button>
