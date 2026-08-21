@@ -35,10 +35,10 @@ export function GraficoElo({ puntos }: { puntos: Punto[] }) {
   return (
     <div className="relative">
       <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full" onMouseLeave={() => setActivo(null)}>
-        <text x={4} y={y(eloMax) + 4} className="fill-zinc-400 text-[10px]">
+        <text x={4} y={y(eloMax) + 4} className="fill-zinc-500 text-[10px]">
           {eloMax}
         </text>
-        <text x={4} y={y(eloMin) + 4} className="fill-zinc-400 text-[10px]">
+        <text x={4} y={y(eloMin) + 4} className="fill-zinc-500 text-[10px]">
           {eloMin}
         </text>
         <polyline points={linea} fill="none" stroke="#2563eb" strokeWidth={2} />
@@ -50,6 +50,7 @@ export function GraficoElo({ puntos }: { puntos: Punto[] }) {
             r={activo === i ? 5 : 3}
             fill="#2563eb"
             onMouseEnter={() => setActivo(i)}
+            onClick={() => setActivo(activo === i ? null : i)}
             className="cursor-pointer"
           />
         ))}
