@@ -23,6 +23,8 @@ export default function TransmitirPage() {
   const transmitiendoRef = useRef(false);
   const [blancas, setBlancas] = useState("");
   const [negras, setNegras] = useState("");
+  const blancasRef = useRef("");
+  const negrasRef = useRef("");
 
   const pickupsRef = useRef(0);
   const origenRef = useRef("");
@@ -36,10 +38,22 @@ export default function TransmitirPage() {
         transmitiendoRef.current = data.activa;
         setBlancas(data.blancas ?? "");
         setNegras(data.negras ?? "");
+        blancasRef.current = data.blancas ?? "";
+        negrasRef.current = data.negras ?? "";
       }
     }
     cargar();
   }, []);
+
+  function cambiarBlancas(valor: string) {
+    setBlancas(valor);
+    blancasRef.current = valor;
+  }
+
+  function cambiarNegras(valor: string) {
+    setNegras(valor);
+    negrasRef.current = valor;
+  }
 
   function agregarLog(linea: string) {
     setLog((actual) => [...actual.slice(-49), linea]);
@@ -58,8 +72,8 @@ export default function TransmitirPage() {
         activa,
         fen: chessRef.current.fen(),
         jugadas: chessRef.current.history(),
-        blancas: blancas.trim() || null,
-        negras: negras.trim() || null,
+        blancas: blancasRef.current.trim() || null,
+        negras: negrasRef.current.trim() || null,
         actualizado_en: new Date().toISOString(),
       })
       .eq("id", transmisionId);
@@ -158,7 +172,7 @@ export default function TransmitirPage() {
           <input
             type="text"
             value={blancas}
-            onChange={(e) => setBlancas(e.target.value)}
+            onChange={(e) => cambiarBlancas(e.target.value)}
             placeholder="Nombre jugador blancas"
             className="w-48 rounded-md border border-zinc-300 px-3 py-2 text-sm"
           />
@@ -168,7 +182,7 @@ export default function TransmitirPage() {
           <input
             type="text"
             value={negras}
-            onChange={(e) => setNegras(e.target.value)}
+            onChange={(e) => cambiarNegras(e.target.value)}
             placeholder="Nombre jugador negras"
             className="w-48 rounded-md border border-zinc-300 px-3 py-2 text-sm"
           />
