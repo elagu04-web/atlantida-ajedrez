@@ -257,6 +257,12 @@ function TransmitirContenido() {
     ultimoVolcadoRef.current = ocupado;
     repeticionesEstableRef.current = igualQueAntes ? repeticionesEstableRef.current + 1 : 0;
     if (repeticionesEstableRef.current < 3) return;
+    // Si hay una pieza en el aire (levantada, todavía sin apoyar en ningún
+    // lado), una captura en curso se ve idéntica a una captura ya terminada
+    // — comer no cambia si la casilla destino está ocupada, así que solo
+    // desaparece la casilla de origen. No adivinamos nada hasta que no
+    // quede nada en la mano.
+    if (pickupsRef.current !== 0) return;
 
     const tablero = chessRef.current.board();
     if (ocupacionCoincide(tablero, ocupado)) {
@@ -320,10 +326,16 @@ function TransmitirContenido() {
     repeticionesEstableRef.current = 0;
     desincronizadoRef.current = false;
     setUltimaPromocion(null);
+    // Si la partida ya se había dado por terminada, deshacer una jugada la
+    // vuelve a dejar en curso — el resultado y el PGN viejos ya no valen.
+    setResultadoState(null);
+    setPgn(null);
     actualizarDesdeChess();
     if (transmitiendoRef.current) publicarEstado(true);
     agregarLog(
-      `⏪ Se deshizo la jugada "${deshecha.san}". Acomodá las piezas en el tablero real para que coincida con esta posición antes de seguir.`
+      `⏪ Se deshizo la jugada "${deshecha.san}". Le toca mover a ${
+        chessRef.current.turn() === "w" ? "blancas" : "negras"
+      }. Acomodá las piezas en el tablero real para que coincida con esta posición antes de seguir.`
     );
   }
 
