@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTorneos } from "@/context/TorneosContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { supabase } from "@/lib/supabase";
-import { conectarPegasus } from "@/lib/pegasus";
+import { conectarPegasus, casillaDesdeIndice } from "@/lib/pegasus";
 import { TableroMini } from "@/components/TableroMini";
 import { EditorPosicion } from "@/components/EditorPosicion";
 import type { ResultadoPartida } from "@/lib/tournaments";
@@ -34,6 +34,7 @@ function TransmitirContenido() {
   const [conectando, setConectando] = useState(false);
   const [fen, setFen] = useState(chessRef.current.fen());
   const [jugadas, setJugadas] = useState<string[]>([]);
+  const [bateria, setBateria] = useState<number | null>(null);
 
   const [transmisionId, setTransmisionId] = useState<string | null>(null);
   const [transmitiendo, setTransmitiendo] = useState(false);
@@ -222,12 +223,22 @@ function TransmitirContenido() {
   }
 
   function ocupacionCoincide(tablero: ({ type: string; color: string } | null)[][], ocupado: boolean[]) {
+    return casillasQueNoCoinciden(tablero, ocupado).length === 0;
+  }
+
+  function casillasQueNoCoinciden(
+    tablero: ({ type: string; color: string } | null)[][],
+    ocupado: boolean[]
+  ): string[] {
+    const distintas: string[] = [];
     for (let i = 0; i < 64; i++) {
       const fila = Math.floor(i / 8);
       const columna = i - fila * 8;
-      if (ocupado[i] !== Boolean(tablero[fila][columna])) return false;
+      if (ocupado[i] !== Boolean(tablero[fila][columna])) {
+        distintas.push(casillaDesdeIndice(i));
+      }
     }
-    return true;
+    return distintas;
   }
 
   function manejarVolcado(ocupado: boolean[]) {
@@ -270,8 +281,9 @@ function TransmitirContenido() {
       desincronizadoRef.current = false;
     } else if (!desincronizadoRef.current) {
       desincronizadoRef.current = true;
+      const distintas = casillasQueNoCoinciden(tablero, ocupado);
       agregarLog(
-        "⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Corregí a mano o reiniciá la partida."
+        `⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
       );
     }
   }
@@ -312,6 +324,7 @@ function TransmitirContenido() {
         onPiezaLevantada: manejarLevantada,
         onPiezaApoyada: manejarApoyada,
         onVolcadoTablero: manejarVolcado,
+        onBateria: setBateria,
       });
       desconectarRef.current = desconectar;
       setConectado(true);
@@ -325,6 +338,7 @@ function TransmitirContenido() {
     desconectarRef.current?.();
     desconectarRef.current = null;
     setConectado(false);
+    setBateria(null);
     agregarLog("Tablero desconectado prolijamente.");
   }
 
@@ -549,6 +563,13 @@ function TransmitirContenido() {
           >
             Desconectar tablero
           </button>
+        )}
+        {bateria !== null && (
+          <span
+            className={`text-sm font-medium ${bateria <= 20 ? "text-red-600" : "text-zinc-500"}`}
+          >
+            🔋 {bateria}%
+          </span>
         )}
         <button
           onClick={handleReiniciar}

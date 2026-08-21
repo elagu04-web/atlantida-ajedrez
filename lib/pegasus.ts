@@ -33,6 +33,8 @@ export type PegasusCallbacks = {
   onPiezaApoyada: (casilla: string) => void;
   /** Foto completa de qué casillas tienen pieza ahora mismo (índice = casillaDesdeIndice). */
   onVolcadoTablero: (ocupado: boolean[]) => void;
+  /** Nivel de batería (0-100), si el tablero expone el servicio estándar de Bluetooth para esto. */
+  onBateria?: (porcentaje: number) => void;
 };
 
 export async function conectarPegasus(cb: PegasusCallbacks) {
@@ -44,7 +46,10 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
   }
 
   cb.onLog("Buscando el tablero...");
-  const device = await bt.requestDevice({ filters: [{ services: [SERVICE_UUID] }] });
+  const device = await bt.requestDevice({
+    filters: [{ services: [SERVICE_UUID] }],
+    optionalServices: ["battery_service"],
+  });
 
   device.addEventListener("gattserverdisconnected", () => {
     cb.onLog("⚠ Se desconectó el tablero.");
@@ -61,6 +66,30 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
     ),
   ]);
   cb.onLog("Conectado. Buscando el servicio...");
+
+  // El nivel de batería es un servicio Bluetooth estándar, aparte del
+  // protocolo propio del Pegasus. Si el tablero no lo expone, no pasa nada.
+  try {
+    const servicioBateria = await server.getPrimaryService("battery_service");
+    const caracteristicaBateria = await servicioBateria.getCharacteristic("battery_level");
+    async function leerBateria() {
+      try {
+        const valor = await caracteristicaBateria.readValue();
+        const porcentaje = valor.getUint8(0);
+        cb.onBateria?.(porcentaje);
+        if (porcentaje <= 20) {
+          cb.onLog(`🔋 Batería del tablero baja (${porcentaje}%) — cargalo pronto, puede volverse impreciso.`);
+        }
+      } catch {
+        // se reintenta en el próximo ciclo
+      }
+    }
+    await leerBateria();
+    setInterval(leerBateria, 60000);
+  } catch {
+    // este tablero no expone el nivel de batería por Bluetooth; seguimos sin eso
+  }
+
   const service = await server.getPrimaryService(SERVICE_UUID);
 
   const caracteristicasRx = await service.getCharacteristics(RX_CHARACTERISTIC_UUID);
