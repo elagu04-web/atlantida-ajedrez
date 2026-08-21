@@ -1,16 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Chess } from "chess.js";
 import { useAuth } from "@/context/AuthContext";
+import { useTorneos } from "@/context/TorneosContext";
 import { supabase } from "@/lib/supabase";
 import { conectarPegasus } from "@/lib/pegasus";
 import { TableroMini } from "@/components/TableroMini";
 import { EditorPosicion } from "@/components/EditorPosicion";
+import type { ResultadoPartida } from "@/lib/tournaments";
 
 export default function TransmitirPage() {
   const { session } = useAuth();
   const puedeUsar = Boolean(session);
+  const parametros = useSearchParams();
+  const { torneos, registrarResultado } = useTorneos();
 
   const chessRef = useRef(new Chess());
   const [log, setLog] = useState<string[]>([]);
@@ -35,6 +40,15 @@ export default function TransmitirPage() {
   );
   const [editandoPosicion, setEditandoPosicion] = useState(false);
 
+  const [torneoId, setTorneoId] = useState<string | null>(null);
+  const [rondaNumero, setRondaNumero] = useState<number | null>(null);
+  const [empNumero, setEmpNumero] = useState<number | null>(null);
+  const torneoIdRef = useRef<string | null>(null);
+  const rondaNumeroRef = useRef<number | null>(null);
+  const empNumeroRef = useRef<number | null>(null);
+  const [resultado, setResultadoState] = useState<ResultadoPartida | null>(null);
+  const [pgn, setPgn] = useState<string | null>(null);
+
   useEffect(() => {
     async function cargar() {
       const { data } = await supabase.from("transmision").select("*").limit(1).single();
@@ -49,6 +63,33 @@ export default function TransmitirPage() {
       }
     }
     cargar();
+  }, []);
+
+  useEffect(() => {
+    const torneo = parametros.get("torneo");
+    const ronda = parametros.get("ronda");
+    const emp = parametros.get("emp");
+    const nombreBlancas = parametros.get("blancas");
+    const nombreNegras = parametros.get("negras");
+    if (!torneo || !ronda || !emp) return;
+
+    torneoIdRef.current = torneo;
+    rondaNumeroRef.current = Number(ronda);
+    empNumeroRef.current = Number(emp);
+    setTorneoId(torneo);
+    setRondaNumero(Number(ronda));
+    setEmpNumero(Number(emp));
+
+    if (nombreBlancas) {
+      blancasRef.current = nombreBlancas;
+      setBlancas(nombreBlancas);
+    }
+    if (nombreNegras) {
+      negrasRef.current = nombreNegras;
+      setNegras(nombreNegras);
+    }
+    agregarLog(`🔗 Conectado a la ronda ${ronda} del torneo (partida ${emp}).`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function cambiarBlancas(valor: string) {
@@ -70,7 +111,7 @@ export default function TransmitirPage() {
     setJugadas(chessRef.current.history());
   }
 
-  async function publicarEstado(activa: boolean) {
+  async function publicarEstado(activa: boolean, resultadoFinal?: ResultadoPartida, pgnFinal?: string) {
     if (!transmisionId) return;
     await supabase
       .from("transmision")
@@ -80,6 +121,11 @@ export default function TransmitirPage() {
         jugadas: chessRef.current.history(),
         blancas: blancasRef.current.trim() || null,
         negras: negrasRef.current.trim() || null,
+        torneo_id: torneoIdRef.current,
+        ronda_numero: rondaNumeroRef.current,
+        emparejamiento_numero: empNumeroRef.current,
+        resultado: resultadoFinal ?? null,
+        pgn: pgnFinal ?? null,
         actualizado_en: new Date().toISOString(),
       })
       .eq("id", transmisionId);
@@ -189,6 +235,8 @@ export default function TransmitirPage() {
 
   function handleReiniciar() {
     setUltimaPromocion(null);
+    setResultadoState(null);
+    setPgn(null);
     pickupsRef.current = 0;
     desincronizadoRef.current = false;
     origenRef.current = "";
@@ -212,6 +260,48 @@ export default function TransmitirPage() {
     agregarLog("Transmisión terminada.");
   }
 
+  async function handleTerminarPartida(res: ResultadoPartida) {
+    const torneoVinculado = torneoIdRef.current
+      ? torneos.find((t) => t.id === torneoIdRef.current)
+      : undefined;
+
+    chessRef.current.header(
+      "White",
+      blancasRef.current.trim() || "Blancas",
+      "Black",
+      negrasRef.current.trim() || "Negras",
+      "Result",
+      res,
+      "Date",
+      new Date().toISOString().slice(0, 10).replace(/-/g, "."),
+      "Event",
+      torneoVinculado?.nombre || "Atlántida Ajedrez",
+      ...(rondaNumeroRef.current ? ["Round", String(rondaNumeroRef.current)] : [])
+    );
+    const pgnGenerado = chessRef.current.pgn();
+    setResultadoState(res);
+    setPgn(pgnGenerado);
+    agregarLog(`🏁 Partida terminada: ${res}. PGN generado.`);
+
+    if (torneoIdRef.current && rondaNumeroRef.current && empNumeroRef.current) {
+      await registrarResultado(torneoIdRef.current, rondaNumeroRef.current, empNumeroRef.current, res);
+      agregarLog("✅ Resultado cargado también en el torneo.");
+    }
+
+    if (transmitiendoRef.current) publicarEstado(true, res, pgnGenerado);
+  }
+
+  function descargarPgn() {
+    if (!pgn) return;
+    const blob = new Blob([pgn], { type: "application/x-chess-pgn" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(blancasRef.current || "blancas").trim()}_vs_${(negrasRef.current || "negras").trim()}.pgn`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!puedeUsar) {
     return (
       <div className="flex flex-col gap-4">
@@ -229,6 +319,12 @@ export default function TransmitirPage() {
           Conectá el tablero DGT Pegasus por Bluetooth (Chrome o Edge de computadora, tablero
           prendido y cerca) y transmitilo en vivo en /transmision.
         </p>
+        {torneoId && (
+          <p className="mt-1 text-sm text-blue-700">
+            🔗 Vinculada al torneo &quot;{torneos.find((t) => t.id === torneoId)?.nombre ?? "?"}&quot;
+            — ronda {rondaNumero}, partida {empNumero}. El resultado se va a cargar ahí también.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4">
@@ -268,6 +364,48 @@ export default function TransmitirPage() {
           </button>
         )}
       </div>
+
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+        <span className="text-xs font-medium text-zinc-600">Terminar partida con resultado:</span>
+        <button
+          onClick={() => handleTerminarPartida("1-0")}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+        >
+          1 – 0
+        </button>
+        <button
+          onClick={() => handleTerminarPartida("1/2-1/2")}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+        >
+          ½ – ½
+        </button>
+        <button
+          onClick={() => handleTerminarPartida("0-1")}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+        >
+          0 – 1
+        </button>
+        {resultado && <span className="text-sm font-medium text-green-700">Resultado: {resultado}</span>}
+      </div>
+
+      {pgn && (
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-semibold">PGN de la partida</h2>
+            <button
+              onClick={descargarPgn}
+              className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-700"
+            >
+              Descargar .pgn
+            </button>
+          </div>
+          <textarea
+            readOnly
+            value={pgn}
+            className="h-32 w-full rounded border border-zinc-200 bg-zinc-50 p-2 font-mono text-xs"
+          />
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <button

@@ -10,6 +10,8 @@ type EstadoTransmision = {
   jugadas: string[];
   blancas: string | null;
   negras: string | null;
+  resultado: string | null;
+  pgn: string | null;
 };
 
 export default function TransmisionPage() {
@@ -28,6 +30,8 @@ export default function TransmisionPage() {
           jugadas: data.jugadas ?? [],
           blancas: data.blancas,
           negras: data.negras,
+          resultado: data.resultado,
+          pgn: data.pgn,
         });
         setCargando(false);
       }
@@ -63,6 +67,22 @@ export default function TransmisionPage() {
               <span>♚ {estado.negras || "Negras"}</span>
             </div>
             <TableroMini fen={estado.fen} />
+            {estado.resultado && (
+              <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 px-3 py-2">
+                <span className="text-sm font-semibold text-green-800">
+                  🏁 Partida terminada: {estado.resultado}
+                </span>
+                {estado.pgn && (
+                  <a
+                    href={`data:application/x-chess-pgn;charset=utf-8,${encodeURIComponent(estado.pgn)}`}
+                    download={`${(estado.blancas || "blancas")}_vs_${(estado.negras || "negras")}.pgn`}
+                    className="text-xs font-medium text-blue-700 hover:underline"
+                  >
+                    Descargar .pgn
+                  </a>
+                )}
+              </div>
+            )}
           </div>
           <div className="rounded-lg border border-zinc-200 bg-white p-4">
             <h2 className="mb-3 font-semibold">Jugadas</h2>

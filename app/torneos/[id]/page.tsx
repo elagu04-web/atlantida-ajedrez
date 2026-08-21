@@ -531,13 +531,22 @@ export default function TorneoPage() {
                           🏆 {nombreDe(e.negrasId)}
                         </button>
                       </div>
-                      <button
-                        onClick={() => corregirColor(torneo.id, ronda.numero, e.numero)}
-                        className="shrink-0 text-xs text-blue-600 hover:underline sm:ml-3"
-                        title="Intercambiar quién jugó con blancas y quién con negras"
-                      >
-                        ↔ colores
-                      </button>
+                      <div className="flex shrink-0 items-center gap-3 sm:ml-3">
+                        <Link
+                          href={`/transmitir?torneo=${torneo.id}&ronda=${ronda.numero}&emp=${e.numero}&blancas=${encodeURIComponent(nombreDe(e.blancasId))}&negras=${encodeURIComponent(nombreDe(e.negrasId))}`}
+                          className="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+                          title="Transmitir esta partida en vivo desde el tablero"
+                        >
+                          🔴 Transmitir
+                        </Link>
+                        <button
+                          onClick={() => corregirColor(torneo.id, ronda.numero, e.numero)}
+                          className="text-xs text-blue-600 hover:underline"
+                          title="Intercambiar quién jugó con blancas y quién con negras"
+                        >
+                          ↔ colores
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
