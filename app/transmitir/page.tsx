@@ -392,7 +392,13 @@ function TransmitirContenido() {
       desconectarRef.current = desconectar;
       setConectado(true);
     } catch (err) {
-      agregarLog(`❌ Error: ${err instanceof Error ? err.message : String(err)}`);
+      const mensaje = err instanceof Error ? err.message : String(err);
+      agregarLog(`❌ Error: ${mensaje}`);
+      if (mensaje.includes("Connection attempt failed")) {
+        agregarLog(
+          "💡 Esto suele pasar cuando el tablero sigue conectado a otra cosa (el celular con la app DGT Chess, u otra pestaña). Apagá el Bluetooth del celular o cerrá esa app, y si sigue sin andar, abrí chrome://bluetooth-internals en otra pestaña, buscá el DGT Pegasus y conectalo manualmente ahí una vez — eso suele destrabarlo para que después conecte bien desde acá."
+        );
+      }
     }
     setConectando(false);
   }
