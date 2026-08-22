@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
+import { useJugadores } from "@/context/JugadoresContext";
 import { nombreVisible } from "@/lib/players";
 
 export default function Home() {
   const jugadoresEnVivo = useJugadoresEnVivo();
+  const { cargando } = useJugadores();
   const top3 = jugadoresEnVivo.slice(0, 3);
 
   return (
@@ -26,17 +28,23 @@ export default function Home() {
             Ver todos los jugadores →
           </Link>
         </div>
-        <ol className="flex flex-col gap-2">
-          {top3.map((j, i) => (
-            <li key={j.id} className="flex items-center justify-between text-sm">
-              <span>
-                <span className="mr-2 text-zinc-500">{i + 1}.</span>
-                {nombreVisible(j)}
-              </span>
-              <span className="font-mono font-semibold">{j.eloAtlantida}</span>
-            </li>
-          ))}
-        </ol>
+        {top3.length === 0 ? (
+          <p className="text-sm text-zinc-500">
+            {cargando ? "Cargando..." : "Todavía no hay jugadores cargados."}
+          </p>
+        ) : (
+          <ol className="flex flex-col gap-2">
+            {top3.map((j, i) => (
+              <li key={j.id} className="flex items-center justify-between text-sm">
+                <span>
+                  <span className="mr-2 text-zinc-500">{i + 1}.</span>
+                  {nombreVisible(j)}
+                </span>
+                <span className="font-mono font-semibold">{j.eloAtlantida}</span>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

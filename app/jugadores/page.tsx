@@ -97,7 +97,7 @@ function FideIdCelda({
 }
 
 export default function JugadoresPage() {
-  const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId, actualizarJugador } =
+  const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId, actualizarJugador, cargando } =
     useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
   const { session } = useAuth();
@@ -360,7 +360,11 @@ export default function JugadoresPage() {
             {lista.length === 0 && (
               <tr>
                 <td colSpan={9} className="px-4 py-6 text-center text-zinc-500">
-                  {busqueda ? "No hay jugadores que coincidan con la búsqueda." : "No hay jugadores todavía."}
+                  {cargando
+                    ? "Cargando jugadores..."
+                    : busqueda
+                    ? "No hay jugadores que coincidan con la búsqueda."
+                    : "No hay jugadores todavía."}
                 </td>
               </tr>
             )}

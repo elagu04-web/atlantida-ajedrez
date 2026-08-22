@@ -124,7 +124,7 @@ export default function EstadisticasPage() {
                     <td className="px-3 py-2 font-medium">{nombreDe(f.jugadorId)}</td>
                     {f.puntosPorTorneo.map((p, j) => (
                       <td key={j} className="px-3 py-2 text-center font-mono text-zinc-600">
-                        {p === null ? <span className="text-zinc-300">–</span> : p}
+                        {p === null ? <span className="text-zinc-400">–</span> : p}
                       </td>
                     ))}
                     <td className="px-3 py-2 text-center font-mono font-semibold">{f.total}</td>

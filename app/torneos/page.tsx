@@ -23,7 +23,7 @@ const formatoLabel: Record<string, string> = {
 export default function TorneosPage() {
   const router = useRouter();
   const jugadoresConStats = useJugadoresEnVivo();
-  const { torneos, crearTorneo, eliminarTorneo } = useTorneos();
+  const { torneos, crearTorneo, eliminarTorneo, cargando } = useTorneos();
   const { session } = useAuth();
   const puedeEditar = Boolean(session);
 
@@ -256,7 +256,9 @@ export default function TorneosPage() {
       <div className="flex flex-col gap-3">
         <h2 className="font-semibold">Torneos creados</h2>
         {torneos.length === 0 && (
-          <p className="text-sm text-zinc-500">Todavía no creaste ningún torneo.</p>
+          <p className="text-sm text-zinc-500">
+            {cargando ? "Cargando torneos..." : "Todavía no creaste ningún torneo."}
+          </p>
         )}
         {[...torneos].reverse().map((t) => (
           <div
