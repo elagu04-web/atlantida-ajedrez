@@ -42,6 +42,7 @@ export default function TorneoPage() {
     intercambiarJugadores,
     finalizarTorneo,
     standingsDeTorneo,
+    cargando,
   } = useTorneos();
   const { session } = useAuth();
   const puedeEditar = Boolean(session);
@@ -64,7 +65,9 @@ export default function TorneoPage() {
         <Link href="/torneos" className="text-sm text-blue-600 hover:underline">
           ← Volver a torneos
         </Link>
-        <p className="text-zinc-600">Ese torneo no existe.</p>
+        <p className="text-zinc-600">
+          {cargando ? "Cargando..." : "Ese torneo no existe."}
+        </p>
       </div>
     );
   }

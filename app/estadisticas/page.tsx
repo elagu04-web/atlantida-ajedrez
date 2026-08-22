@@ -9,7 +9,7 @@ import { agruparTorneosPorPeriodo, calcularTablaGeneral, etiquetaPeriodo } from 
 import { nombreVisible } from "@/lib/players";
 
 export default function EstadisticasPage() {
-  const { torneos } = useTorneos();
+  const { torneos, cargando } = useTorneos();
   const jugadores = useJugadoresEnVivo();
   const [modo, setModo] = useState<"mes" | "anio">("mes");
   const [periodo, setPeriodo] = useState<string | null>(null);
@@ -97,7 +97,9 @@ export default function EstadisticasPage() {
         </div>
 
         {tabla.columnas.length === 0 ? (
-          <p className="text-sm text-zinc-500">Todavía no hay torneos con resultados cargados.</p>
+          <p className="text-sm text-zinc-500">
+            {cargando ? "Cargando..." : "Todavía no hay torneos con resultados cargados."}
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -144,7 +146,9 @@ export default function EstadisticasPage() {
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="mb-4 font-semibold">🏆 Copa de Campeones {anioActual}</h2>
         {campeones.length === 0 ? (
-          <p className="text-sm text-zinc-500">Todavía no hay torneos finalizados este año.</p>
+          <p className="text-sm text-zinc-500">
+            {cargando ? "Cargando..." : "Todavía no hay torneos finalizados este año."}
+          </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2">
             <div>

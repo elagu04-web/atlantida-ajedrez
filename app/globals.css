@@ -12,3 +12,9 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+:root {
+  /* Le decimos al navegador que no intente oscurecer nada por su cuenta
+     (scrollbars, inputs, date pickers) aunque el sistema esté en modo oscuro. */
+  color-scheme: light;
+}

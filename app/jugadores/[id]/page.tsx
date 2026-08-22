@@ -28,7 +28,7 @@ export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
-  const { actualizarFoto } = useJugadores();
+  const { actualizarFoto, cargando } = useJugadores();
   const { session } = useAuth();
   const puedeEditar = Boolean(session);
   const inputFotoRef = useRef<HTMLInputElement>(null);
@@ -134,7 +134,9 @@ export default function JugadorPage() {
         <Link href="/jugadores" className="text-sm text-blue-600 hover:underline">
           ← Volver a jugadores
         </Link>
-        <p className="text-zinc-600">Ese jugador no existe (o fue eliminado).</p>
+        <p className="text-zinc-600">
+          {cargando ? "Cargando..." : "Ese jugador no existe (o fue eliminado)."}
+        </p>
       </div>
     );
   }
