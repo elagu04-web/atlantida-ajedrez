@@ -45,6 +45,7 @@ function TransmitirContenido() {
   const negrasRef = useRef("");
 
   const pickupsRef = useRef(0);
+  const ultimoVolcadoRef = useRef<boolean[] | null>(null);
   const desincronizadoRef = useRef(false);
   const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
     null
@@ -259,8 +260,22 @@ function TransmitirContenido() {
     const tablero = chessRef.current.board();
     if (ocupacionCoincide(tablero, ocupado)) {
       desincronizadoRef.current = false;
+      ultimoVolcadoRef.current = ocupado;
       return;
     }
+
+    // Colchón liviano: si el tablero cambió, esperamos a ver la MISMA foto
+    // dos veces seguidas antes de intentar resolverla. Sin esto, mientras
+    // se está comiendo una pieza (acomodando la comida, la propia pieza,
+    // etc.) puede llegar una foto a mitad de camino justo cuando el
+    // contador de "manos vacías" ya volvió a cero, y esa foto intermedia no
+    // corresponde a ninguna jugada real todavía. Es solo 1 repetición (no
+    // las 3 de antes) para no volver a atrasar el reconocimiento de
+    // jugadas rápidas normales.
+    const igualQueAntes =
+      ultimoVolcadoRef.current !== null && ultimoVolcadoRef.current.every((v, i) => v === ocupado[i]);
+    ultimoVolcadoRef.current = ocupado;
+    if (!igualQueAntes) return;
 
     // Ojo: en algún momento hubo acá una búsqueda que probaba combinar
     // varias jugadas seguidas para explicar fotos atrasadas. Se sacó a
@@ -328,6 +343,7 @@ function TransmitirContenido() {
       return;
     }
     pickupsRef.current = 0;
+    ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
     setUltimaPromocion(null);
     // Si la partida ya se había dado por terminada, deshacer una jugada la
@@ -346,6 +362,7 @@ function TransmitirContenido() {
   function aplicarPosicionCorregida(fen: string) {
     chessRef.current.load(fen);
     pickupsRef.current = 0;
+    ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
     setUltimaPromocion(null);
     setEditandoPosicion(false);
@@ -391,6 +408,7 @@ function TransmitirContenido() {
     setResultadoState(null);
     setPgn(null);
     pickupsRef.current = 0;
+    ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
     chessRef.current = new Chess();
     actualizarDesdeChess();
