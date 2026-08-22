@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900">
+      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 font-sans">
         <AuthProvider>
           <header className="border-b border-zinc-200 bg-white">
             <HeaderNav />
