@@ -248,37 +248,6 @@ function TransmitirContenido() {
     return distintas;
   }
 
-  const PROFUNDIDAD_MAXIMA_BUSQUEDA = 3;
-
-  /**
-   * Busca, desde la posición dada, una secuencia de exactamente `restante`
-   * jugadas legales cuyo resultado final coincida con `ocupado`. Prioriza
-   * coronar a Dama cuando hay varias piezas de coronación posibles (todas
-   * pisan las mismas casillas, así que la ocupación no las distingue).
-   */
-  function buscarSecuenciaExacta(
-    chess: Chess,
-    ocupado: boolean[],
-    restante: number
-  ): { san: string; promotion?: string }[] | null {
-    if (restante === 0) {
-      return ocupacionCoincide(chess.board(), ocupado) ? [] : null;
-    }
-    const candidatos = chess.moves({ verbose: true }).slice().sort((a, b) => {
-      if (a.promotion === b.promotion) return 0;
-      if (a.promotion === "q") return -1;
-      if (b.promotion === "q") return 1;
-      return 0;
-    });
-    for (const c of candidatos) {
-      const prueba = new Chess(chess.fen());
-      prueba.move(c.san);
-      const resto = buscarSecuenciaExacta(prueba, ocupado, restante - 1);
-      if (resto !== null) return [c, ...resto];
-    }
-    return null;
-  }
-
   function manejarVolcado(ocupado: boolean[]) {
     // Si hay una pieza en el aire (levantada, todavía sin apoyar en ningún
     // lado), una captura en curso se ve idéntica a una captura ya terminada
@@ -293,26 +262,32 @@ function TransmitirContenido() {
       return;
     }
 
-    // Probamos primero con una sola jugada (el caso normal). Si el tablero
-    // físico ya venía de varias jugadas seguidas muy rápidas y esta foto
-    // llegó tarde, subimos de a poco la cantidad de jugadas encadenadas que
-    // probamos, sin esperar a que el tablero se quede quieto — así cada
-    // jugada se reconoce apenas se completa, en vez de acumularse.
-    for (let profundidad = 1; profundidad <= PROFUNDIDAD_MAXIMA_BUSQUEDA; profundidad++) {
-      const secuencia = buscarSecuenciaExacta(new Chess(chessRef.current.fen()), ocupado, profundidad);
-      if (!secuencia) continue;
+    // Ojo: en algún momento hubo acá una búsqueda que probaba combinar
+    // varias jugadas seguidas para explicar fotos atrasadas. Se sacó a
+    // propósito — cualquier jugada de "ida y vuelta" (mover una pieza y
+    // devolverla) no cambia el tablero, así que ese tipo de búsqueda
+    // termina inventando jugadas que nunca pasaron con tal de encontrar
+    // ALGUNA combinación que encaje. Mejor avisar que no se sabe qué pasó
+    // y dejar corregir a mano, que inventar una historia falsa.
+    const candidatos = chessRef.current.moves({ verbose: true }).slice().sort((a, b) => {
+      if (a.promotion === b.promotion) return 0;
+      if (a.promotion === "q") return -1;
+      if (b.promotion === "q") return 1;
+      return 0;
+    });
+    const coincidencia = candidatos.find((c) => {
+      const prueba = new Chess(chessRef.current.fen());
+      prueba.move(c.san);
+      return ocupacionCoincide(prueba.board(), ocupado);
+    });
 
-      const jugadas = secuencia.map((c) => chessRef.current.move(c.san));
-      const ultima = jugadas[jugadas.length - 1];
-      agregarLog(
-        jugadas.length === 1
-          ? `♟ Jugada detectada: ${ultima.san}`
-          : `♟ ${jugadas.length} jugadas rápidas detectadas: ${jugadas.map((m) => m.san).join(", ")}`
-      );
+    if (coincidencia) {
+      const mov = chessRef.current.move(coincidencia.san);
+      agregarLog(`♟ Jugada detectada: ${mov.san}`);
       actualizarDesdeChess();
       if (transmitiendoRef.current) publicarEstado(true);
-      if (ultima.promotion) {
-        setUltimaPromocion({ origen: ultima.from, destino: ultima.to });
+      if (mov.promotion) {
+        setUltimaPromocion({ origen: mov.from, destino: mov.to });
         agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
       } else {
         setUltimaPromocion(null);
@@ -325,7 +300,7 @@ function TransmitirContenido() {
       desincronizadoRef.current = true;
       const distintas = casillasQueNoCoinciden(tablero, ocupado);
       agregarLog(
-        `⚠ El tablero físico no coincide con ninguna jugada (hasta ${PROFUNDIDAD_MAXIMA_BUSQUEDA} seguidas) desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
+        `⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
       );
     }
   }
