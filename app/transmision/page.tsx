@@ -120,62 +120,51 @@ export default function TransmisionPage() {
         </div>
       ) : (
         <>
-          {estado.camaraActiva ? (
-            <div className="relative overflow-hidden rounded-lg bg-black">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+          <div className="relative overflow-hidden rounded-lg bg-black">
+            {estado.camaraActiva ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 key={fotoTick}
                 src={`${urlCamaraTablero.publicUrl}?t=${fotoTick}`}
                 alt="Cámara apuntando al tablero real"
                 className="mx-auto max-h-[560px] w-full object-contain"
               />
-              <div className="absolute left-1/2 top-3 w-60 -translate-x-1/2 rounded-lg bg-zinc-950/90 p-2.5 shadow-xl backdrop-blur-sm sm:w-64">
-                {ultimaJugada && (
-                  <div className="mb-1.5 flex items-center justify-between border-b border-zinc-700 pb-1.5 text-[11px] font-medium text-zinc-300">
-                    <span>Última jugada</span>
-                    <span className="font-mono text-white">
-                      {numeroUltimaJugada}. {ultimaJugada}
-                    </span>
-                  </div>
-                )}
-                <JugadorFila
-                  oscuro
-                  foto={estado.negrasFoto}
-                  nombre={estado.negras || "Negras"}
-                  elo={estado.negrasElo}
-                  icono="♚"
-                />
-                <div className="my-1.5">
-                  <TableroMini fen={estado.fen} />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src="/imagenes/club-fondo.jpg"
+                alt="Club de ajedrez Atlántida"
+                className="mx-auto max-h-[560px] w-full object-cover opacity-70"
+              />
+            )}
+            <div className="absolute left-1/2 top-3 w-60 -translate-x-1/2 rounded-lg bg-zinc-950/90 p-2.5 shadow-xl backdrop-blur-sm sm:w-64">
+              {ultimaJugada && (
+                <div className="mb-1.5 flex items-center justify-between border-b border-zinc-700 pb-1.5 text-[11px] font-medium text-zinc-300">
+                  <span>Última jugada</span>
+                  <span className="font-mono text-white">
+                    {numeroUltimaJugada}. {ultimaJugada}
+                  </span>
                 </div>
-                <JugadorFila
-                  oscuro
-                  foto={estado.blancasFoto}
-                  nombre={estado.blancas || "Blancas"}
-                  elo={estado.blancasElo}
-                  icono="♔"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-zinc-200 bg-white p-4">
+              )}
               <JugadorFila
+                oscuro
                 foto={estado.negrasFoto}
                 nombre={estado.negras || "Negras"}
                 elo={estado.negrasElo}
                 icono="♚"
               />
-              <div className="my-2">
+              <div className="my-1.5">
                 <TableroMini fen={estado.fen} />
               </div>
               <JugadorFila
+                oscuro
                 foto={estado.blancasFoto}
                 nombre={estado.blancas || "Blancas"}
                 elo={estado.blancasElo}
                 icono="♔"
               />
             </div>
-          )}
+          </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="rounded-lg border border-zinc-200 bg-white p-4">
