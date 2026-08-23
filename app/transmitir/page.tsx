@@ -194,7 +194,12 @@ function TransmitirContenido() {
 
   async function publicarEstado(activa: boolean, resultadoFinal?: ResultadoPartida, pgnFinal?: string) {
     if (!transmisionId) return;
-    await supabase
+    // camara_activa NO va acá a propósito: se guarda aparte (ver
+    // onCambiaActiva de CamaraTablero más abajo). Si algún día esa columna
+    // no existiera todavía en la base, no queremos que eso tumbe TODA esta
+    // actualización (que es la que prende/apaga la transmisión y guarda la
+    // partida) — mejor que solo falle lo de la cámara, no todo lo demás.
+    const { error } = await supabase
       .from("transmision")
       .update({
         activa,
@@ -209,12 +214,14 @@ function TransmitirContenido() {
         torneo_id: torneoIdRef.current,
         ronda_numero: rondaNumeroRef.current,
         emparejamiento_numero: empNumeroRef.current,
-        camara_activa: camaraActivaRef.current,
         resultado: resultadoFinal ?? null,
         pgn: pgnFinal ?? null,
         actualizado_en: new Date().toISOString(),
       })
       .eq("id", transmisionId);
+    if (error) {
+      agregarLog(`❌ No se pudo guardar el estado de la transmisión: ${error.message}`);
+    }
   }
 
   function manejarLevantada(casilla: string) {
@@ -684,10 +691,18 @@ function TransmitirContenido() {
 
       <CamaraTablero
         ref={camaraRef}
-        onCambiaActiva={(activa) => {
+        onCambiaActiva={async (activa) => {
           camaraActivaRef.current = activa;
           if (transmisionId) {
-            supabase.from("transmision").update({ camara_activa: activa }).eq("id", transmisionId);
+            const { error } = await supabase
+              .from("transmision")
+              .update({ camara_activa: activa })
+              .eq("id", transmisionId);
+            if (error) {
+              agregarLog(
+                `❌ No se pudo guardar el estado de la cámara (¿falta correr el SQL de configuración?): ${error.message}`
+              );
+            }
           }
         }}
       />
