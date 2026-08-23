@@ -91,7 +91,7 @@ export default function ColegioTorneosPage() {
     <div className="flex flex-col gap-6">
       <div>
         <Link href="/colegio" className="text-sm text-blue-600 hover:underline">
-          ← Volver a Colegio
+          ← Volver a Colegio Pinares
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">Torneos del colegio</h1>
       </div>

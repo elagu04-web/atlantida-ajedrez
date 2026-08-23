@@ -21,7 +21,7 @@ export default function ColegioPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Colegio</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Colegio Pinares</h1>
         <p className="mt-2 text-zinc-600">
           Torneos y alumnos de la escuela — completamente separado del club Atlántida.
         </p>
