@@ -30,23 +30,35 @@ function JugadorFila({
   nombre,
   elo,
   icono,
+  oscuro = false,
 }: {
   foto: string | null;
   nombre: string;
   elo: number | null;
   icono: string;
+  oscuro?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2 text-sm font-medium">
+    <div className={`flex items-center gap-2 text-sm font-medium ${oscuro ? "text-white" : ""}`}>
       {foto ? (
         /* eslint-disable-next-line @next/next/no-img-element */
-        <img src={foto} alt={nombre} className="h-8 w-8 rounded-full border border-zinc-200 object-cover" />
+        <img
+          src={foto}
+          alt={nombre}
+          className={`h-8 w-8 rounded-full border object-cover ${
+            oscuro ? "border-zinc-600" : "border-zinc-200"
+          }`}
+        />
       ) : (
         <span className="text-lg">{icono}</span>
       )}
       <span>
         {nombre}
-        {elo != null && <span className="ml-1 font-mono text-xs text-zinc-500">{elo}</span>}
+        {elo != null && (
+          <span className={`ml-1 font-mono text-xs ${oscuro ? "text-zinc-400" : "text-zinc-500"}`}>
+            {elo}
+          </span>
+        )}
       </span>
     </div>
   );
@@ -90,6 +102,9 @@ export default function TransmisionPage() {
     };
   }, []);
 
+  const ultimaJugada = estado?.jugadas.length ? estado.jugadas[estado.jugadas.length - 1] : null;
+  const numeroUltimaJugada = estado?.jugadas.length ? Math.ceil(estado.jugadas.length / 2) : null;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -105,71 +120,100 @@ export default function TransmisionPage() {
         </div>
       ) : (
         <>
-          {estado.camaraActiva && (
-            <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-900">
+          {estado.camaraActiva ? (
+            <div className="relative overflow-hidden rounded-lg bg-black">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 key={fotoTick}
                 src={`${urlCamaraTablero.publicUrl}?t=${fotoTick}`}
                 alt="Cámara apuntando al tablero real"
-                className="max-h-[420px] w-full object-contain"
+                className="mx-auto max-h-[560px] w-full object-contain"
+              />
+              <div className="absolute left-1/2 top-3 w-60 -translate-x-1/2 rounded-lg bg-zinc-950/90 p-2.5 shadow-xl backdrop-blur-sm sm:w-64">
+                {ultimaJugada && (
+                  <div className="mb-1.5 flex items-center justify-between border-b border-zinc-700 pb-1.5 text-[11px] font-medium text-zinc-300">
+                    <span>Última jugada</span>
+                    <span className="font-mono text-white">
+                      {numeroUltimaJugada}. {ultimaJugada}
+                    </span>
+                  </div>
+                )}
+                <JugadorFila
+                  oscuro
+                  foto={estado.negrasFoto}
+                  nombre={estado.negras || "Negras"}
+                  elo={estado.negrasElo}
+                  icono="♚"
+                />
+                <div className="my-1.5">
+                  <TableroMini fen={estado.fen} />
+                </div>
+                <JugadorFila
+                  oscuro
+                  foto={estado.blancasFoto}
+                  nombre={estado.blancas || "Blancas"}
+                  elo={estado.blancasElo}
+                  icono="♔"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-zinc-200 bg-white p-4">
+              <JugadorFila
+                foto={estado.negrasFoto}
+                nombre={estado.negras || "Negras"}
+                elo={estado.negrasElo}
+                icono="♚"
+              />
+              <div className="my-2">
+                <TableroMini fen={estado.fen} />
+              </div>
+              <JugadorFila
+                foto={estado.blancasFoto}
+                nombre={estado.blancas || "Blancas"}
+                elo={estado.blancasElo}
+                icono="♔"
               />
             </div>
           )}
+
           <div className="grid gap-6 sm:grid-cols-2">
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <JugadorFila
-              foto={estado.negrasFoto}
-              nombre={estado.negras || "Negras"}
-              elo={estado.negrasElo}
-              icono="♚"
-            />
-            <div className="my-2">
-              <TableroMini fen={estado.fen} />
-            </div>
-            <JugadorFila
-              foto={estado.blancasFoto}
-              nombre={estado.blancas || "Blancas"}
-              elo={estado.blancasElo}
-              icono="♔"
-            />
-            <div className="mt-3">
+            <div className="rounded-lg border border-zinc-200 bg-white p-4">
               <AnalisisMotor fen={estado.fen} />
+              {estado.resultado && (
+                <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 px-3 py-2">
+                  <span className="text-sm font-semibold text-green-800">
+                    🏁 Partida terminada: {estado.resultado}
+                  </span>
+                  {estado.pgn && (
+                    <a
+                      href={`data:application/x-chess-pgn;charset=utf-8,${encodeURIComponent(estado.pgn)}`}
+                      download={`${(estado.blancas || "blancas")}_vs_${(estado.negras || "negras")}.pgn`}
+                      className="text-xs font-medium text-blue-700 hover:underline"
+                    >
+                      Descargar .pgn
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
-            {estado.resultado && (
-              <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 px-3 py-2">
-                <span className="text-sm font-semibold text-green-800">
-                  🏁 Partida terminada: {estado.resultado}
-                </span>
-                {estado.pgn && (
-                  <a
-                    href={`data:application/x-chess-pgn;charset=utf-8,${encodeURIComponent(estado.pgn)}`}
-                    download={`${(estado.blancas || "blancas")}_vs_${(estado.negras || "negras")}.pgn`}
-                    className="text-xs font-medium text-blue-700 hover:underline"
-                  >
-                    Descargar .pgn
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
-            <h2 className="mb-3 font-semibold">Jugadas</h2>
-            {estado.jugadas.length === 0 ? (
-              <p className="text-sm text-zinc-500">Todavía no se jugó ninguna jugada.</p>
-            ) : (
-              <ol className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
-                {estado.jugadas.map((j, i) => (
-                  <li key={i} className="font-mono">
-                    {i % 2 === 0 && (
-                      <span className="mr-1 text-zinc-500">{Math.floor(i / 2) + 1}.</span>
-                    )}
-                    {j}
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
+            <div className="rounded-lg border border-zinc-200 bg-white p-4">
+              <h2 className="mb-3 font-semibold">Jugadas</h2>
+              {estado.jugadas.length === 0 ? (
+                <p className="text-sm text-zinc-500">Todavía no se jugó ninguna jugada.</p>
+              ) : (
+                <ol className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
+                  {estado.jugadas.map((j, i) => (
+                    <li key={i} className="font-mono">
+                      {i % 2 === 0 && (
+                        <span className="mr-1 text-zinc-500">{Math.floor(i / 2) + 1}.</span>
+                      )}
+                      {j}
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
           </div>
         </>
       )}
