@@ -18,6 +18,7 @@ export type Jugador = {
   fotoUrl: string | null;
   eloAtlantida: number;
   partidas: Partida[];
+  lichessUsuario?: string | null;
 };
 
 export function nombreVisible(j: { nombre: string; apodo: string | null }): string {

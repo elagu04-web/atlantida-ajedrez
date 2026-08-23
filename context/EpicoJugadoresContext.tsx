@@ -11,6 +11,7 @@ type FilaAlumno = {
   fide_id: string | null;
   foto_url: string | null;
   elo_inicial: number;
+  lichess_usuario: string | null;
 };
 
 type EpicoJugadoresContextType = {
@@ -19,6 +20,7 @@ type EpicoJugadoresContextType = {
   agregarJugador: (nombre: string, eloInicial: number, apodo?: string) => Promise<string>;
   eliminarJugador: (id: string) => Promise<void>;
   actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<void>;
+  actualizarLichess: (id: string, usuario: string) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
 };
 
@@ -33,6 +35,7 @@ function filaAJugador(fila: FilaAlumno): Jugador {
     fotoUrl: fila.foto_url,
     eloAtlantida: fila.elo_inicial,
     partidas: [],
+    lichessUsuario: fila.lichess_usuario ?? null,
   };
 }
 
@@ -83,13 +86,29 @@ export function EpicoJugadoresProvider({ children }: { children: ReactNode }) {
       .eq("id", id);
   }
 
+  async function actualizarLichess(id: string, usuario: string) {
+    const usuarioLimpio = usuario.trim() || null;
+    setJugadores((actuales) =>
+      actuales.map((j) => (j.id === id ? { ...j, lichessUsuario: usuarioLimpio } : j))
+    );
+    await supabase.from("epico_jugadores").update({ lichess_usuario: usuarioLimpio }).eq("id", id);
+  }
+
   function obtenerJugador(id: string) {
     return jugadores.find((j) => j.id === id);
   }
 
   return (
     <EpicoJugadoresContext.Provider
-      value={{ jugadores, cargando, agregarJugador, eliminarJugador, actualizarJugador, obtenerJugador }}
+      value={{
+        jugadores,
+        cargando,
+        agregarJugador,
+        eliminarJugador,
+        actualizarJugador,
+        actualizarLichess,
+        obtenerJugador,
+      }}
     >
       {children}
     </EpicoJugadoresContext.Provider>

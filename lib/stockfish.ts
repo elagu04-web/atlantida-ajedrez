@@ -7,6 +7,7 @@ export type AnalisisPosicion = {
   evaluacionCentipawns: number | null; // desde el punto de vista de blancas
   mateEn: number | null; // positivo: mate a favor de blancas
   mejorJugada: string | null; // en notación UCI, ej "e2e4"
+  variantePrincipal: string[] | null; // la línea completa que veía el motor, en UCI
   profundidad: number;
 };
 
@@ -19,6 +20,7 @@ export class MotorAjedrez {
     evaluacionCentipawns: null,
     mateEn: null,
     mejorJugada: null,
+    variantePrincipal: null,
     profundidad: 0,
   };
 
@@ -43,7 +45,7 @@ export class MotorAjedrez {
       const profundidadMatch = linea.match(/\bdepth (\d+)/);
       const cpMatch = linea.match(/score cp (-?\d+)/);
       const mateMatch = linea.match(/score mate (-?\d+)/);
-      const pvMatch = linea.match(/\bpv (\S+)/);
+      const pvMatch = linea.match(/\bpv (.+)/);
       if (profundidadMatch) this.parcial.profundidad = Number(profundidadMatch[1]);
       // El motor siempre da el puntaje desde el punto de vista de quien mueve ahora.
       const signo = this.turnoActual === "w" ? 1 : -1;
@@ -54,7 +56,11 @@ export class MotorAjedrez {
         this.parcial.mateEn = Number(mateMatch[1]) * signo;
         this.parcial.evaluacionCentipawns = null;
       }
-      if (pvMatch) this.parcial.mejorJugada = pvMatch[1];
+      if (pvMatch) {
+        const jugadas = pvMatch[1].trim().split(/\s+/);
+        this.parcial.mejorJugada = jugadas[0];
+        this.parcial.variantePrincipal = jugadas;
+      }
       this.onActualizar({ ...this.parcial });
     }
     if (linea.startsWith("bestmove")) {
@@ -67,7 +73,13 @@ export class MotorAjedrez {
   async analizar(fen: string, turno: "w" | "b", tiempoMs = 800) {
     await this.listo;
     this.turnoActual = turno;
-    this.parcial = { evaluacionCentipawns: null, mateEn: null, mejorJugada: null, profundidad: 0 };
+    this.parcial = {
+      evaluacionCentipawns: null,
+      mateEn: null,
+      mejorJugada: null,
+      variantePrincipal: null,
+      profundidad: 0,
+    };
     this.worker.postMessage("stop");
     this.worker.postMessage(`position fen ${fen}`);
     this.worker.postMessage(`go movetime ${tiempoMs}`);

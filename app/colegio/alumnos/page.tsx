@@ -8,9 +8,33 @@ import { useColegioJugadoresEnVivo } from "@/context/useColegioJugadoresEnVivo";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO, type JugadorEnVivo } from "@/lib/elo";
 
+function LichessCelda({
+  jugadorId,
+  usuarioActual,
+  onGuardar,
+}: {
+  jugadorId: string;
+  usuarioActual: string | null | undefined;
+  onGuardar: (id: string, usuario: string) => void;
+}) {
+  const [valor, setValor] = useState(usuarioActual ?? "");
+  return (
+    <input
+      type="text"
+      value={valor}
+      onChange={(e) => setValor(e.target.value)}
+      onBlur={() => {
+        if (valor.trim() !== (usuarioActual ?? "")) onGuardar(jugadorId, valor);
+      }}
+      placeholder="usuario Lichess..."
+      className="w-32 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 hover:border-zinc-200 focus:border-zinc-300 focus:bg-white focus:outline-none"
+    />
+  );
+}
+
 export default function ColegioAlumnosPage() {
   const { session } = useAuth();
-  const { agregarJugador, eliminarJugador, actualizarJugador } = useColegioJugadores();
+  const { agregarJugador, eliminarJugador, actualizarJugador, actualizarLichess } = useColegioJugadores();
   const alumnos = useColegioJugadoresEnVivo();
 
   const [nombre, setNombre] = useState("");
@@ -108,6 +132,7 @@ export default function ColegioAlumnosPage() {
               <th className="px-4 py-3 font-medium">Nombre</th>
               <th className="px-4 py-3 font-medium">Elo</th>
               <th className="px-4 py-3 font-medium">Partidas</th>
+              <th className="px-4 py-3 font-medium">Lichess</th>
               <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
@@ -134,6 +159,7 @@ export default function ColegioAlumnosPage() {
                     />
                   </td>
                   <td className="px-4 py-3 text-zinc-500">{j.jugadas}</td>
+                  <td className="px-4 py-3 text-zinc-400">—</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <button
                       onClick={guardarEdicion}
@@ -155,6 +181,17 @@ export default function ColegioAlumnosPage() {
                   <td className="px-4 py-3 font-medium">{nombreVisible(j)}</td>
                   <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
                   <td className="px-4 py-3">{j.jugadas}</td>
+                  <td className="px-4 py-3">
+                    <LichessCelda jugadorId={j.id} usuarioActual={j.lichessUsuario} onGuardar={actualizarLichess} />
+                    {j.lichessUsuario && (
+                      <Link
+                        href={`/entrenamiento?usuario=${encodeURIComponent(j.lichessUsuario)}`}
+                        className="ml-1 text-xs text-blue-600 hover:underline"
+                      >
+                        Analizar
+                      </Link>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <button
                       onClick={() => empezarEdicion(j)}
@@ -174,7 +211,7 @@ export default function ColegioAlumnosPage() {
             )}
             {lista.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-zinc-500">
                   Todavía no hay alumnos cargados.
                 </td>
               </tr>

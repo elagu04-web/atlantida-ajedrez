@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { MotorAjedrez, type AnalisisPosicion } from "@/lib/stockfish";
 import { TableroMini } from "@/components/TableroMini";
@@ -35,9 +36,38 @@ function etiquetaSeveridad(perdida: number): string | null {
   return null;
 }
 
+function DetalleJugada({ jugada }: { jugada: JugadaAnalizada }) {
+  return (
+    <>
+      {jugada.llevaAMate && (
+        <div className="text-sm text-red-700">☠ Esta jugada lleva a un jaque mate forzado</div>
+      )}
+      {jugada.varianteSan && (
+        <div className="text-sm text-zinc-600">
+          Mejor era: <span className="font-mono font-medium">{jugada.varianteSan.join(" ")}</span>
+        </div>
+      )}
+      {jugada.piezaColgada && (
+        <div className="text-sm text-red-600">
+          ⚠ Quedó {jugada.piezaColgada.nombrePieza} colgada en {jugada.piezaColgada.casilla}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function EntrenamientoPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-zinc-500">Cargando...</p>}>
+      <EntrenamientoContenido />
+    </Suspense>
+  );
+}
+
+function EntrenamientoContenido() {
   const { session } = useAuth();
-  const [usuario, setUsuario] = useState("");
+  const parametros = useSearchParams();
+  const [usuario, setUsuario] = useState(() => parametros.get("usuario") ?? "");
   const [buscando, setBuscando] = useState(false);
   const [errorBusqueda, setErrorBusqueda] = useState<string | null>(null);
   const [partidas, setPartidas] = useState<PartidaLichess[]>([]);
@@ -62,6 +92,7 @@ export default function EntrenamientoPage() {
     evaluacionCentipawns: null,
     mateEn: null,
     mejorJugada: null,
+    variantePrincipal: null,
     profundidad: 0,
   });
 
@@ -72,6 +103,12 @@ export default function EntrenamientoPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const usuarioUrl = parametros.get("usuario");
+    if (usuarioUrl) buscarPartidas(usuarioUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!session) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
@@ -80,15 +117,14 @@ export default function EntrenamientoPage() {
     );
   }
 
-  async function handleBuscar(e: React.FormEvent) {
-    e.preventDefault();
-    if (!usuario.trim()) return;
+  async function buscarPartidas(usuarioBuscado: string) {
+    if (!usuarioBuscado.trim()) return;
     setBuscando(true);
     setErrorBusqueda(null);
     setResultado(null);
     setPartidas([]);
     try {
-      const lista = await obtenerPartidasLichess(usuario, 10);
+      const lista = await obtenerPartidasLichess(usuarioBuscado, 10);
       setPartidas(lista);
       if (lista.length === 0) {
         setErrorBusqueda("Ese usuario no tiene partidas recientes en Lichess.");
@@ -97,6 +133,11 @@ export default function EntrenamientoPage() {
       setErrorBusqueda(err instanceof Error ? err.message : "Error buscando las partidas.");
     }
     setBuscando(false);
+  }
+
+  function handleBuscar(e: React.FormEvent) {
+    e.preventDefault();
+    buscarPartidas(usuario);
   }
 
   async function handleAnalizar(partida: PartidaLichess) {
@@ -209,6 +250,7 @@ export default function EntrenamientoPage() {
                 <span className="font-medium">{p.negras}</span>{" "}
                 <span className="font-mono text-xs text-zinc-500">{p.resultado}</span>
                 {p.fecha && <span className="ml-2 text-xs text-zinc-500">{p.fecha}</span>}
+                <span className="ml-2 text-xs text-zinc-500">· {p.apertura}</span>
               </span>
               <button
                 onClick={() => handleAnalizar(p)}
@@ -243,11 +285,7 @@ export default function EntrenamientoPage() {
                 <div className="text-sm text-red-600">
                   -{resultado.peorJugadaBlancas.perdidaCentipeones} centipeones
                 </div>
-                {resultado.peorJugadaBlancas.mejorJugadaSan && (
-                  <div className="text-sm text-zinc-600">
-                    Mejor era: <span className="font-mono font-medium">{resultado.peorJugadaBlancas.mejorJugadaSan}</span>
-                  </div>
-                )}
+                <DetalleJugada jugada={resultado.peorJugadaBlancas} />
                 <div className="mt-2 max-w-[220px]">
                   <TableroMini fen={resultado.peorJugadaBlancas.fenAntes} />
                 </div>
@@ -262,11 +300,7 @@ export default function EntrenamientoPage() {
                 <div className="text-sm text-red-600">
                   -{resultado.peorJugadaNegras.perdidaCentipeones} centipeones
                 </div>
-                {resultado.peorJugadaNegras.mejorJugadaSan && (
-                  <div className="text-sm text-zinc-600">
-                    Mejor era: <span className="font-mono font-medium">{resultado.peorJugadaNegras.mejorJugadaSan}</span>
-                  </div>
-                )}
+                <DetalleJugada jugada={resultado.peorJugadaNegras} />
                 <div className="mt-2 max-w-[220px]">
                   <TableroMini fen={resultado.peorJugadaNegras.fenAntes} />
                 </div>
@@ -285,9 +319,9 @@ export default function EntrenamientoPage() {
                   {par.map((j, k) => {
                     const etiqueta = etiquetaSeveridad(j.perdidaCentipeones);
                     const titulo = etiqueta
-                      ? `${etiqueta} (-${j.perdidaCentipeones})${
-                          j.mejorJugadaSan ? ` — mejor era ${j.mejorJugadaSan}` : ""
-                        }`
+                      ? `${etiqueta} (-${j.perdidaCentipeones})${j.llevaAMate ? " — lleva a mate forzado" : ""}${
+                          j.varianteSan ? ` — mejor era ${j.varianteSan.join(" ")}` : ""
+                        }${j.piezaColgada ? ` — quedó ${j.piezaColgada.nombrePieza} colgada en ${j.piezaColgada.casilla}` : ""}`
                       : undefined;
                     return (
                       <span
@@ -329,7 +363,7 @@ export default function EntrenamientoPage() {
             <h2 className="font-semibold text-blue-900">
               Patrones de {usuario} en {patrones.partidas.length} partidas
             </h2>
-            <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-5">
               <div>
                 <div className="text-xs text-blue-700">Pérdida promedio por jugada</div>
                 <div className="text-lg font-semibold text-blue-900">{patrones.perdidaPromedioGeneral} cp</div>
@@ -345,6 +379,10 @@ export default function EntrenamientoPage() {
               <div>
                 <div className="text-xs text-blue-700">Imprecisiones</div>
                 <div className="text-lg font-semibold text-amber-700">{patrones.totalImprecisiones}</div>
+              </div>
+              <div>
+                <div className="text-xs text-blue-700">Piezas colgadas</div>
+                <div className="text-lg font-semibold text-red-700">{patrones.totalPiezasColgadas}</div>
               </div>
             </div>
             {patrones.faseMasDebil && (
@@ -373,6 +411,7 @@ export default function EntrenamientoPage() {
                 <tr>
                   <th className="px-4 py-2 font-medium">Fecha</th>
                   <th className="px-4 py-2 font-medium">Rival</th>
+                  <th className="px-4 py-2 font-medium">Apertura</th>
                   <th className="px-4 py-2 font-medium">Color</th>
                   <th className="px-4 py-2 font-medium">Resultado</th>
                   <th className="px-4 py-2 font-medium">Pérdida promedio</th>
@@ -384,6 +423,7 @@ export default function EntrenamientoPage() {
                   <tr key={i} className="border-b border-zinc-100 last:border-0">
                     <td className="px-4 py-2 text-zinc-500">{p.fecha}</td>
                     <td className="px-4 py-2">{p.rival}</td>
+                    <td className="px-4 py-2 text-xs text-zinc-500">{p.apertura}</td>
                     <td className="px-4 py-2">{p.color === "w" ? "Blancas" : "Negras"}</td>
                     <td className="px-4 py-2 font-mono text-xs">{p.resultado}</td>
                     <td className="px-4 py-2 font-mono">{p.perdidaPromedio} cp</td>
@@ -397,6 +437,38 @@ export default function EntrenamientoPage() {
               </tbody>
             </table>
           </div>
+
+          {patrones.aperturas.length > 0 && (
+            <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+              <h2 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 font-semibold">
+                Rendimiento por apertura
+              </h2>
+              <table className="w-full text-sm">
+                <thead className="border-b border-zinc-200 text-left text-zinc-500">
+                  <tr>
+                    <th className="px-4 py-2 font-medium">Apertura</th>
+                    <th className="px-4 py-2 font-medium">Partidas</th>
+                    <th className="px-4 py-2 font-medium">V</th>
+                    <th className="px-4 py-2 font-medium">E</th>
+                    <th className="px-4 py-2 font-medium">D</th>
+                    <th className="px-4 py-2 font-medium">Pérdida promedio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patrones.aperturas.map((a, i) => (
+                    <tr key={i} className="border-b border-zinc-100 last:border-0">
+                      <td className="px-4 py-2">{a.apertura}</td>
+                      <td className="px-4 py-2 text-center">{a.partidas}</td>
+                      <td className="px-4 py-2 text-center text-green-700">{a.victorias}</td>
+                      <td className="px-4 py-2 text-center text-zinc-500">{a.empates}</td>
+                      <td className="px-4 py-2 text-center text-red-700">{a.derrotas}</td>
+                      <td className="px-4 py-2 font-mono">{a.perdidaPromedio} cp</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
