@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useJugadores } from "@/context/JugadoresContext";
 import { nombreVisible } from "@/lib/players";
+import { TextoBrillante } from "@/components/TextoBrillante";
 
 export default function Home() {
   const jugadoresEnVivo = useJugadoresEnVivo();
@@ -14,7 +15,7 @@ export default function Home() {
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Bienvenido al sistema de torneos de Atlántida
+          Bienvenido al sistema de torneos de <TextoBrillante>Atlántida</TextoBrillante>
         </h1>
         <p className="mt-2 text-zinc-600">
           Ranking, torneos y estadísticas del club de ajedrez Atlántida.

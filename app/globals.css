@@ -18,3 +18,40 @@
      (scrollbars, inputs, date pickers) aunque el sistema esté en modo oscuro. */
   color-scheme: light;
 }
+
+/* Prueba de interfaz: un brillo sutil que recorre el texto (inspirado en
+   "Shiny Text" de reactbits.dev, pero hecho a mano en CSS puro para no
+   sumar una dependencia nueva — motion/framer-motion — por un solo
+   efecto decorativo). */
+@keyframes brillo-texto {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.texto-brillante {
+  background-image: linear-gradient(
+    100deg,
+    #18181b 40%,
+    #a1a1aa 48%,
+    #ffffff 50%,
+    #a1a1aa 52%,
+    #18181b 60%
+  );
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: brillo-texto 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .texto-brillante {
+    animation: none;
+    background: none;
+    color: inherit;
+  }
+}
