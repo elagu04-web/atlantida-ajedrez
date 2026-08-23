@@ -5,6 +5,8 @@ import { JugadoresProvider } from "@/context/JugadoresContext";
 import { TorneosProvider } from "@/context/TorneosContext";
 import { ActividadProvider } from "@/context/ActividadContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { ColegioJugadoresProvider } from "@/context/ColegioJugadoresContext";
+import { ColegioTorneosProvider } from "@/context/ColegioTorneosContext";
 import { HeaderNav } from "@/components/HeaderNav";
 
 const geistSans = Geist({
@@ -36,7 +38,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
             <ActividadProvider>
               <JugadoresProvider>
-                <TorneosProvider>{children}</TorneosProvider>
+                <TorneosProvider>
+                  <ColegioJugadoresProvider>
+                    <ColegioTorneosProvider>{children}</ColegioTorneosProvider>
+                  </ColegioJugadoresProvider>
+                </TorneosProvider>
               </JugadoresProvider>
             </ActividadProvider>
           </main>

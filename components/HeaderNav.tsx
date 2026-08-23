@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthWidget } from "@/components/AuthWidget";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { href: "/jugadores", label: "Jugadores" },
@@ -16,6 +17,8 @@ const navLinks = [
 export function HeaderNav() {
   const [abierto, setAbierto] = useState(false);
   const pathname = usePathname();
+  const { session } = useAuth();
+  const links = session ? [...navLinks, { href: "/colegio", label: "Colegio" }] : navLinks;
 
   return (
     <div className="mx-auto max-w-5xl px-6">
@@ -25,7 +28,7 @@ export function HeaderNav() {
         </Link>
 
         <nav className="hidden items-center gap-5 text-sm font-medium text-zinc-600 md:flex">
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -54,7 +57,7 @@ export function HeaderNav() {
 
       {abierto && (
         <nav className="flex flex-col gap-1 border-t border-zinc-200 pb-4 pt-2 text-sm font-medium text-zinc-600 md:hidden">
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
