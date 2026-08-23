@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { conectarPegasus, casillaDesdeIndice } from "@/lib/pegasus";
 import { TableroMini } from "@/components/TableroMini";
 import { EditorPosicion } from "@/components/EditorPosicion";
+import { CamaraTablero, type CamaraTableroHandle } from "@/components/CamaraTablero";
 import type { ResultadoPartida } from "@/lib/tournaments";
 
 export default function TransmitirPage() {
@@ -72,6 +73,8 @@ function TransmitirContenido() {
   const negrasEloRef = useRef<number | null>(null);
   const [resultado, setResultadoState] = useState<ResultadoPartida | null>(null);
   const [pgn, setPgn] = useState<string | null>(null);
+  const camaraRef = useRef<CamaraTableroHandle>(null);
+  const camaraActivaRef = useRef(false);
 
   useEffect(() => {
     // Si salimos de la página (navegando, recargando o cerrando la pestaña)
@@ -206,6 +209,7 @@ function TransmitirContenido() {
         torneo_id: torneoIdRef.current,
         ronda_numero: rondaNumeroRef.current,
         emparejamiento_numero: empNumeroRef.current,
+        camara_activa: camaraActivaRef.current,
         resultado: resultadoFinal ?? null,
         pgn: pgnFinal ?? null,
         actualizado_en: new Date().toISOString(),
@@ -321,6 +325,7 @@ function TransmitirContenido() {
       agregarLog(
         `⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
       );
+      camaraRef.current?.capturarDesajuste();
     }
   }
 
@@ -676,6 +681,16 @@ function TransmitirContenido() {
           </button>
         )}
       </div>
+
+      <CamaraTablero
+        ref={camaraRef}
+        onCambiaActiva={(activa) => {
+          camaraActivaRef.current = activa;
+          if (transmisionId) {
+            supabase.from("transmision").update({ camara_activa: activa }).eq("id", transmisionId);
+          }
+        }}
+      />
 
       {editandoPosicion && (
         <EditorPosicion

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { TableroMini } from "@/components/TableroMini";
 import { AnalisisMotor } from "@/components/AnalisisMotor";
+import { CAMARA_BUCKET, CAMARA_ARCHIVO_EN_VIVO } from "@/lib/camaraTablero";
 
 type EstadoTransmision = {
   activa: boolean;
@@ -17,7 +18,12 @@ type EstadoTransmision = {
   negrasElo: number | null;
   resultado: string | null;
   pgn: string | null;
+  camaraActiva: boolean;
 };
+
+const { data: urlCamaraTablero } = supabase.storage
+  .from(CAMARA_BUCKET)
+  .getPublicUrl(CAMARA_ARCHIVO_EN_VIVO);
 
 function JugadorFila({
   foto,
@@ -49,6 +55,7 @@ function JugadorFila({
 export default function TransmisionPage() {
   const [estado, setEstado] = useState<EstadoTransmision | null>(null);
   const [cargando, setCargando] = useState(true);
+  const [fotoTick, setFotoTick] = useState(0);
 
   useEffect(() => {
     let activo = true;
@@ -68,7 +75,9 @@ export default function TransmisionPage() {
           negrasElo: data.negras_elo,
           resultado: data.resultado,
           pgn: data.pgn,
+          camaraActiva: Boolean(data.camara_activa),
         });
+        setFotoTick((t) => t + 1);
         setCargando(false);
       }
     }
@@ -95,7 +104,19 @@ export default function TransmisionPage() {
           <p className="text-zinc-500">No hay ninguna transmisión en este momento.</p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2">
+        <>
+          {estado.camaraActiva && (
+            <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-900">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                key={fotoTick}
+                src={`${urlCamaraTablero.publicUrl}?t=${fotoTick}`}
+                alt="Cámara apuntando al tablero real"
+                className="max-h-[420px] w-full object-contain"
+              />
+            </div>
+          )}
+          <div className="grid gap-6 sm:grid-cols-2">
           <div className="rounded-lg border border-zinc-200 bg-white p-4">
             <JugadorFila
               foto={estado.negrasFoto}
@@ -149,7 +170,8 @@ export default function TransmisionPage() {
               </ol>
             )}
           </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
