@@ -7,14 +7,18 @@ import { MotorAjedrez, type AnalisisPosicion } from "@/lib/stockfish";
 import { TableroMini } from "@/components/TableroMini";
 import {
   obtenerPartidasLichess,
+  obtenerPartidasChessCom,
   analizarPartida,
   analizarPatrones,
-  type PartidaLichess,
+  type PartidaExterna,
+  type FuentePartida,
   type ResultadoAnalisis,
   type JugadaAnalizada,
   type AnalisisPatrones,
   type FaseJuego,
 } from "@/lib/analisisPartidas";
+
+const ETIQUETA_FUENTE: Record<FuentePartida, string> = { lichess: "Lichess", chesscom: "Chess.com" };
 
 const ETIQUETA_FASE: Record<FaseJuego, string> = {
   apertura: "Apertura",
@@ -68,9 +72,10 @@ function EntrenamientoContenido() {
   const { session } = useAuth();
   const parametros = useSearchParams();
   const [usuario, setUsuario] = useState(() => parametros.get("usuario") ?? "");
+  const [fuente, setFuente] = useState<FuentePartida>("lichess");
   const [buscando, setBuscando] = useState(false);
   const [errorBusqueda, setErrorBusqueda] = useState<string | null>(null);
-  const [partidas, setPartidas] = useState<PartidaLichess[]>([]);
+  const [partidas, setPartidas] = useState<PartidaExterna[]>([]);
 
   const [analizando, setAnalizando] = useState(false);
   const [progreso, setProgreso] = useState<{ hechas: number; total: number } | null>(null);
@@ -124,10 +129,13 @@ function EntrenamientoContenido() {
     setResultado(null);
     setPartidas([]);
     try {
-      const lista = await obtenerPartidasLichess(usuarioBuscado, 10);
+      const lista =
+        fuente === "lichess"
+          ? await obtenerPartidasLichess(usuarioBuscado, 10)
+          : await obtenerPartidasChessCom(usuarioBuscado, 10);
       setPartidas(lista);
       if (lista.length === 0) {
-        setErrorBusqueda("Ese usuario no tiene partidas recientes en Lichess.");
+        setErrorBusqueda(`Ese usuario no tiene partidas recientes en ${ETIQUETA_FUENTE[fuente]}.`);
       }
     } catch (err) {
       setErrorBusqueda(err instanceof Error ? err.message : "Error buscando las partidas.");
@@ -140,7 +148,7 @@ function EntrenamientoContenido() {
     buscarPartidas(usuario);
   }
 
-  async function handleAnalizar(partida: PartidaLichess) {
+  async function handleAnalizar(partida: PartidaExterna) {
     setAnalizando(true);
     setErrorAnalisis(null);
     setResultado(null);
@@ -198,22 +206,38 @@ function EntrenamientoContenido() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Entrenamiento</h1>
         <p className="mt-1 text-zinc-600">
-          Traé las últimas partidas de un jugador en Lichess y analizalas con el motor para
-          encontrar sus errores más grandes — herramienta solo para vos, no la ven los alumnos.
+          Traé las últimas partidas de un jugador en Lichess o Chess.com y analizalas con el motor
+          para encontrar sus errores más grandes — herramienta solo para vos, no la ven los alumnos.
         </p>
       </div>
 
       <form onSubmit={handleBuscar} className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4">
         <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-zinc-600">Plataforma</span>
+          <div className="flex gap-3 py-2">
+            {(Object.keys(ETIQUETA_FUENTE) as FuentePartida[]).map((f) => (
+              <label key={f} className="flex items-center gap-1 text-sm">
+                <input
+                  type="radio"
+                  name="fuente"
+                  checked={fuente === f}
+                  onChange={() => setFuente(f)}
+                />
+                {ETIQUETA_FUENTE[f]}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
           <label htmlFor="usuario" className="text-xs font-medium text-zinc-600">
-            Usuario de Lichess
+            Usuario de {ETIQUETA_FUENTE[fuente]}
           </label>
           <input
             id="usuario"
             type="text"
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
-            placeholder="Ej: DrNykterstein"
+            placeholder={fuente === "lichess" ? "Ej: DrNykterstein" : "Ej: Hikaru"}
             className="w-56 rounded-md border border-zinc-300 px-3 py-2 text-sm"
           />
         </div>
@@ -251,6 +275,9 @@ function EntrenamientoContenido() {
                 <span className="font-mono text-xs text-zinc-500">{p.resultado}</span>
                 {p.fecha && <span className="ml-2 text-xs text-zinc-500">{p.fecha}</span>}
                 <span className="ml-2 text-xs text-zinc-500">· {p.apertura}</span>
+                <span className="ml-2 rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500">
+                  {ETIQUETA_FUENTE[p.fuente]}
+                </span>
               </span>
               <button
                 onClick={() => handleAnalizar(p)}

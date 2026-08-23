@@ -1,6 +1,8 @@
 import { Chess, type Square } from "chess.js";
 
-export type PartidaLichess = {
+export type FuentePartida = "lichess" | "chesscom";
+
+export type PartidaExterna = {
   pgn: string;
   blancas: string;
   negras: string;
@@ -9,10 +11,18 @@ export type PartidaLichess = {
   control: string;
   apertura: string;
   eco: string;
+  fuente: FuentePartida;
 };
 
+/** @deprecated usar PartidaExterna — se deja el nombre viejo para no romper importaciones. */
+export type PartidaLichess = PartidaExterna;
+
+function campoPgn(pgn: string, nombre: string): string {
+  return pgn.match(new RegExp(`\\[${nombre} "([^"]*)"\\]`))?.[1] ?? "";
+}
+
 /** Trae las últimas partidas de un usuario de Lichess (API pública, sin login). */
-export async function obtenerPartidasLichess(usuario: string, cantidad = 10): Promise<PartidaLichess[]> {
+export async function obtenerPartidasLichess(usuario: string, cantidad = 10): Promise<PartidaExterna[]> {
   const url = `https://lichess.org/api/games/user/${encodeURIComponent(
     usuario.trim()
   )}?max=${cantidad}&moves=true&opening=true&clocks=false&evals=false`;
@@ -29,19 +39,65 @@ export async function obtenerPartidasLichess(usuario: string, cantidad = 10): Pr
     .map((p) => p.trim())
     .filter(Boolean);
 
-  return bloques.map((pgn) => {
-    const campo = (nombre: string) => pgn.match(new RegExp(`\\[${nombre} "([^"]*)"\\]`))?.[1] ?? "";
-    return {
-      pgn,
-      blancas: campo("White") || "?",
-      negras: campo("Black") || "?",
-      resultado: campo("Result") || "*",
-      fecha: campo("UTCDate"),
-      control: campo("TimeControl"),
-      apertura: campo("Opening") || "Apertura desconocida",
-      eco: campo("ECO"),
-    };
-  });
+  return bloques.map((pgn) => ({
+    pgn,
+    blancas: campoPgn(pgn, "White") || "?",
+    negras: campoPgn(pgn, "Black") || "?",
+    resultado: campoPgn(pgn, "Result") || "*",
+    fecha: campoPgn(pgn, "UTCDate"),
+    control: campoPgn(pgn, "TimeControl"),
+    apertura: campoPgn(pgn, "Opening") || "Apertura desconocida",
+    eco: campoPgn(pgn, "ECO"),
+    fuente: "lichess" as const,
+  }));
+}
+
+type ArchivoChessCom = { games: { pgn?: string; time_control?: string }[] };
+
+/**
+ * Trae las últimas partidas de un usuario de Chess.com (API pública, sin
+ * login). A diferencia de Lichess, acá hay que primero pedir la lista de
+ * "archivos" mensuales y después ir bajando los meses más recientes hasta
+ * juntar suficientes partidas.
+ */
+export async function obtenerPartidasChessCom(usuario: string, cantidad = 10): Promise<PartidaExterna[]> {
+  const usuarioLimpio = usuario.trim().toLowerCase();
+  const resArchivos = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(usuarioLimpio)}/games/archives`);
+  if (resArchivos.status === 404) {
+    throw new Error(`No existe ningún usuario "${usuario}" en Chess.com.`);
+  }
+  if (!resArchivos.ok) {
+    throw new Error(`No se pudo consultar Chess.com (código ${resArchivos.status}).`);
+  }
+  const { archives } = (await resArchivos.json()) as { archives: string[] };
+  if (!archives || archives.length === 0) return [];
+
+  const partidas: PartidaExterna[] = [];
+  for (let i = archives.length - 1; i >= 0 && partidas.length < cantidad; i--) {
+    const resMes = await fetch(archives[i]);
+    if (!resMes.ok) continue;
+    const { games } = (await resMes.json()) as ArchivoChessCom;
+    for (let j = games.length - 1; j >= 0 && partidas.length < cantidad; j--) {
+      const pgn = games[j].pgn;
+      if (!pgn) continue;
+      const ecoUrl = campoPgn(pgn, "ECOUrl");
+      const aperturaDeUrl = ecoUrl
+        ? decodeURIComponent(ecoUrl.split("/").filter(Boolean).pop() ?? "").replace(/-/g, " ")
+        : "";
+      partidas.push({
+        pgn,
+        blancas: campoPgn(pgn, "White") || "?",
+        negras: campoPgn(pgn, "Black") || "?",
+        resultado: campoPgn(pgn, "Result") || "*",
+        fecha: campoPgn(pgn, "UTCDate") || campoPgn(pgn, "Date"),
+        control: games[j].time_control ?? "",
+        apertura: aperturaDeUrl || campoPgn(pgn, "ECO") ? aperturaDeUrl || `ECO ${campoPgn(pgn, "ECO")}` : "Apertura desconocida",
+        eco: campoPgn(pgn, "ECO"),
+        fuente: "chesscom" as const,
+      });
+    }
+  }
+  return partidas;
 }
 
 const VALOR_PIEZA: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
@@ -270,7 +326,7 @@ export type AnalisisPatrones = {
  * entrenar, no solo qué pasó en una partida puntual.
  */
 export async function analizarPatrones(
-  partidas: PartidaLichess[],
+  partidas: PartidaExterna[],
   usuario: string,
   motor: { analizar: (fen: string, turno: "w" | "b", tiempoMs?: number) => Promise<void> },
   onProgreso: (partidaActual: number, totalPartidas: number, jugadaActual: number, totalJugadas: number) => void,
