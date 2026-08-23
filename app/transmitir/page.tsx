@@ -47,6 +47,7 @@ function TransmitirContenido() {
   const pickupsRef = useRef(0);
   const ultimoVolcadoRef = useRef<boolean[] | null>(null);
   const desincronizadoRef = useRef(false);
+  const [casillasSospechosas, setCasillasSospechosas] = useState<string[] | null>(null);
   const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
     null
   );
@@ -260,6 +261,7 @@ function TransmitirContenido() {
     const tablero = chessRef.current.board();
     if (ocupacionCoincide(tablero, ocupado)) {
       desincronizadoRef.current = false;
+      setCasillasSospechosas(null);
       ultimoVolcadoRef.current = ocupado;
       return;
     }
@@ -308,12 +310,14 @@ function TransmitirContenido() {
         setUltimaPromocion(null);
       }
       desincronizadoRef.current = false;
+      setCasillasSospechosas(null);
       return;
     }
 
+    const distintas = casillasQueNoCoinciden(tablero, ocupado);
+    setCasillasSospechosas(distintas);
     if (!desincronizadoRef.current) {
       desincronizadoRef.current = true;
-      const distintas = casillasQueNoCoinciden(tablero, ocupado);
       agregarLog(
         `⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
       );
@@ -345,6 +349,7 @@ function TransmitirContenido() {
     pickupsRef.current = 0;
     ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
+    setCasillasSospechosas(null);
     setUltimaPromocion(null);
     // Si la partida ya se había dado por terminada, deshacer una jugada la
     // vuelve a dejar en curso — el resultado y el PGN viejos ya no valen.
@@ -364,6 +369,7 @@ function TransmitirContenido() {
     pickupsRef.current = 0;
     ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
+    setCasillasSospechosas(null);
     setUltimaPromocion(null);
     setEditandoPosicion(false);
     agregarLog("🛠 Se aplicó una posición corregida a mano. La lista de jugadas arranca de nuevo desde acá.");
@@ -410,6 +416,7 @@ function TransmitirContenido() {
     pickupsRef.current = 0;
     ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
+    setCasillasSospechosas(null);
     chessRef.current = new Chess();
     actualizarDesdeChess();
     agregarLog("Se reinició la partida (el tablero físico sigue conectado).");
@@ -609,6 +616,21 @@ function TransmitirContenido() {
         </div>
       )}
 
+      {casillasSospechosas && !editandoPosicion && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-300 bg-red-50 p-4">
+          <p className="text-sm text-red-800">
+            ⚠ El tablero físico no coincide con ninguna jugada legal. Casilleros distintos:{" "}
+            <span className="font-mono font-semibold">{casillasSospechosas.join(", ")}</span>.
+          </p>
+          <button
+            onClick={() => setEditandoPosicion(true)}
+            className="shrink-0 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            🛠 Corregir posición ahora
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={handleConectar}
@@ -658,6 +680,7 @@ function TransmitirContenido() {
       {editandoPosicion && (
         <EditorPosicion
           chess={chessRef.current}
+          casillasSospechosas={casillasSospechosas}
           onAplicar={aplicarPosicionCorregida}
           onCancelar={() => setEditandoPosicion(false)}
         />

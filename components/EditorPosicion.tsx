@@ -37,13 +37,16 @@ function construirFen(tablero: CasillaTablero[][], turno: Color): string {
 
 export function EditorPosicion({
   chess,
+  casillasSospechosas,
   onAplicar,
   onCancelar,
 }: {
   chess: Chess;
+  casillasSospechosas?: string[] | null;
   onAplicar: (fen: string) => void;
   onCancelar: () => void;
 }) {
+  const sospechosas = new Set(casillasSospechosas ?? []);
   const [tablero, setTablero] = useState<CasillaTablero[][]>(() =>
     chess.board().map((fila) => [...fila])
   );
@@ -124,6 +127,12 @@ export function EditorPosicion({
           tablero. Esto reinicia la lista de jugadas desde acá (chess.js no permite insertar un
           cambio manual en el medio del historial).
         </p>
+        {sospechosas.size > 0 && (
+          <p className="mt-1 text-sm font-medium text-red-700">
+            Casillas marcadas en rojo abajo: son las que no coinciden con lo que se esperaba —
+            probablemente ahí está el problema.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -177,6 +186,8 @@ export function EditorPosicion({
           fila.map((casilla, j) => {
             const oscura = (i + j) % 2 === 1;
             const levantada = piezaLevantada?.fila === i && piezaLevantada?.columna === j;
+            const nombreCasilla = `${ARCHIVOS[j]}${8 - i}`;
+            const sospechosa = sospechosas.has(nombreCasilla);
             return (
               <button
                 key={`${i}-${j}`}
@@ -192,11 +203,13 @@ export function EditorPosicion({
                 className={`flex h-10 w-10 items-center justify-center text-2xl ${
                   levantada
                     ? "bg-amber-300 ring-2 ring-inset ring-amber-600"
+                    : sospechosa
+                    ? "bg-red-200 ring-2 ring-inset ring-red-500"
                     : oscura
                     ? "bg-zinc-300 hover:bg-amber-200"
                     : "bg-zinc-50 hover:bg-amber-100"
                 }`}
-                title={`${ARCHIVOS[j]}${8 - i}`}
+                title={`${nombreCasilla}${sospechosa ? " — no coincide" : ""}`}
               >
                 {casilla ? PIEZA_UNICODE[`${casilla.color}${casilla.type}`] : ""}
               </button>
