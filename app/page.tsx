@@ -6,6 +6,12 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { nombreVisible } from "@/lib/players";
 import { TextoBrillante } from "@/components/TextoBrillante";
 
+function manejarSpotlight(ev: React.MouseEvent<HTMLElement>) {
+  const rect = ev.currentTarget.getBoundingClientRect();
+  ev.currentTarget.style.setProperty("--x", `${ev.clientX - rect.left}px`);
+  ev.currentTarget.style.setProperty("--y", `${ev.clientY - rect.top}px`);
+}
+
 export default function Home() {
   const jugadoresEnVivo = useJugadoresEnVivo();
   const { cargando } = useJugadores();
@@ -13,13 +19,16 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Bienvenido al sistema de torneos de <TextoBrillante>Atlántida</TextoBrillante>
-        </h1>
-        <p className="mt-2 text-zinc-600">
-          Ranking, torneos y estadísticas del club de ajedrez Atlántida.
-        </p>
+      <div className="relative overflow-hidden rounded-lg p-2">
+        <div className="fondo-aurora" />
+        <div className="relative z-10">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Bienvenido al sistema de torneos de <TextoBrillante>Atlántida</TextoBrillante>
+          </h1>
+          <p className="mt-2 text-zinc-600">
+            Ranking, torneos y estadísticas del club de ajedrez Atlántida.
+          </p>
+        </div>
       </div>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
@@ -57,7 +66,8 @@ export default function Home() {
           <Link
             key={card.href}
             href={card.href}
-            className="rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
+            onMouseMove={manejarSpotlight}
+            className="tarjeta-spotlight rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
           >
             <div className="font-semibold">{card.label}</div>
             <div className="mt-1 text-sm text-zinc-500">{card.desc}</div>

@@ -55,3 +55,94 @@
     color: inherit;
   }
 }
+
+/* Prueba de interfaz: fondo tipo "Aurora" (manchas de color grandes y
+   difuminadas, moviéndose lento) inspirado en el fondo "Aurora" de
+   reactbits.dev — esa versión usa WebGL (ogl); acá se hace con dos
+   gradientes radiales animados y blur, mucho más liviano para un par de
+   manchas quietas de fondo. Va detrás de contenido con overflow-hidden. */
+@keyframes aurora-flotar-1 {
+  0%,
+  100% {
+    transform: translate(-10%, -10%) scale(1);
+  }
+  50% {
+    transform: translate(10%, 5%) scale(1.15);
+  }
+}
+
+@keyframes aurora-flotar-2 {
+  0%,
+  100% {
+    transform: translate(10%, 5%) scale(1);
+  }
+  50% {
+    transform: translate(-8%, -8%) scale(1.1);
+  }
+}
+
+.fondo-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fondo-aurora::before,
+.fondo-aurora::after {
+  content: "";
+  position: absolute;
+  width: 60%;
+  height: 140%;
+  top: -20%;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.35;
+}
+
+.fondo-aurora::before {
+  left: -10%;
+  background: radial-gradient(circle, #60a5fa, transparent 70%);
+  animation: aurora-flotar-1 14s ease-in-out infinite;
+}
+
+.fondo-aurora::after {
+  right: -10%;
+  background: radial-gradient(circle, #a78bfa, transparent 70%);
+  animation: aurora-flotar-2 16s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo-aurora::before,
+  .fondo-aurora::after {
+    animation: none;
+  }
+}
+
+/* Prueba de interfaz: tarjeta con un brillo tipo "spotlight" que sigue al
+   mouse (efecto muy usado en reactbits.dev / sitios de producto). Las
+   coordenadas las actualiza un pequeño onMouseMove en React vía las
+   variables --x/--y; el CSS solo dibuja el gradiente en esa posición. */
+.tarjeta-spotlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.tarjeta-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    220px circle at var(--x, 50%) var(--y, 50%),
+    rgba(96, 165, 250, 0.15),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.tarjeta-spotlight:hover::after {
+  opacity: 1;
+}
