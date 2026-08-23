@@ -7,6 +7,8 @@ import { ActividadProvider } from "@/context/ActividadContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ColegioJugadoresProvider } from "@/context/ColegioJugadoresContext";
 import { ColegioTorneosProvider } from "@/context/ColegioTorneosContext";
+import { EpicoJugadoresProvider } from "@/context/EpicoJugadoresContext";
+import { EpicoTorneosProvider } from "@/context/EpicoTorneosContext";
 import { HeaderNav } from "@/components/HeaderNav";
 
 const geistSans = Geist({
@@ -40,7 +42,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <JugadoresProvider>
                 <TorneosProvider>
                   <ColegioJugadoresProvider>
-                    <ColegioTorneosProvider>{children}</ColegioTorneosProvider>
+                    <ColegioTorneosProvider>
+                      <EpicoJugadoresProvider>
+                        <EpicoTorneosProvider>{children}</EpicoTorneosProvider>
+                      </EpicoJugadoresProvider>
+                    </ColegioTorneosProvider>
                   </ColegioJugadoresProvider>
                 </TorneosProvider>
               </JugadoresProvider>

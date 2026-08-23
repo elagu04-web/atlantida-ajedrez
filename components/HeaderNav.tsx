@@ -18,7 +18,13 @@ export function HeaderNav() {
   const [abierto, setAbierto] = useState(false);
   const pathname = usePathname();
   const { session } = useAuth();
-  const links = session ? [...navLinks, { href: "/colegio", label: "Colegio Pinares" }] : navLinks;
+  const links = session
+    ? [
+        ...navLinks,
+        { href: "/colegio", label: "Colegio Pinares" },
+        { href: "/epico", label: "Épico" },
+      ]
+    : navLinks;
 
   return (
     <div className="mx-auto max-w-5xl px-6">
