@@ -7,10 +7,19 @@ import { TableroMini } from "@/components/TableroMini";
 import {
   obtenerPartidasLichess,
   analizarPartida,
+  analizarPatrones,
   type PartidaLichess,
   type ResultadoAnalisis,
   type JugadaAnalizada,
+  type AnalisisPatrones,
+  type FaseJuego,
 } from "@/lib/analisisPartidas";
+
+const ETIQUETA_FASE: Record<FaseJuego, string> = {
+  apertura: "Apertura",
+  "medio juego": "Medio juego",
+  final: "Final",
+};
 
 function claseSeveridad(perdida: number): string {
   if (perdida >= 300) return "bg-red-100 text-red-800";
@@ -37,6 +46,16 @@ export default function EntrenamientoPage() {
   const [progreso, setProgreso] = useState<{ hechas: number; total: number } | null>(null);
   const [resultado, setResultado] = useState<ResultadoAnalisis | null>(null);
   const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
+
+  const [analizandoPatrones, setAnalizandoPatrones] = useState(false);
+  const [progresoPatrones, setProgresoPatrones] = useState<{
+    partida: number;
+    totalPartidas: number;
+    jugada: number;
+    totalJugadas: number;
+  } | null>(null);
+  const [patrones, setPatrones] = useState<AnalisisPatrones | null>(null);
+  const [errorPatrones, setErrorPatrones] = useState<string | null>(null);
 
   const motorRef = useRef<MotorAjedrez | null>(null);
   const ultimaEvalRef = useRef<AnalisisPosicion>({
@@ -105,6 +124,34 @@ export default function EntrenamientoPage() {
     setProgreso(null);
   }
 
+  async function handleAnalizarPatrones() {
+    if (partidas.length === 0) return;
+    setAnalizandoPatrones(true);
+    setErrorPatrones(null);
+    setPatrones(null);
+    setProgresoPatrones(null);
+    try {
+      if (!motorRef.current) {
+        motorRef.current = new MotorAjedrez((a) => {
+          ultimaEvalRef.current = a;
+        });
+      }
+      const res = await analizarPatrones(
+        partidas,
+        usuario,
+        motorRef.current,
+        (partida, totalPartidas, jugada, totalJugadas) =>
+          setProgresoPatrones({ partida, totalPartidas, jugada, totalJugadas }),
+        () => ultimaEvalRef.current
+      );
+      setPatrones(res);
+    } catch (err) {
+      setErrorPatrones(err instanceof Error ? err.message : "Error analizando los patrones.");
+    }
+    setAnalizandoPatrones(false);
+    setProgresoPatrones(null);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -142,7 +189,16 @@ export default function EntrenamientoPage() {
 
       {partidas.length > 0 && (
         <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4">
-          <h2 className="font-semibold">Últimas partidas</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-semibold">Últimas partidas</h2>
+            <button
+              onClick={handleAnalizarPatrones}
+              disabled={analizandoPatrones || analizando}
+              className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              📊 Analizar patrones de las {partidas.length} partidas
+            </button>
+          </div>
           {partidas.map((p, i) => (
             <div
               key={i}
@@ -251,6 +307,95 @@ export default function EntrenamientoPage() {
               <span className="rounded bg-orange-100 px-1 text-orange-800">Error</span>
               <span className="rounded bg-red-100 px-1 text-red-800">Error grave</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {analizandoPatrones && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+          Analizando patrones
+          {progresoPatrones
+            ? ` — partida ${progresoPatrones.partida} de ${progresoPatrones.totalPartidas} (jugada ${progresoPatrones.jugada} de ${progresoPatrones.totalJugadas})...`
+            : "..."}{" "}
+          Esto puede tardar varios minutos.
+        </div>
+      )}
+
+      {errorPatrones && <p className="text-sm text-red-600">{errorPatrones}</p>}
+
+      {patrones && (
+        <div className="flex flex-col gap-4">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-5">
+            <h2 className="font-semibold text-blue-900">
+              Patrones de {usuario} en {patrones.partidas.length} partidas
+            </h2>
+            <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div>
+                <div className="text-xs text-blue-700">Pérdida promedio por jugada</div>
+                <div className="text-lg font-semibold text-blue-900">{patrones.perdidaPromedioGeneral} cp</div>
+              </div>
+              <div>
+                <div className="text-xs text-blue-700">Errores graves</div>
+                <div className="text-lg font-semibold text-red-700">{patrones.totalErroresGraves}</div>
+              </div>
+              <div>
+                <div className="text-xs text-blue-700">Errores</div>
+                <div className="text-lg font-semibold text-orange-700">{patrones.totalErrores}</div>
+              </div>
+              <div>
+                <div className="text-xs text-blue-700">Imprecisiones</div>
+                <div className="text-lg font-semibold text-amber-700">{patrones.totalImprecisiones}</div>
+              </div>
+            </div>
+            {patrones.faseMasDebil && (
+              <p className="mt-4 text-sm text-blue-900">
+                💡 Donde más pierde en promedio es en <strong>{ETIQUETA_FASE[patrones.faseMasDebil]}</strong> — buen
+                punto de partida para la próxima clase.
+              </p>
+            )}
+            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+              {(Object.keys(patrones.perdidaPorFase) as FaseJuego[]).map((fase) => {
+                const datos = patrones.perdidaPorFase[fase];
+                const promedio = datos.cantidad > 0 ? Math.round(datos.total / datos.cantidad) : 0;
+                return (
+                  <div key={fase} className="rounded-md bg-white p-2 text-center">
+                    <div className="text-zinc-500">{ETIQUETA_FASE[fase]}</div>
+                    <div className="font-semibold">{datos.cantidad > 0 ? `${promedio} cp` : "—"}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+            <table className="w-full text-sm">
+              <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+                <tr>
+                  <th className="px-4 py-2 font-medium">Fecha</th>
+                  <th className="px-4 py-2 font-medium">Rival</th>
+                  <th className="px-4 py-2 font-medium">Color</th>
+                  <th className="px-4 py-2 font-medium">Resultado</th>
+                  <th className="px-4 py-2 font-medium">Pérdida promedio</th>
+                  <th className="px-4 py-2 font-medium">Peor jugada</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patrones.partidas.map((p, i) => (
+                  <tr key={i} className="border-b border-zinc-100 last:border-0">
+                    <td className="px-4 py-2 text-zinc-500">{p.fecha}</td>
+                    <td className="px-4 py-2">{p.rival}</td>
+                    <td className="px-4 py-2">{p.color === "w" ? "Blancas" : "Negras"}</td>
+                    <td className="px-4 py-2 font-mono text-xs">{p.resultado}</td>
+                    <td className="px-4 py-2 font-mono">{p.perdidaPromedio} cp</td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      {p.peorJugada
+                        ? `${p.peorJugada.numero}. ${p.peorJugada.san} (-${p.peorJugada.perdidaCentipeones})`
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

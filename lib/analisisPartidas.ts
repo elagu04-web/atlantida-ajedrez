@@ -149,3 +149,123 @@ export async function analizarPartida(
     peorJugadaNegras: peor(deNegras),
   };
 }
+
+export type FaseJuego = "apertura" | "medio juego" | "final";
+
+function faseDeJugada(numeroJugada: number): FaseJuego {
+  if (numeroJugada <= 10) return "apertura";
+  if (numeroJugada <= 25) return "medio juego";
+  return "final";
+}
+
+export type ResumenPartidaJugador = {
+  rival: string;
+  color: "w" | "b";
+  resultado: string;
+  fecha: string;
+  perdidaPromedio: number;
+  peorJugada: JugadaAnalizada | null;
+};
+
+export type AnalisisPatrones = {
+  partidas: ResumenPartidaJugador[];
+  perdidaPromedioGeneral: number;
+  totalErroresGraves: number;
+  totalErrores: number;
+  totalImprecisiones: number;
+  perdidaPorFase: Record<FaseJuego, { total: number; cantidad: number }>;
+  faseMasDebil: FaseJuego | null;
+};
+
+/**
+ * Analiza varias partidas seguidas del mismo jugador (identificado por su
+ * usuario de Lichess, comparando contra blancas/negras de cada partida) y
+ * junta los resultados: cuánto pierde en promedio, cuántos errores de cada
+ * tipo comete, y en qué momento de la partida (apertura/medio juego/final)
+ * le cuesta más — para tener una idea de qué entrenar, no solo qué pasó en
+ * una partida puntual.
+ */
+export async function analizarPatrones(
+  partidas: PartidaLichess[],
+  usuario: string,
+  motor: { analizar: (fen: string, turno: "w" | "b", tiempoMs?: number) => Promise<void> },
+  onProgreso: (partidaActual: number, totalPartidas: number, jugadaActual: number, totalJugadas: number) => void,
+  ultimaEvaluacion: () => {
+    evaluacionCentipawns: number | null;
+    mateEn: number | null;
+    mejorJugada: string | null;
+  },
+  tiempoMs = 180
+): Promise<AnalisisPatrones> {
+  const usuarioNorm = usuario.trim().toLowerCase();
+  const resumenes: ResumenPartidaJugador[] = [];
+  const todasLasJugadas: JugadaAnalizada[] = [];
+
+  for (let p = 0; p < partidas.length; p++) {
+    const partida = partidas[p];
+    const esBlancas = partida.blancas.toLowerCase() === usuarioNorm;
+    const esNegras = partida.negras.toLowerCase() === usuarioNorm;
+    if (!esBlancas && !esNegras) continue;
+    const colorJugador: "w" | "b" = esBlancas ? "w" : "b";
+
+    const res = await analizarPartida(
+      partida.pgn,
+      motor,
+      (hechas, total) => onProgreso(p + 1, partidas.length, hechas, total),
+      ultimaEvaluacion,
+      tiempoMs
+    );
+
+    const jugadasJugador = res.jugadas.filter((j) => j.color === colorJugador);
+    todasLasJugadas.push(...jugadasJugador);
+    const perdidaPromedio = jugadasJugador.length
+      ? jugadasJugador.reduce((s, j) => s + j.perdidaCentipeones, 0) / jugadasJugador.length
+      : 0;
+    const peorJugada = jugadasJugador.reduce<JugadaAnalizada | null>(
+      (a, b) => (!a || b.perdidaCentipeones > a.perdidaCentipeones ? b : a),
+      null
+    );
+
+    resumenes.push({
+      rival: esBlancas ? partida.negras : partida.blancas,
+      color: colorJugador,
+      resultado: partida.resultado,
+      fecha: partida.fecha,
+      perdidaPromedio: Math.round(perdidaPromedio),
+      peorJugada,
+    });
+  }
+
+  const perdidaPorFase: Record<FaseJuego, { total: number; cantidad: number }> = {
+    apertura: { total: 0, cantidad: 0 },
+    "medio juego": { total: 0, cantidad: 0 },
+    final: { total: 0, cantidad: 0 },
+  };
+  for (const j of todasLasJugadas) {
+    const fase = faseDeJugada(j.numero);
+    perdidaPorFase[fase].total += j.perdidaCentipeones;
+    perdidaPorFase[fase].cantidad += 1;
+  }
+
+  const fases: FaseJuego[] = ["apertura", "medio juego", "final"];
+  const faseMasDebil =
+    fases
+      .filter((f) => perdidaPorFase[f].cantidad > 0)
+      .sort(
+        (a, b) =>
+          perdidaPorFase[b].total / perdidaPorFase[b].cantidad -
+          perdidaPorFase[a].total / perdidaPorFase[a].cantidad
+      )[0] ?? null;
+
+  return {
+    partidas: resumenes,
+    perdidaPromedioGeneral: todasLasJugadas.length
+      ? Math.round(todasLasJugadas.reduce((s, j) => s + j.perdidaCentipeones, 0) / todasLasJugadas.length)
+      : 0,
+    totalErroresGraves: todasLasJugadas.filter((j) => j.perdidaCentipeones >= 300).length,
+    totalErrores: todasLasJugadas.filter((j) => j.perdidaCentipeones >= 100 && j.perdidaCentipeones < 300).length,
+    totalImprecisiones: todasLasJugadas.filter((j) => j.perdidaCentipeones >= 50 && j.perdidaCentipeones < 100).length,
+    perdidaPorFase,
+    faseMasDebil,
+  };
+}
