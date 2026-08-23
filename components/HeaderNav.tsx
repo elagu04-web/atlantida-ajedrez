@@ -23,6 +23,7 @@ export function HeaderNav() {
         ...navLinks,
         { href: "/colegio", label: "Colegio Pinares" },
         { href: "/epico", label: "Épico" },
+        { href: "/entrenamiento", label: "Entrenamiento" },
       ]
     : navLinks;
 
