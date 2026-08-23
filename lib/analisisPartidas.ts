@@ -45,7 +45,24 @@ export type JugadaAnalizada = {
   color: "w" | "b";
   san: string;
   perdidaCentipeones: number;
+  fenAntes: string;
+  mejorJugadaSan: string | null;
 };
+
+function uciASan(fen: string, uci: string | null): string | null {
+  if (!uci) return null;
+  try {
+    const prueba = new Chess(fen);
+    const mov = prueba.move({
+      from: uci.slice(0, 2),
+      to: uci.slice(2, 4),
+      promotion: uci.length > 4 ? uci[4] : undefined,
+    });
+    return mov?.san ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export type ResultadoAnalisis = {
   jugadas: JugadaAnalizada[];
@@ -72,7 +89,11 @@ export async function analizarPartida(
   pgn: string,
   motor: { analizar: (fen: string, turno: "w" | "b", tiempoMs?: number) => Promise<void> },
   onProgreso: (hechas: number, total: number) => void,
-  ultimaEvaluacion: () => { evaluacionCentipawns: number | null; mateEn: number | null },
+  ultimaEvaluacion: () => {
+    evaluacionCentipawns: number | null;
+    mateEn: number | null;
+    mejorJugada: string | null;
+  },
   tiempoMs = 250
 ): Promise<ResultadoAnalisis> {
   const chess = new Chess();
@@ -86,11 +107,14 @@ export async function analizarPartida(
   posiciones.push(movimientos[movimientos.length - 1].after);
 
   const valores: number[] = [];
+  const mejoresUci: (string | null)[] = [];
   for (let i = 0; i < posiciones.length; i++) {
     const turno = posiciones[i].split(" ")[1] === "b" ? "b" : "w";
     await motor.analizar(posiciones[i], turno, tiempoMs);
     await new Promise((r) => setTimeout(r, tiempoMs + 150));
-    valores.push(valorNumerico(ultimaEvaluacion()));
+    const evaluacion = ultimaEvaluacion();
+    valores.push(valorNumerico(evaluacion));
+    mejoresUci.push(evaluacion.mejorJugada);
     onProgreso(i + 1, posiciones.length);
   }
 
@@ -98,11 +122,17 @@ export async function analizarPartida(
     const antes = valores[i];
     const despues = valores[i + 1];
     const perdida = m.color === "w" ? Math.max(0, antes - despues) : Math.max(0, despues - antes);
+    // Si el motor sugería exactamente la jugada que se hizo, no hay nada
+    // mejor que mostrar.
+    const mejorJugadaSan =
+      perdida >= 50 ? uciASan(posiciones[i], mejoresUci[i]) : null;
     return {
       numero: Math.floor(i / 2) + 1,
       color: m.color,
       san: m.san,
       perdidaCentipeones: Math.round(perdida),
+      fenAntes: posiciones[i],
+      mejorJugadaSan: mejorJugadaSan === m.san ? null : mejorJugadaSan,
     };
   });
 

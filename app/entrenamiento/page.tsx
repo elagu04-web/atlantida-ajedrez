@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { MotorAjedrez, type AnalisisPosicion } from "@/lib/stockfish";
+import { TableroMini } from "@/components/TableroMini";
 import {
   obtenerPartidasLichess,
   analizarPartida,
@@ -186,6 +187,14 @@ export default function EntrenamientoPage() {
                 <div className="text-sm text-red-600">
                   -{resultado.peorJugadaBlancas.perdidaCentipeones} centipeones
                 </div>
+                {resultado.peorJugadaBlancas.mejorJugadaSan && (
+                  <div className="text-sm text-zinc-600">
+                    Mejor era: <span className="font-mono font-medium">{resultado.peorJugadaBlancas.mejorJugadaSan}</span>
+                  </div>
+                )}
+                <div className="mt-2 max-w-[220px]">
+                  <TableroMini fen={resultado.peorJugadaBlancas.fenAntes} />
+                </div>
               </div>
             )}
             {resultado.peorJugadaNegras && resultado.peorJugadaNegras.perdidaCentipeones > 0 && (
@@ -196,6 +205,14 @@ export default function EntrenamientoPage() {
                 </div>
                 <div className="text-sm text-red-600">
                   -{resultado.peorJugadaNegras.perdidaCentipeones} centipeones
+                </div>
+                {resultado.peorJugadaNegras.mejorJugadaSan && (
+                  <div className="text-sm text-zinc-600">
+                    Mejor era: <span className="font-mono font-medium">{resultado.peorJugadaNegras.mejorJugadaSan}</span>
+                  </div>
+                )}
+                <div className="mt-2 max-w-[220px]">
+                  <TableroMini fen={resultado.peorJugadaNegras.fenAntes} />
                 </div>
               </div>
             )}
@@ -209,15 +226,23 @@ export default function EntrenamientoPage() {
               {agruparPorJugada(resultado.jugadas).map((par, i) => (
                 <div key={i} className="flex items-center gap-1 font-mono text-xs">
                   <span className="text-zinc-400">{i + 1}.</span>
-                  {par.map((j, k) => (
-                    <span
-                      key={k}
-                      title={etiquetaSeveridad(j.perdidaCentipeones) ?? undefined}
-                      className={`rounded px-1 ${claseSeveridad(j.perdidaCentipeones)}`}
-                    >
-                      {j.san}
-                    </span>
-                  ))}
+                  {par.map((j, k) => {
+                    const etiqueta = etiquetaSeveridad(j.perdidaCentipeones);
+                    const titulo = etiqueta
+                      ? `${etiqueta} (-${j.perdidaCentipeones})${
+                          j.mejorJugadaSan ? ` — mejor era ${j.mejorJugadaSan}` : ""
+                        }`
+                      : undefined;
+                    return (
+                      <span
+                        key={k}
+                        title={titulo}
+                        className={`rounded px-1 ${claseSeveridad(j.perdidaCentipeones)}`}
+                      >
+                        {j.san}
+                      </span>
+                    );
+                  })}
                 </div>
               ))}
             </div>
