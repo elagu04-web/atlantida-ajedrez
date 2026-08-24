@@ -6,17 +6,9 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
-import { ELO_MINIMO, type JugadorEnVivo } from "@/lib/elo";
+import { ELO_MINIMO, jugoRecientemente, type JugadorEnVivo } from "@/lib/elo";
 
 type Orden = "elo" | "partidas";
-
-const DIAS_ACTIVIDAD = 365;
-
-function jugoRecientemente(j: JugadorEnVivo): boolean {
-  if (!j.ultimaPartidaFecha) return false;
-  const dias = (Date.now() - new Date(j.ultimaPartidaFecha).getTime()) / (1000 * 60 * 60 * 24);
-  return dias <= DIAS_ACTIVIDAD;
-}
 
 function ApodoCelda({
   jugadorId,
@@ -165,11 +157,21 @@ export default function JugadoresPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Jugadores</h1>
-        <p className="mt-1 text-zinc-600">
-          Lista de jugadores del club con su Elo Atlántida y estadísticas.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Jugadores</h1>
+          <p className="mt-1 text-zinc-600">
+            Lista de jugadores del club con su Elo Atlántida y estadísticas.
+          </p>
+        </div>
+        {puedeEditar && (
+          <Link
+            href="/jugadores/compartir"
+            className="shrink-0 rounded-md border border-blue-300 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+          >
+            🖼️ Imagen para compartir
+          </Link>
+        )}
       </div>
 
       {puedeEditar && (

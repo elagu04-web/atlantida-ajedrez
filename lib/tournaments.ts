@@ -322,6 +322,22 @@ export function rondaCompleta(ronda: RondaTorneo): boolean {
   return ronda.emparejamientos.every((e) => e.resultado !== null);
 }
 
+/**
+ * El torneo más reciente (por orden de creación) que tiene al menos un
+ * resultado cargado y de verdad movió el Elo (no uno histórico marcado
+ * excluirDeElo) — el que la lista de jugadores usa como referencia para
+ * "cuánto subió/bajó cada uno" desde la última vez que se jugó.
+ */
+export function ultimoTorneoConResultados(torneos: Torneo[]): Torneo | null {
+  for (let i = torneos.length - 1; i >= 0; i--) {
+    const t = torneos[i];
+    if (t.excluirDeElo) continue;
+    const tieneResultados = t.rondas.some((r) => r.emparejamientos.some((e) => e.negrasId && e.resultado));
+    if (tieneResultados) return t;
+  }
+  return null;
+}
+
 export type ResultadoCampeon =
   | { tipo: "campeon"; jugadorId: string }
   | { tipo: "necesita_final"; jugadorIds: string[] }

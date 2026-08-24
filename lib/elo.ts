@@ -3,10 +3,17 @@ import { Torneo } from "./tournaments";
 
 export const K_FACTOR = 20;
 export const ELO_MINIMO = 1400;
+export const DIAS_ACTIVIDAD = 365;
 
 function nuevoElo(ratingPropio: number, ratingRival: number, resultado: number): number {
   const esperado = 1 / (1 + Math.pow(10, (ratingRival - ratingPropio) / 400));
   return Math.max(ELO_MINIMO, Math.round(ratingPropio + K_FACTOR * (resultado - esperado)));
+}
+
+export function jugoRecientemente(j: { ultimaPartidaFecha: string | null }): boolean {
+  if (!j.ultimaPartidaFecha) return false;
+  const dias = (Date.now() - new Date(j.ultimaPartidaFecha).getTime()) / (1000 * 60 * 60 * 24);
+  return dias <= DIAS_ACTIVIDAD;
 }
 
 export type JugadorEnVivo = Jugador & {
@@ -15,10 +22,12 @@ export type JugadorEnVivo = Jugador & {
   empates: number;
   derrotas: number;
   ultimaPartidaFecha: string | null;
+  eloAntesUltimoTorneo: number;
 };
 
 type PartidaOrdenada = {
   orden: number;
+  torneoIndex: number;
   torneoNombre: string;
   torneoFecha: string;
   blancasId: string;
@@ -50,6 +59,7 @@ export function calcularEloYHistorialEnVivo(
         if (!e.negrasId || !e.resultado) return;
         partidas.push({
           orden: torneoIndex * 1_000_000 + ronda.numero * 1_000 + i,
+          torneoIndex,
           torneoNombre: t.nombre,
           torneoFecha: t.creadoEn.slice(0, 10),
           blancasId: e.blancasId,
@@ -64,7 +74,22 @@ export function calcularEloYHistorialEnVivo(
 
   const nombrePorId = new Map(jugadoresBase.map((j) => [j.id, nombreVisible(j)]));
 
+  // El "último torneo" para mostrar cuánto subió/bajó cada uno es el más
+  // reciente que de verdad movió el Elo (no uno histórico marcado
+  // excluirDeElo). Se guarda una foto del Elo de cada jugador justo antes
+  // de aplicar sus resultados, para poder mostrar el antes/después.
+  const ultimoIndiceConResultados = partidas.reduce(
+    (max, p) => (!p.excluirDeElo && p.torneoIndex > max ? p.torneoIndex : max),
+    -1
+  );
+  const eloAntesDelUltimo = new Map<string, number>();
+  let snapshotTomado = false;
+
   for (const p of partidas) {
+    if (!snapshotTomado && p.torneoIndex === ultimoIndiceConResultados) {
+      for (const [id, valor] of elo) eloAntesDelUltimo.set(id, valor);
+      snapshotTomado = true;
+    }
     const eloBlancas = elo.get(p.blancasId);
     const eloNegras = elo.get(p.negrasId);
     if (eloBlancas === undefined || eloNegras === undefined) continue;
@@ -110,15 +135,17 @@ export function calcularEloYHistorialEnVivo(
         (masReciente, p) => (!masReciente || p.fecha > masReciente ? p.fecha : masReciente),
         null
       );
+      const eloFinal = elo.get(j.id) ?? j.eloAtlantida;
       return {
         ...j,
         partidas: todasLasPartidas,
-        eloAtlantida: elo.get(j.id) ?? j.eloAtlantida,
+        eloAtlantida: eloFinal,
         jugadas: todasLasPartidas.length,
         victorias,
         empates,
         derrotas,
         ultimaPartidaFecha,
+        eloAntesUltimoTorneo: eloAntesDelUltimo.get(j.id) ?? eloFinal,
       };
     })
     .sort((a, b) => b.eloAtlantida - a.eloAtlantida);
