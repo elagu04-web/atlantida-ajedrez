@@ -10,6 +10,14 @@ import { ELO_MINIMO, type JugadorEnVivo } from "@/lib/elo";
 
 type Orden = "elo" | "partidas";
 
+const DIAS_ACTIVIDAD = 365;
+
+function jugoRecientemente(j: JugadorEnVivo): boolean {
+  if (!j.ultimaPartidaFecha) return false;
+  const dias = (Date.now() - new Date(j.ultimaPartidaFecha).getTime()) / (1000 * 60 * 60 * 24);
+  return dias <= DIAS_ACTIVIDAD;
+}
+
 function ApodoCelda({
   jugadorId,
   apodoActual,
@@ -108,6 +116,7 @@ export default function JugadoresPage() {
   const [elo, setElo] = useState("1500");
   const [busqueda, setBusqueda] = useState("");
   const [orden, setOrden] = useState<Orden>("elo");
+  const [mostrarTodos, setMostrarTodos] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [editNombre, setEditNombre] = useState("");
   const [editElo, setEditElo] = useState("");
@@ -137,16 +146,22 @@ export default function JugadoresPage() {
     setElo("1500");
   }
 
+  const ocultosPorInactividad = useMemo(
+    () => jugadoresConStats.filter((j) => !jugoRecientemente(j)).length,
+    [jugadoresConStats]
+  );
+
   const lista = useMemo(() => {
+    const activos = mostrarTodos ? jugadoresConStats : jugadoresConStats.filter(jugoRecientemente);
     const filtrados = busqueda.trim()
-      ? jugadoresConStats.filter((j: JugadorEnVivo) =>
+      ? activos.filter((j: JugadorEnVivo) =>
           `${j.nombre} ${j.apodo ?? ""}`.toLowerCase().includes(busqueda.trim().toLowerCase())
         )
-      : jugadoresConStats;
+      : activos;
     return [...filtrados].sort((a, b) =>
       orden === "elo" ? b.eloAtlantida - a.eloAtlantida : b.jugadas - a.jugadas
     );
-  }, [jugadoresConStats, busqueda, orden]);
+  }, [jugadoresConStats, busqueda, orden, mostrarTodos]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -238,6 +253,24 @@ export default function JugadoresPage() {
           </button>
         </div>
       </div>
+
+      {ocultosPorInactividad > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-md bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+          <span>
+            {mostrarTodos
+              ? `Mostrando a todos, incluidos ${ocultosPorInactividad} que no jugaron en el último año.`
+              : `${ocultosPorInactividad} jugador${ocultosPorInactividad === 1 ? "" : "es"} sin partidas en el último año ${
+                  ocultosPorInactividad === 1 ? "está oculto" : "están ocultos"
+                } de esta lista.`}
+          </span>
+          <button
+            onClick={() => setMostrarTodos((v) => !v)}
+            className="shrink-0 font-medium text-blue-600 hover:underline"
+          >
+            {mostrarTodos ? "Ocultar inactivos" : "Mostrar a todos"}
+          </button>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
         <table className="w-full text-sm">
@@ -364,6 +397,8 @@ export default function JugadoresPage() {
                     ? "Cargando jugadores..."
                     : busqueda
                     ? "No hay jugadores que coincidan con la búsqueda."
+                    : !mostrarTodos && ocultosPorInactividad > 0
+                    ? "Nadie jugó en el último año — probá \"Mostrar a todos\"."
                     : "No hay jugadores todavía."}
                 </td>
               </tr>

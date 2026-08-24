@@ -14,6 +14,7 @@ export type JugadorEnVivo = Jugador & {
   victorias: number;
   empates: number;
   derrotas: number;
+  ultimaPartidaFecha: string | null;
 };
 
 type PartidaOrdenada = {
@@ -105,6 +106,10 @@ export function calcularEloYHistorialEnVivo(
       const victorias = todasLasPartidas.filter((p) => p.resultado === "victoria").length;
       const empates = todasLasPartidas.filter((p) => p.resultado === "empate").length;
       const derrotas = todasLasPartidas.filter((p) => p.resultado === "derrota").length;
+      const ultimaPartidaFecha = todasLasPartidas.reduce<string | null>(
+        (masReciente, p) => (!masReciente || p.fecha > masReciente ? p.fecha : masReciente),
+        null
+      );
       return {
         ...j,
         partidas: todasLasPartidas,
@@ -113,6 +118,7 @@ export function calcularEloYHistorialEnVivo(
         victorias,
         empates,
         derrotas,
+        ultimaPartidaFecha,
       };
     })
     .sort((a, b) => b.eloAtlantida - a.eloAtlantida);
