@@ -74,6 +74,13 @@ function TransmitirContenido() {
   // que termine en una casilla también ya ocupada. Esta lista sirve para
   // desempatar: la jugada real siempre toca físicamente su casilla destino.
   const tocadasRef = useRef<Set<string>>(new Set());
+  // Cuántas piezas propias de quien mueve están en el aire ahora mismo
+  // (igual que la extensión de referencia de chess.com: se cuenta cada vez
+  // que se levanta una pieza del color a quien le toca jugar, y se
+  // descuenta con cualquier apoyar). Mientras sea mayor a 0 no se intenta
+  // reconocer nada — recién al volver a 0 se prueba al instante, sin
+  // esperar ningún margen de quietud.
+  const enManoMoverRef = useRef(0);
   const timerQuietoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const desincronizadoRef = useRef(false);
   const intentosSinResolverRef = useRef(0);
@@ -298,6 +305,7 @@ function TransmitirContenido() {
     vaciadasRef.current.clear();
     llenadasRef.current.clear();
     tocadasRef.current.clear();
+    enManoMoverRef.current = 0;
     if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
     timerQuietoRef.current = null;
     intentosSinResolverRef.current = 0;
@@ -313,8 +321,10 @@ function TransmitirContenido() {
     // en la misma casilla (alguien la tocó y la volvió a levantar antes de
     // asentarse).
     tocadasRef.current.add(casilla);
-    if (chessRef.current.get(casilla as Square)) {
+    const pieza = chessRef.current.get(casilla as Square);
+    if (pieza) {
       vaciadasRef.current.add(casilla);
+      if (pieza.color === chessRef.current.turn()) enManoMoverRef.current++;
     } else {
       llenadasRef.current.delete(casilla);
     }
@@ -334,19 +344,29 @@ function TransmitirContenido() {
     } else {
       llenadasRef.current.add(casilla);
     }
+    enManoMoverRef.current = Math.max(0, enManoMoverRef.current - 1);
     reprogramarResolucion();
   }
 
-  /** Reinicia el reloj de "quietud" cada vez que llega un evento nuevo. */
+  /**
+   * Igual que la extensión de referencia de chess.com: mientras quede
+   * alguna pieza propia de quien mueve en el aire, no se intenta nada
+   * (una captura en curso se ve idéntica a una terminada). En cuanto la
+   * mano queda vacía se prueba al instante, sin esperar ningún margen —
+   * el margen de quietud queda como red de seguridad para cuando el
+   * primer intento no encaja (ver intentarResolver).
+   */
   function reprogramarResolucion() {
     if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
     timerQuietoRef.current = null;
     if (vaciadasRef.current.size === 0 && llenadasRef.current.size === 0) return;
-    timerQuietoRef.current = setTimeout(intentarResolver, ESPERA_QUIETUD_MS);
+    if (enManoMoverRef.current > 0) return;
+    intentarResolver();
   }
 
   function intentarResolver() {
     timerQuietoRef.current = null;
+    if (enManoMoverRef.current > 0) return;
     if (vaciadasRef.current.size === 0 && llenadasRef.current.size === 0) return;
 
     const ocupado = ocupadoDesdeSeguimiento();
