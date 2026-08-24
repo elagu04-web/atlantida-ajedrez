@@ -13,13 +13,18 @@ import { EditorPosicion } from "@/components/EditorPosicion";
 import { CamaraTablero, type CamaraTableroHandle } from "@/components/CamaraTablero";
 import type { ResultadoPartida } from "@/lib/tournaments";
 
-// Cuántas fotos seguidas del tablero (cada una ~500ms, ya estabilizada e
-// idéntica a la anterior) tienen que fallar en encajar con alguna jugada
-// legal antes de avisar que el tablero físico se desincronizó. Un valor
-// más alto le da más tiempo al sensor para asentarse después de una
-// captura "deslizada" (empujando la pieza comida en vez de levantarla)
-// sin agregar demora a una jugada normal, que igual resuelve apenas la
-// foto coincide con una jugada legal.
+// Cuánto esperar, después del último levantar/apoyar, antes de intentar
+// reconocer una jugada. No es un sondeo periódico: el reloj se reinicia
+// en cada evento nuevo, así que mientras el tablero siga cambiando (una
+// captura larga, piezas acomodándose) no se intenta nada — recién cuando
+// pasa este ratito sin ningún evento nuevo.
+const ESPERA_QUIETUD_MS = 400;
+
+// Cuántas rondas de espera de quietud pueden fallar en encajar con alguna
+// jugada legal antes de avisar que el tablero físico se desincronizó. Le
+// da margen extra a una captura "deslizada" (empujando la pieza comida en
+// vez de levantarla y apoyarla limpio), que puede dejar el seguimiento con
+// alguna casilla de más por un instante incluso después de quedar quieto.
 const INTENTOS_ANTES_DE_DESINCRONIZAR = 3;
 
 export default function TransmitirPage() {
@@ -54,8 +59,22 @@ function TransmitirContenido() {
   const blancasRef = useRef("");
   const negrasRef = useRef("");
 
-  const pickupsRef = useRef(0);
-  const ultimoVolcadoRef = useRef<boolean[] | null>(null);
+  // Seguimiento de qué casillas quedaron distintas de la posición
+  // confirmada (chessRef.current) por los eventos de levantar/apoyar
+  // recibidos desde la última jugada resuelta. Tocar una pieza y devolverla
+  // al mismo lugar se cancela solo: si una casilla vuelve a coincidir con
+  // la posición confirmada, sale de estos sets.
+  const vaciadasRef = useRef<Set<string>>(new Set());
+  const llenadasRef = useRef<Set<string>>(new Set());
+  // Superset de vaciadasRef/llenadasRef: toda casilla que tuvo al menos un
+  // evento (se cancele o no en la ocupación final). Una comida sobre una
+  // casilla que ya estaba ocupada no cambia su ocupación (ocupada antes,
+  // ocupada después, solo cambió de dueño) — así que por ocupación sola es
+  // indistinguible de cualquier otra captura legal desde el mismo origen
+  // que termine en una casilla también ya ocupada. Esta lista sirve para
+  // desempatar: la jugada real siempre toca físicamente su casilla destino.
+  const tocadasRef = useRef<Set<string>>(new Set());
+  const timerQuietoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const desincronizadoRef = useRef(false);
   const intentosSinResolverRef = useRef(0);
   const [casillasSospechosas, setCasillasSospechosas] = useState<string[] | null>(null);
@@ -97,6 +116,7 @@ function TransmitirContenido() {
     return () => {
       window.removeEventListener("beforeunload", desconectarAntesDeSalir);
       desconectarRef.current?.();
+      if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
     };
   }, []);
 
@@ -234,24 +254,6 @@ function TransmitirContenido() {
     }
   }
 
-  function manejarLevantada(casilla: string) {
-    agregarLog(`↑ se levantó una pieza de ${casilla}`);
-    // Solo contamos como "en mano" la pieza de quien mueve: esa sí se vuelve
-    // a apoyar en algún lado. Una pieza comida se levanta y se saca del
-    // tablero para siempre, nunca genera un "se apoyó" — si la contáramos
-    // igual, el contador quedaría trabado después de cada comida y no
-    // reconocería más jugadas.
-    const pieza = chessRef.current.get(casilla as Square);
-    if (pieza && pieza.color === chessRef.current.turn()) {
-      pickupsRef.current++;
-    }
-  }
-
-  function manejarApoyada(casilla: string) {
-    agregarLog(`↓ se apoyó una pieza en ${casilla}`);
-    pickupsRef.current = Math.max(0, pickupsRef.current - 1);
-  }
-
   function ocupacionCoincide(tablero: ({ type: string; color: string } | null)[][], ocupado: boolean[]) {
     return casillasQueNoCoinciden(tablero, ocupado).length === 0;
   }
@@ -271,35 +273,84 @@ function TransmitirContenido() {
     return distintas;
   }
 
-  function manejarVolcado(ocupado: boolean[]) {
-    // Si hay una pieza en el aire (levantada, todavía sin apoyar en ningún
-    // lado), una captura en curso se ve idéntica a una captura ya terminada
-    // — comer no cambia si la casilla destino está ocupada, así que solo
-    // desaparece la casilla de origen. No adivinamos nada hasta que no
-    // quede nada en la mano de quien mueve.
-    if (pickupsRef.current !== 0) return;
-
+  /**
+   * Arma la "foto" completa del tablero (64 casillas, ocupada o no) tal
+   * como debería verse ahora mismo según la posición confirmada más los
+   * cambios que se vienen siguiendo desde los eventos de levantar/apoyar.
+   */
+  function ocupadoDesdeSeguimiento(): boolean[] {
     const tablero = chessRef.current.board();
-    if (ocupacionCoincide(tablero, ocupado)) {
-      desincronizadoRef.current = false;
-      intentosSinResolverRef.current = 0;
-      setCasillasSospechosas(null);
-      ultimoVolcadoRef.current = ocupado;
-      return;
+    const ocupado: boolean[] = [];
+    for (let i = 0; i < 64; i++) {
+      const fila = Math.floor(i / 8);
+      const columna = i - fila * 8;
+      const casilla = casillaDesdeIndice(i);
+      let val = Boolean(tablero[fila][columna]);
+      if (vaciadasRef.current.has(casilla)) val = false;
+      if (llenadasRef.current.has(casilla)) val = true;
+      ocupado.push(val);
     }
+    return ocupado;
+  }
 
-    // Colchón liviano: si el tablero cambió, esperamos a ver la MISMA foto
-    // dos veces seguidas antes de intentar resolverla. Sin esto, mientras
-    // se está comiendo una pieza (acomodando la comida, la propia pieza,
-    // etc.) puede llegar una foto a mitad de camino justo cuando el
-    // contador de "manos vacías" ya volvió a cero, y esa foto intermedia no
-    // corresponde a ninguna jugada real todavía. Es solo 1 repetición (no
-    // las 3 de antes) para no volver a atrasar el reconocimiento de
-    // jugadas rápidas normales.
-    const igualQueAntes =
-      ultimoVolcadoRef.current !== null && ultimoVolcadoRef.current.every((v, i) => v === ocupado[i]);
-    ultimoVolcadoRef.current = ocupado;
-    if (!igualQueAntes) return;
+  /** Borra cualquier seguimiento en curso — se usa cada vez que la posición confirmada cambia por otro medio (deshacer, corrección manual, reinicio). */
+  function limpiarSeguimiento() {
+    vaciadasRef.current.clear();
+    llenadasRef.current.clear();
+    tocadasRef.current.clear();
+    if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
+    timerQuietoRef.current = null;
+    intentosSinResolverRef.current = 0;
+    desincronizadoRef.current = false;
+    setCasillasSospechosas(null);
+  }
+
+  function manejarLevantada(casilla: string) {
+    agregarLog(`↑ se levantó una pieza de ${casilla}`);
+    // El seguimiento es relativo a la posición confirmada (chessRef.current),
+    // no a un contador: si la casilla tenía pieza ahí, ahora está distinta
+    // (vacía); si no tenía nada, este levantar cancela un "apoyó" anterior
+    // en la misma casilla (alguien la tocó y la volvió a levantar antes de
+    // asentarse).
+    tocadasRef.current.add(casilla);
+    if (chessRef.current.get(casilla as Square)) {
+      vaciadasRef.current.add(casilla);
+    } else {
+      llenadasRef.current.delete(casilla);
+    }
+    reprogramarResolucion();
+  }
+
+  function manejarApoyada(casilla: string) {
+    agregarLog(`↓ se apoyó una pieza en ${casilla}`);
+    tocadasRef.current.add(casilla);
+    if (chessRef.current.get(casilla as Square)) {
+      // La casilla ya tenía pieza en la posición confirmada: apoyar algo
+      // ahí de nuevo la deja como estaba (cancela un "levantó" anterior,
+      // sea porque era la misma pieza vuelta a su lugar, o porque es el
+      // final de una comida: la pieza propia terminó ahí y "reemplaza",
+      // en términos de ocupación, a la que se sacó).
+      vaciadasRef.current.delete(casilla);
+    } else {
+      llenadasRef.current.add(casilla);
+    }
+    reprogramarResolucion();
+  }
+
+  /** Reinicia el reloj de "quietud" cada vez que llega un evento nuevo. */
+  function reprogramarResolucion() {
+    if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
+    timerQuietoRef.current = null;
+    if (vaciadasRef.current.size === 0 && llenadasRef.current.size === 0) return;
+    timerQuietoRef.current = setTimeout(intentarResolver, ESPERA_QUIETUD_MS);
+  }
+
+  function intentarResolver() {
+    timerQuietoRef.current = null;
+    if (vaciadasRef.current.size === 0 && llenadasRef.current.size === 0) return;
+
+    const ocupado = ocupadoDesdeSeguimiento();
+    const tablero = chessRef.current.board();
 
     // Ojo: en algún momento hubo acá una búsqueda que probaba combinar
     // varias jugadas seguidas para explicar fotos atrasadas. Se sacó a
@@ -315,6 +366,14 @@ function TransmitirContenido() {
       return 0;
     });
     const coincidencia = candidatos.find((c) => {
+      // Una captura no cambia la ocupación de su casilla destino (tenía
+      // pieza rival antes, tiene la propia después — sigue "ocupada" en
+      // los dos casos), así que si la pieza que se mueve tiene más de una
+      // captura legal posible, todas encajan igual de bien con la sola
+      // ocupación final. Se desempata exigiendo que el origen y el destino
+      // hayan tenido de verdad algún evento de levantar/apoyar — la jugada
+      // real siempre toca físicamente las dos casillas.
+      if (!tocadasRef.current.has(c.from) || !tocadasRef.current.has(c.to)) return false;
       const prueba = new Chess(chessRef.current.fen());
       prueba.move(c.san);
       return ocupacionCoincide(prueba.board(), ocupado);
@@ -331,21 +390,27 @@ function TransmitirContenido() {
       } else {
         setUltimaPromocion(null);
       }
-      desincronizadoRef.current = false;
+      vaciadasRef.current.clear();
+      llenadasRef.current.clear();
+      tocadasRef.current.clear();
       intentosSinResolverRef.current = 0;
+      desincronizadoRef.current = false;
       setCasillasSospechosas(null);
       return;
     }
 
     // Todavía no encaja con ninguna jugada legal, pero no avisamos
     // desincronización al primer intento fallido: una captura donde la
-    // pieza se desliza (en vez de levantarse y apoyarse limpio) deja el
-    // sensor leyendo estados intermedios raros por un ratito antes de
-    // asentarse en la posición real. Le damos unas vueltas más de margen
-    // (sigue siendo la MISMA foto estable, no una nueva combinación
-    // inventada) antes de rendirnos.
+    // pieza se desliza (en vez de levantarse y apoyarse limpio) puede dejar
+    // el seguimiento con alguna casilla de más por un instante incluso
+    // después de quedar quieto. Le damos unas vueltas más de margen (sigue
+    // siendo el mismo seguimiento, no una combinación inventada) antes de
+    // rendirnos.
     intentosSinResolverRef.current++;
-    if (intentosSinResolverRef.current < INTENTOS_ANTES_DE_DESINCRONIZAR) return;
+    if (intentosSinResolverRef.current < INTENTOS_ANTES_DE_DESINCRONIZAR) {
+      timerQuietoRef.current = setTimeout(intentarResolver, ESPERA_QUIETUD_MS);
+      return;
+    }
 
     const distintas = casillasQueNoCoinciden(tablero, ocupado);
     setCasillasSospechosas(distintas);
@@ -356,6 +421,28 @@ function TransmitirContenido() {
       );
       camaraRef.current?.capturarDesajuste();
     }
+  }
+
+  function manejarVolcado(ocupado: boolean[]) {
+    // El Pegasus también manda esta foto completa de las 64 casillas cada
+    // medio segundo, aparte de los eventos de levantar/apoyar. Sirve de
+    // respaldo: si en este momento no hay ningún cambio en seguimiento
+    // (todo coincide con la posición confirmada) pero esta foto real no
+    // coincide, es que se perdió algún evento por el camino (una
+    // notificación Bluetooth que no llegó) — se reconstruye el seguimiento
+    // directamente desde esta foto para no quedar desincronizados sin
+    // enterarnos. Si ya hay un cambio en curso por eventos, no se pisa.
+    if (vaciadasRef.current.size > 0 || llenadasRef.current.size > 0) return;
+
+    const tablero = chessRef.current.board();
+    if (ocupacionCoincide(tablero, ocupado)) return;
+
+    for (const casilla of casillasQueNoCoinciden(tablero, ocupado)) {
+      tocadasRef.current.add(casilla);
+      if (chessRef.current.get(casilla as Square)) vaciadasRef.current.add(casilla);
+      else llenadasRef.current.add(casilla);
+    }
+    reprogramarResolucion();
   }
 
   const NOMBRE_PIEZA: Record<string, string> = { q: "Dama", r: "Torre", b: "Alfil", n: "Caballo" };
@@ -380,11 +467,7 @@ function TransmitirContenido() {
       agregarLog("No hay ninguna jugada para deshacer.");
       return;
     }
-    pickupsRef.current = 0;
-    ultimoVolcadoRef.current = null;
-    desincronizadoRef.current = false;
-    intentosSinResolverRef.current = 0;
-    setCasillasSospechosas(null);
+    limpiarSeguimiento();
     setUltimaPromocion(null);
     // Si la partida ya se había dado por terminada, deshacer una jugada la
     // vuelve a dejar en curso — el resultado y el PGN viejos ya no valen.
@@ -401,11 +484,7 @@ function TransmitirContenido() {
 
   function aplicarPosicionCorregida(fen: string) {
     chessRef.current.load(fen);
-    pickupsRef.current = 0;
-    ultimoVolcadoRef.current = null;
-    desincronizadoRef.current = false;
-    intentosSinResolverRef.current = 0;
-    setCasillasSospechosas(null);
+    limpiarSeguimiento();
     setUltimaPromocion(null);
     setEditandoPosicion(false);
     agregarLog("🛠 Se aplicó una posición corregida a mano. La lista de jugadas arranca de nuevo desde acá.");
@@ -449,11 +528,7 @@ function TransmitirContenido() {
     setUltimaPromocion(null);
     setResultadoState(null);
     setPgn(null);
-    pickupsRef.current = 0;
-    ultimoVolcadoRef.current = null;
-    desincronizadoRef.current = false;
-    intentosSinResolverRef.current = 0;
-    setCasillasSospechosas(null);
+    limpiarSeguimiento();
     chessRef.current = new Chess();
     actualizarDesdeChess();
     agregarLog("Se reinició la partida (el tablero físico sigue conectado).");
