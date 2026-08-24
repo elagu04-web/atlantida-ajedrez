@@ -16,6 +16,7 @@ import {
   type JugadaAnalizada,
   type AnalisisPatrones,
   type FaseJuego,
+  type PatronRecurrente,
 } from "@/lib/analisisPartidas";
 
 const ETIQUETA_FUENTE: Record<FuentePartida, string> = { lichess: "Lichess", chesscom: "Chess.com" };
@@ -57,6 +58,23 @@ function DetalleJugada({ jugada }: { jugada: JugadaAnalizada }) {
         </div>
       )}
     </>
+  );
+}
+
+function BarraPatron({ patron }: { patron: PatronRecurrente }) {
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <span className="w-56 shrink-0 truncate">{patron.etiqueta}</span>
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-100">
+        <div
+          className="h-full rounded-full bg-blue-500"
+          style={{ width: `${Math.max(patron.porcentaje, 4)}%` }}
+        />
+      </div>
+      <span className="w-20 shrink-0 text-right text-xs text-zinc-500">
+        {patron.cantidad} ({patron.porcentaje}%)
+      </span>
+    </div>
   );
 }
 
@@ -431,6 +449,20 @@ function EntrenamientoContenido() {
               })}
             </div>
           </div>
+
+          {patrones.patronesRecurrentes.length > 0 && (
+            <div className="rounded-lg border border-zinc-200 bg-white p-5">
+              <h2 className="font-semibold">Patrones recurrentes</h2>
+              <p className="mt-1 text-xs text-zinc-500">
+                Qué se repite entre todas las jugadas marcadas como error, de más a menos frecuente.
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                {patrones.patronesRecurrentes.map((p) => (
+                  <BarraPatron key={p.etiqueta} patron={p} />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
             <table className="w-full text-sm">

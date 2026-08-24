@@ -149,7 +149,23 @@ export type JugadaAnalizada = {
   varianteSan: string[] | null;
   piezaColgada: PiezaColgada | null;
   llevaAMate: boolean;
+  piezaMovida: string;
+  estabaEnJaque: boolean;
 };
+
+const PIEZA_DESDE_LETRA: Record<string, string> = {
+  K: "Rey",
+  Q: "Dama",
+  R: "Torre",
+  B: "Alfil",
+  N: "Caballo",
+};
+
+/** Qué pieza se movió, a partir de la notación SAN de la jugada. */
+function piezaMovidaDesdeSan(san: string): string {
+  if (san.startsWith("O-O")) return "Enroque";
+  return PIEZA_DESDE_LETRA[san[0]] ?? "Peón";
+}
 
 function variantASan(fen: string, uciLista: string[] | null, tope = 4): string[] | null {
   if (!uciLista || uciLista.length === 0) return null;
@@ -261,6 +277,8 @@ export async function analizarPartida(
       varianteSan: mejorJugadaSan ? varianteSan : null,
       piezaColgada: esError ? detectarPiezaColgada(m.after, m.color) : null,
       llevaAMate,
+      piezaMovida: piezaMovidaDesdeSan(m.san),
+      estabaEnJaque: esError ? new Chess(posiciones[i]).isCheck() : false,
     };
   });
 
@@ -305,6 +323,12 @@ export type ResumenApertura = {
   perdidaPromedio: number;
 };
 
+export type PatronRecurrente = {
+  etiqueta: string;
+  cantidad: number;
+  porcentaje: number; // % sobre el total de jugadas marcadas como error
+};
+
 export type AnalisisPatrones = {
   partidas: ResumenPartidaJugador[];
   perdidaPromedioGeneral: number;
@@ -315,6 +339,7 @@ export type AnalisisPatrones = {
   perdidaPorFase: Record<FaseJuego, { total: number; cantidad: number }>;
   faseMasDebil: FaseJuego | null;
   aperturas: ResumenApertura[];
+  patronesRecurrentes: PatronRecurrente[];
 };
 
 /**
@@ -427,6 +452,8 @@ export async function analizarPatrones(
     }))
     .sort((a, b) => b.partidas - a.partidas);
 
+  const patronesRecurrentes = calcularPatronesRecurrentes(todasLasJugadas);
+
   return {
     partidas: resumenes,
     perdidaPromedioGeneral: todasLasJugadas.length
@@ -439,5 +466,46 @@ export async function analizarPatrones(
     perdidaPorFase,
     faseMasDebil,
     aperturas,
+    patronesRecurrentes,
   };
+}
+
+/**
+ * Busca qué se repite entre todas las jugadas marcadas como error (>=50
+ * centipeones perdidos): con qué pieza se equivoca más seguido, si le
+ * cuesta responder a los jaques, cuánto de lo que pierde es por dejar
+ * piezas colgadas, cuánto termina en jaque mate forzado. Sirve para
+ * mostrarle a un alumno (o a un futuro alumno) en qué tipo de error cae una
+ * y otra vez, no solo cuánto pierde en total.
+ */
+function calcularPatronesRecurrentes(jugadas: JugadaAnalizada[]): PatronRecurrente[] {
+  const errores = jugadas.filter((j) => j.perdidaCentipeones >= 50);
+  const total = errores.length;
+  if (total === 0) return [];
+
+  const porPieza = new Map<string, number>();
+  let colgadas = 0;
+  let enJaque = 0;
+  let llevanAMate = 0;
+  for (const j of errores) {
+    porPieza.set(j.piezaMovida, (porPieza.get(j.piezaMovida) ?? 0) + 1);
+    if (j.piezaColgada) colgadas += 1;
+    if (j.estabaEnJaque) enJaque += 1;
+    if (j.llevaAMate) llevanAMate += 1;
+  }
+
+  const patrones: PatronRecurrente[] = [];
+  const agregar = (etiqueta: string, cantidad: number) => {
+    if (cantidad === 0) return;
+    patrones.push({ etiqueta, cantidad, porcentaje: Math.round((cantidad / total) * 100) });
+  };
+
+  agregar("Deja piezas colgadas", colgadas);
+  agregar("Responde mal cuando le dan jaque", enJaque);
+  agregar("Termina en jaque mate forzado", llevanAMate);
+  for (const [pieza, cantidad] of porPieza) {
+    agregar(`Se equivoca moviendo ${pieza.toLowerCase()}`, cantidad);
+  }
+
+  return patrones.sort((a, b) => b.cantidad - a.cantidad);
 }
