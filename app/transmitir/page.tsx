@@ -13,6 +13,15 @@ import { EditorPosicion } from "@/components/EditorPosicion";
 import { CamaraTablero, type CamaraTableroHandle } from "@/components/CamaraTablero";
 import type { ResultadoPartida } from "@/lib/tournaments";
 
+// Cuántas fotos seguidas del tablero (cada una ~500ms, ya estabilizada e
+// idéntica a la anterior) tienen que fallar en encajar con alguna jugada
+// legal antes de avisar que el tablero físico se desincronizó. Un valor
+// más alto le da más tiempo al sensor para asentarse después de una
+// captura "deslizada" (empujando la pieza comida en vez de levantarla)
+// sin agregar demora a una jugada normal, que igual resuelve apenas la
+// foto coincide con una jugada legal.
+const INTENTOS_ANTES_DE_DESINCRONIZAR = 3;
+
 export default function TransmitirPage() {
   return (
     <Suspense fallback={<p className="text-sm text-zinc-500">Cargando...</p>}>
@@ -48,6 +57,7 @@ function TransmitirContenido() {
   const pickupsRef = useRef(0);
   const ultimoVolcadoRef = useRef<boolean[] | null>(null);
   const desincronizadoRef = useRef(false);
+  const intentosSinResolverRef = useRef(0);
   const [casillasSospechosas, setCasillasSospechosas] = useState<string[] | null>(null);
   const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
     null
@@ -272,6 +282,7 @@ function TransmitirContenido() {
     const tablero = chessRef.current.board();
     if (ocupacionCoincide(tablero, ocupado)) {
       desincronizadoRef.current = false;
+      intentosSinResolverRef.current = 0;
       setCasillasSospechosas(null);
       ultimoVolcadoRef.current = ocupado;
       return;
@@ -321,9 +332,20 @@ function TransmitirContenido() {
         setUltimaPromocion(null);
       }
       desincronizadoRef.current = false;
+      intentosSinResolverRef.current = 0;
       setCasillasSospechosas(null);
       return;
     }
+
+    // Todavía no encaja con ninguna jugada legal, pero no avisamos
+    // desincronización al primer intento fallido: una captura donde la
+    // pieza se desliza (en vez de levantarse y apoyarse limpio) deja el
+    // sensor leyendo estados intermedios raros por un ratito antes de
+    // asentarse en la posición real. Le damos unas vueltas más de margen
+    // (sigue siendo la MISMA foto estable, no una nueva combinación
+    // inventada) antes de rendirnos.
+    intentosSinResolverRef.current++;
+    if (intentosSinResolverRef.current < INTENTOS_ANTES_DE_DESINCRONIZAR) return;
 
     const distintas = casillasQueNoCoinciden(tablero, ocupado);
     setCasillasSospechosas(distintas);
@@ -361,6 +383,7 @@ function TransmitirContenido() {
     pickupsRef.current = 0;
     ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
+    intentosSinResolverRef.current = 0;
     setCasillasSospechosas(null);
     setUltimaPromocion(null);
     // Si la partida ya se había dado por terminada, deshacer una jugada la
@@ -381,6 +404,7 @@ function TransmitirContenido() {
     pickupsRef.current = 0;
     ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
+    intentosSinResolverRef.current = 0;
     setCasillasSospechosas(null);
     setUltimaPromocion(null);
     setEditandoPosicion(false);
@@ -428,6 +452,7 @@ function TransmitirContenido() {
     pickupsRef.current = 0;
     ultimoVolcadoRef.current = null;
     desincronizadoRef.current = false;
+    intentosSinResolverRef.current = 0;
     setCasillasSospechosas(null);
     chessRef.current = new Chess();
     actualizarDesdeChess();
