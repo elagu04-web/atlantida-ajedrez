@@ -7,11 +7,11 @@ import {
   EstadoTorneo,
   RondaTorneo,
   ResultadoPartida,
-  Standing,
+  StandingConDesempates,
   generarRoundRobin,
   generarRondaUnoDutch,
   generarRondaSuiza,
-  calcularStandings,
+  standingsConDesempates,
   puedeEditarJugadores,
 } from "@/lib/tournaments";
 import { useEpicoJugadores } from "@/context/EpicoJugadoresContext";
@@ -54,7 +54,7 @@ type EpicoTorneosContextType = {
   eliminarUltimaRonda: (torneoId: string) => Promise<void>;
   eliminarTorneo: (torneoId: string) => Promise<void>;
   finalizarTorneo: (torneoId: string) => Promise<void>;
-  standingsDeTorneo: (torneoId: string) => Standing[];
+  standingsDeTorneo: (torneoId: string) => StandingConDesempates[];
 };
 
 const EpicoTorneosContext = createContext<EpicoTorneosContextType | null>(null);
@@ -236,7 +236,7 @@ export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
   function standingsDeTorneo(torneoId: string) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo) return [];
-    return [...calcularStandings(torneo).values()].sort((a, b) => b.puntos - a.puntos);
+    return standingsConDesempates(torneo);
   }
 
   return (

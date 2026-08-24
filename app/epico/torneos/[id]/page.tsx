@@ -22,6 +22,14 @@ const formatoLabel: Record<string, string> = {
   suizo: "Sistema suizo",
 };
 
+const ABREVIATURA_DESEMPATE: Record<string, string> = {
+  Buchholz: "Bch",
+  "Sonneborn-Berger": "SB",
+  Progresivo: "Prog",
+  "Enfrentamiento directo": "ED",
+  "Mayor número de victorias": "Vict",
+};
+
 export default function EpicoTorneoPage() {
   const { id } = useParams<{ id: string }>();
   const { session } = useAuth();
@@ -252,6 +260,11 @@ export default function EpicoTorneoPage() {
                 <th className="px-4 py-2 font-medium">Alumno</th>
                 <th className="px-4 py-2 font-medium">Puntos</th>
                 <th className="px-4 py-2 font-medium">Partidas</th>
+                {torneo.desempates.map((d) => (
+                  <th key={d} className="px-4 py-2 font-medium" title={d}>
+                    {ABREVIATURA_DESEMPATE[d] ?? d}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -261,6 +274,11 @@ export default function EpicoTorneoPage() {
                   <td className="px-4 py-2">{nombreDe(s.jugadorId)}</td>
                   <td className="px-4 py-2 font-mono">{s.puntos}</td>
                   <td className="px-4 py-2">{s.partidasJugadas}</td>
+                  {torneo.desempates.map((d) => (
+                    <td key={d} className="px-4 py-2 font-mono text-xs text-zinc-500">
+                      {s.desempates[d] ?? "—"}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

@@ -12,6 +12,7 @@ import {
   rondaCompleta,
   puedeEditarJugadores,
   puedeEditarEmparejamientos,
+  determinarCampeon,
   SlotEmparejamiento,
 } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
@@ -25,6 +26,14 @@ const estadoLabel: Record<string, string> = {
 const formatoLabel: Record<string, string> = {
   "round-robin": "Round robin",
   suizo: "Sistema suizo",
+};
+
+const ABREVIATURA_DESEMPATE: Record<string, string> = {
+  Buchholz: "Bch",
+  "Sonneborn-Berger": "SB",
+  Progresivo: "Prog",
+  "Enfrentamiento directo": "ED",
+  "Mayor número de victorias": "Vict",
 };
 
 export default function TorneoPage() {
@@ -42,6 +51,7 @@ export default function TorneoPage() {
     intercambiarJugadores,
     finalizarTorneo,
     standingsDeTorneo,
+    registrarFinalDesempate,
     cargando,
   } = useTorneos();
   const { session } = useAuth();
@@ -147,6 +157,11 @@ export default function TorneoPage() {
   const inscriptos = torneo.jugadoresIds.map((jid) => jugadores.find((j) => j.id === jid)).filter((j) => j !== undefined);
   const disponiblesParaAgregar = jugadores.filter((j) => !torneo.jugadoresIds.includes(j.id));
   const standings = standingsDeTorneo(torneo.id);
+  const resultadoCampeon = determinarCampeon(torneo);
+
+  async function handleRegistrarFinal(jugadorIds: string[], ganadorId: string) {
+    await registrarFinalDesempate(torneo!.id, jugadorIds, ganadorId);
+  }
 
   const ultimaRonda = torneo.rondas[torneo.rondas.length - 1];
   const puedeEditarEstaRonda = Boolean(ultimaRonda && puedeEditarEmparejamientos(ultimaRonda));
@@ -311,6 +326,46 @@ export default function TorneoPage() {
           )}
       </div>
 
+      {resultadoCampeon?.tipo === "campeon" && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          🏆 Campeón del torneo: <strong>{nombreDe(resultadoCampeon.jugadorId)}</strong>
+        </div>
+      )}
+
+      {resultadoCampeon?.tipo === "necesita_final" && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+          <p>
+            Empate en la punta{" "}
+            {resultadoCampeon.jugadorIds.length > 2 ? "(desempate por planilla no lo resuelve del todo, " : "("}
+            se define con una final:{" "}
+            <strong>
+              {resultadoCampeon.jugadorIds.map((jid) => nombreDe(jid)).join(" vs ")}
+            </strong>
+            .
+          </p>
+          {puedeEditar && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {resultadoCampeon.jugadorIds.map((jid) => (
+                <button
+                  key={jid}
+                  onClick={() => handleRegistrarFinal(resultadoCampeon.jugadorIds, jid)}
+                  className="rounded-md border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-blue-100"
+                >
+                  Ganó {nombreDe(jid)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {resultadoCampeon?.tipo === "empate" && (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
+          Empate en la punta entre {resultadoCampeon.jugadorIds.map((jid) => nombreDe(jid)).join(", ")} — para
+          poder elegir quiénes juegan la final hace falta configurar al menos un desempate en el torneo.
+        </div>
+      )}
+
       {standings.length > 0 && torneo.rondas.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
           <h2 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 font-semibold">
@@ -323,6 +378,11 @@ export default function TorneoPage() {
                 <th className="px-4 py-2 font-medium">Jugador</th>
                 <th className="px-4 py-2 font-medium">Puntos</th>
                 <th className="px-4 py-2 font-medium">Partidas</th>
+                {torneo.desempates.map((d) => (
+                  <th key={d} className="px-4 py-2 font-medium" title={d}>
+                    {ABREVIATURA_DESEMPATE[d] ?? d}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -332,6 +392,11 @@ export default function TorneoPage() {
                   <td className="px-4 py-2">{nombreDe(s.jugadorId)}</td>
                   <td className="px-4 py-2 font-mono">{s.puntos}</td>
                   <td className="px-4 py-2">{s.partidasJugadas}</td>
+                  {torneo.desempates.map((d) => (
+                    <td key={d} className="px-4 py-2 font-mono text-xs text-zinc-500">
+                      {s.desempates[d] ?? "—"}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

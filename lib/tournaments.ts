@@ -34,6 +34,14 @@ export type Torneo = {
   // Elo inicial), pero sí deben contar para historial de partidas,
   // estadísticas y Copa de Campeones.
   excluirDeElo?: boolean;
+  // Registro de la final de desempate jugada aparte (tradición del club:
+  // un empate en la punta no se resuelve por planilla, se juega una final).
+  finalDesempate?: FinalDesempate | null;
+};
+
+export type FinalDesempate = {
+  jugadorIds: string[]; // los que definen la final (2, salvo empates sin desempate configurado)
+  ganadorId: string | null; // null hasta que se cargue el resultado de la final
 };
 
 export const DESEMPATES_DISPONIBLES = [
@@ -123,6 +131,124 @@ export function calcularStandings(torneo: Torneo): Map<string, Standing> {
   return standings;
 }
 
+type JugadaTorneo = { rivalId: string; resultadoPropio: number };
+
+function historialDeJugador(torneo: Torneo, jugadorId: string): JugadaTorneo[] {
+  const historial: JugadaTorneo[] = [];
+  for (const ronda of torneo.rondas) {
+    for (const emp of ronda.emparejamientos) {
+      if (!emp.resultado || !emp.negrasId) continue; // sin resultado o descanso: no cuenta como enfrentamiento
+      if (emp.blancasId !== jugadorId && emp.negrasId !== jugadorId) continue;
+      const esBlancas = emp.blancasId === jugadorId;
+      const rivalId = esBlancas ? emp.negrasId : emp.blancasId;
+      let resultadoPropio: number;
+      if (emp.resultado === "1/2-1/2") resultadoPropio = 0.5;
+      else if ((emp.resultado === "1-0" && esBlancas) || (emp.resultado === "0-1" && !esBlancas))
+        resultadoPropio = 1;
+      else resultadoPropio = 0;
+      historial.push({ rivalId, resultadoPropio });
+    }
+  }
+  return historial;
+}
+
+function progresivoDeJugador(torneo: Torneo, jugadorId: string): number {
+  let acumulado = 0;
+  let total = 0;
+  for (const ronda of [...torneo.rondas].sort((a, b) => a.numero - b.numero)) {
+    const emp = ronda.emparejamientos.find(
+      (e) => e.blancasId === jugadorId || e.negrasId === jugadorId
+    );
+    if (!emp || !emp.resultado) continue;
+    let ganado = 0;
+    if (!emp.negrasId) ganado = 1; // descanso: punto libre
+    else if (emp.resultado === "1/2-1/2") ganado = 0.5;
+    else if (
+      (emp.resultado === "1-0" && emp.blancasId === jugadorId) ||
+      (emp.resultado === "0-1" && emp.negrasId === jugadorId)
+    )
+      ganado = 1;
+    acumulado += ganado;
+    total += acumulado;
+  }
+  return total;
+}
+
+function redondear(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * Calcula, para cada jugador del torneo, el valor de cada criterio de
+ * desempate disponible (independientemente de cuáles estén configurados en
+ * el torneo — se calculan todos, y quien ordena decide cuáles usar):
+ * - Buchholz: suma de los puntos finales de todos los rivales enfrentados.
+ * - Sonneborn-Berger: igual pero ponderado por el resultado propio contra
+ *   cada rival (ganada cuenta entero, tablas la mitad, perdida no suma).
+ * - Progresivo: suma del puntaje acumulado ronda a ronda (premia arrancar
+ *   fuerte).
+ * - Enfrentamiento directo: puntos obtenidos específicamente contra otros
+ *   jugadores que terminaron con el mismo puntaje final.
+ * - Mayor número de victorias: cantidad de partidas ganadas.
+ */
+export function calcularDesempates(torneo: Torneo): Map<string, Record<string, number>> {
+  const standings = calcularStandings(torneo);
+  const puntosFinales = new Map<string, number>();
+  for (const [id, s] of standings) puntosFinales.set(id, s.puntos);
+
+  const resultado = new Map<string, Record<string, number>>();
+  for (const jugadorId of torneo.jugadoresIds) {
+    const historial = historialDeJugador(torneo, jugadorId);
+    const propiosPuntos = puntosFinales.get(jugadorId) ?? 0;
+
+    const buchholz = historial.reduce((acc, j) => acc + (puntosFinales.get(j.rivalId) ?? 0), 0);
+    const sonnebornBerger = historial.reduce(
+      (acc, j) => acc + j.resultadoPropio * (puntosFinales.get(j.rivalId) ?? 0),
+      0
+    );
+    const victorias = historial.filter((j) => j.resultadoPropio === 1).length;
+    const enfrentamientoDirecto = historial
+      .filter((j) => (puntosFinales.get(j.rivalId) ?? -1) === propiosPuntos)
+      .reduce((acc, j) => acc + j.resultadoPropio, 0);
+
+    resultado.set(jugadorId, {
+      Buchholz: redondear(buchholz),
+      "Sonneborn-Berger": redondear(sonnebornBerger),
+      Progresivo: redondear(progresivoDeJugador(torneo, jugadorId)),
+      "Enfrentamiento directo": redondear(enfrentamientoDirecto),
+      "Mayor número de victorias": victorias,
+    });
+  }
+  return resultado;
+}
+
+export type StandingConDesempates = Standing & { desempates: Record<string, number> };
+
+/**
+ * Tabla de posiciones ordenada de verdad: primero por puntos, y en caso de
+ * empate por los criterios de desempate configurados en el torneo, en el
+ * orden en que se eligieron (el primero de la lista manda; solo se mira el
+ * siguiente si el anterior también empata).
+ */
+export function standingsConDesempates(torneo: Torneo): StandingConDesempates[] {
+  const standings = [...calcularStandings(torneo).values()];
+  const desempates = calcularDesempates(torneo);
+  const combinados: StandingConDesempates[] = standings.map((s) => ({
+    ...s,
+    desempates: desempates.get(s.jugadorId) ?? {},
+  }));
+
+  combinados.sort((a, b) => {
+    if (b.puntos !== a.puntos) return b.puntos - a.puntos;
+    for (const criterio of torneo.desempates) {
+      const diff = (b.desempates[criterio] ?? 0) - (a.desempates[criterio] ?? 0);
+      if (diff !== 0) return diff;
+    }
+    return 0;
+  });
+  return combinados;
+}
+
 /**
  * Ronda 1 del suizo según el sistema Dutch de FIDE (C.04.3): se ordena a
  * todos por Elo, si son impares el de menor Elo descansa, y se divide el
@@ -198,18 +324,25 @@ export function rondaCompleta(ronda: RondaTorneo): boolean {
 
 export type ResultadoCampeon =
   | { tipo: "campeon"; jugadorId: string }
+  | { tipo: "necesita_final"; jugadorIds: string[] }
   | { tipo: "empate"; jugadorIds: string[] };
 
 /**
  * El campeón de un torneo finalizado es quien más puntos hizo. Si hay
- * empate a dos entre el 1° y el 2°, se resuelve por enfrentamiento directo
- * (mano a mano) dentro del propio torneo, si jugaron entre sí y no fueron
- * tablas. Empates de tres o más, o sin enfrentamiento directo decisivo,
- * quedan como "empate" sin campeón único.
+ * empate en la punta, la tradición del club es que NO se resuelve en la
+ * planilla: los empatados juegan una final aparte. Si son justo dos,
+ * definen esos dos. Si son tres o más, primero se aplican los desempates
+ * configurados en el torneo (en el orden de prioridad elegido) para
+ * quedarse con los dos primeros, y esos dos juegan la final. Sin
+ * desempates configurados y con 3+ empatados no hay forma de elegir
+ * quiénes juegan, así que queda como "empate" sin definir.
+ *
+ * El resultado de esa final se registra aparte (torneo.finalDesempate) —
+ * una vez cargado, ese jugador es el campeón.
  */
 export function determinarCampeon(torneo: Torneo): ResultadoCampeon | null {
   if (torneo.estado !== "finalizado" || torneo.rondas.length === 0) return null;
-  const standings = [...calcularStandings(torneo).values()].sort((a, b) => b.puntos - a.puntos);
+  const standings = standingsConDesempates(torneo);
   if (standings.length === 0) return null;
 
   const maxPuntos = standings[0].puntos;
@@ -218,21 +351,26 @@ export function determinarCampeon(torneo: Torneo): ResultadoCampeon | null {
     return { tipo: "campeon", jugadorId: empatados[0].jugadorId };
   }
 
+  let finalistas: string[];
   if (empatados.length === 2) {
-    const [a, b] = empatados;
-    for (const ronda of torneo.rondas) {
-      for (const emp of ronda.emparejamientos) {
-        if (!emp.negrasId || !emp.resultado || emp.resultado === "1/2-1/2") continue;
-        const esAvsB = emp.blancasId === a.jugadorId && emp.negrasId === b.jugadorId;
-        const esBvsA = emp.blancasId === b.jugadorId && emp.negrasId === a.jugadorId;
-        if (!esAvsB && !esBvsA) continue;
-        const ganadorId = emp.resultado === "1-0" ? emp.blancasId : emp.negrasId;
-        return { tipo: "campeon", jugadorId: ganadorId };
-      }
-    }
+    finalistas = empatados.map((s) => s.jugadorId);
+  } else if (torneo.desempates.length > 0) {
+    // standingsConDesempates ya viene ordenado por los desempates del torneo.
+    finalistas = empatados.slice(0, 2).map((s) => s.jugadorId);
+  } else {
+    return { tipo: "empate", jugadorIds: empatados.map((s) => s.jugadorId) };
   }
 
-  return { tipo: "empate", jugadorIds: empatados.map((s) => s.jugadorId) };
+  const final = torneo.finalDesempate;
+  const mismosFinalistas =
+    final &&
+    final.jugadorIds.length === finalistas.length &&
+    finalistas.every((id) => final.jugadorIds.includes(id));
+  if (mismosFinalistas && final.ganadorId) {
+    return { tipo: "campeon", jugadorId: final.ganadorId };
+  }
+
+  return { tipo: "necesita_final", jugadorIds: finalistas };
 }
 
 /**

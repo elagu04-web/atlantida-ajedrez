@@ -7,11 +7,12 @@ import {
   EstadoTorneo,
   RondaTorneo,
   ResultadoPartida,
-  Standing,
+  StandingConDesempates,
+  FinalDesempate,
   generarRoundRobin,
   generarRondaUnoDutch,
   generarRondaSuiza,
-  calcularStandings,
+  standingsConDesempates,
   puedeEditarJugadores,
   corregirColorEmparejamiento,
   intercambiarEnRonda,
@@ -35,6 +36,7 @@ type FilaTorneo = {
   rondas_objetivo: number | null;
   created_at: string;
   excluir_elo: boolean | null;
+  final_desempate: FinalDesempate | null;
 };
 
 type TorneosContextType = {
@@ -72,7 +74,12 @@ type TorneosContextType = {
   ) => Promise<boolean>;
   eliminarTorneo: (torneoId: string) => Promise<void>;
   finalizarTorneo: (torneoId: string) => Promise<void>;
-  standingsDeTorneo: (torneoId: string) => Standing[];
+  standingsDeTorneo: (torneoId: string) => StandingConDesempates[];
+  registrarFinalDesempate: (
+    torneoId: string,
+    jugadorIds: string[],
+    ganadorId: string
+  ) => Promise<void>;
 };
 
 const TorneosContext = createContext<TorneosContextType | null>(null);
@@ -89,6 +96,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     rondasObjetivo: fila.rondas_objetivo ?? null,
     creadoEn: fila.created_at,
     excluirDeElo: fila.excluir_elo === true,
+    finalDesempate: fila.final_desempate ?? null,
   };
 }
 
@@ -345,7 +353,20 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
   function standingsDeTorneo(torneoId: string) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo) return [];
-    return [...calcularStandings(torneo).values()].sort((a, b) => b.puntos - a.puntos);
+    return standingsConDesempates(torneo);
+  }
+
+  async function registrarFinalDesempate(torneoId: string, jugadorIds: string[], ganadorId: string) {
+    const torneo = obtenerTorneo(torneoId);
+    const finalDesempate: FinalDesempate = { jugadorIds, ganadorId };
+    setTorneos((actuales) =>
+      actuales.map((t) => (t.id === torneoId ? { ...t, finalDesempate } : t))
+    );
+    await supabase.from("torneos").update({ final_desempate: finalDesempate }).eq("id", torneoId);
+    registrar(
+      "torneo",
+      `Se cargó el resultado de la final de desempate de "${torneo?.nombre ?? torneoId}": ganó ${nombreDe(ganadorId)}.`
+    );
   }
 
   return (
@@ -365,6 +386,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         eliminarTorneo,
         finalizarTorneo,
         standingsDeTorneo,
+        registrarFinalDesempate,
       }}
     >
       {children}

@@ -30,7 +30,7 @@ export default function ColegioTorneosPage() {
   const [formato, setFormato] = useState<FormatoTorneo>("suizo");
   const [rondasObjetivo, setRondasObjetivo] = useState("");
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
-  const [desempates, setDesempates] = useState<Set<string>>(new Set());
+  const [desempates, setDesempates] = useState<string[]>([]);
   const [busquedaJugadores, setBusquedaJugadores] = useState("");
 
   const jugadoresFiltrados = useMemo(() => {
@@ -58,11 +58,21 @@ export default function ColegioTorneosPage() {
   }
 
   function toggleDesempate(nombreDesempate: string) {
+    setDesempates((actuales) =>
+      actuales.includes(nombreDesempate)
+        ? actuales.filter((d) => d !== nombreDesempate)
+        : [...actuales, nombreDesempate]
+    );
+  }
+
+  function moverDesempate(nombreDesempate: string, direccion: -1 | 1) {
     setDesempates((actuales) => {
-      const nuevo = new Set(actuales);
-      if (nuevo.has(nombreDesempate)) nuevo.delete(nombreDesempate);
-      else nuevo.add(nombreDesempate);
-      return nuevo;
+      const i = actuales.indexOf(nombreDesempate);
+      const j = i + direccion;
+      if (i < 0 || j < 0 || j >= actuales.length) return actuales;
+      const copia = [...actuales];
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+      return copia;
     });
   }
 
@@ -235,13 +245,42 @@ export default function ColegioTorneosPage() {
               <label key={d} className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  checked={desempates.has(d)}
+                  checked={desempates.includes(d)}
                   onChange={() => toggleDesempate(d)}
                 />
                 {d}
               </label>
             ))}
           </div>
+          {desempates.length > 0 && (
+            <div className="mt-2 flex flex-col gap-1 rounded-md border border-zinc-200 bg-zinc-50 p-2">
+              <span className="text-xs text-zinc-500">
+                Orden de prioridad (se usa el primero; si empatan, se pasa al siguiente):
+              </span>
+              {desempates.map((d, i) => (
+                <div key={d} className="flex items-center gap-2 text-sm">
+                  <span className="w-4 text-xs text-zinc-400">{i + 1}.</span>
+                  <span className="flex-1">{d}</span>
+                  <button
+                    type="button"
+                    onClick={() => moverDesempate(d, -1)}
+                    disabled={i === 0}
+                    className="rounded border border-zinc-300 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moverDesempate(d, 1)}
+                    disabled={i === desempates.length - 1}
+                    className="rounded border border-zinc-300 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    ↓
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <button

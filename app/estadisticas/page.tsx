@@ -162,7 +162,9 @@ export default function EstadisticasPage() {
                     <span className="text-right font-medium">
                       {resultado.tipo === "campeon"
                         ? nombreDe(resultado.jugadorId)
-                        : `Empate: ${resultado.jugadorIds.map(nombreDe).join(" y ")}`}
+                        : resultado.tipo === "necesita_final"
+                        ? `Definen con una final: ${resultado.jugadorIds.map(nombreDe).join(" vs ")}`
+                        : `Empate sin definir: ${resultado.jugadorIds.map(nombreDe).join(" y ")}`}
                     </span>
                   </li>
                 ))}
