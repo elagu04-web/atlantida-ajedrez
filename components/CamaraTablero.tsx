@@ -44,10 +44,15 @@ export const CamaraTablero = forwardRef<CamaraTableroHandle, { onCambiaActiva?: 
     async function subirFrame(ruta: string) {
       const blob = await capturarBlob();
       if (!blob) return;
-      await supabase.storage.from(CAMARA_BUCKET).upload(ruta, blob, {
+      const { error: errorSubida } = await supabase.storage.from(CAMARA_BUCKET).upload(ruta, blob, {
         upsert: true,
         contentType: "image/jpeg",
       });
+      if (errorSubida) {
+        setError(`No se pudo subir la foto a la transmisión: ${errorSubida.message}`);
+      } else {
+        setError(null);
+      }
     }
 
     useImperativeHandle(ref, () => ({
