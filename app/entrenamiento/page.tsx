@@ -78,6 +78,131 @@ function BarraPatron({ patron }: { patron: PatronRecurrente }) {
   );
 }
 
+function FilaComparacion({
+  etiqueta,
+  anterior,
+  reciente,
+  sufijo = "",
+  menorEsMejor = true,
+}: {
+  etiqueta: string;
+  anterior: number;
+  reciente: number;
+  sufijo?: string;
+  menorEsMejor?: boolean;
+}) {
+  const diff = reciente - anterior;
+  const mejoro = menorEsMejor ? diff < 0 : diff > 0;
+  const empeoro = menorEsMejor ? diff > 0 : diff < 0;
+  return (
+    <tr className="border-b border-zinc-100 last:border-0">
+      <td className="px-4 py-2 text-zinc-600">{etiqueta}</td>
+      <td className="px-4 py-2 text-center font-mono">
+        {anterior}
+        {sufijo}
+      </td>
+      <td className="px-4 py-2 text-center font-mono">
+        {reciente}
+        {sufijo}
+      </td>
+      <td
+        className={`px-4 py-2 text-center font-mono text-xs ${
+          mejoro ? "text-green-700" : empeoro ? "text-red-700" : "text-zinc-400"
+        }`}
+      >
+        {diff === 0 ? "=" : `${diff > 0 ? "+" : ""}${diff}${sufijo}`}
+        {mejoro && " ↓ mejoró"}
+        {empeoro && " ↑ empeoró"}
+      </td>
+    </tr>
+  );
+}
+
+function ComparacionProgreso({
+  usuario,
+  comparacion,
+}: {
+  usuario: string;
+  comparacion: { recientes: AnalisisPatrones; anteriores: AnalisisPatrones };
+}) {
+  const { recientes, anteriores } = comparacion;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-5">
+        <h2 className="font-semibold text-blue-900">Progreso de {usuario}</h2>
+        <p className="mt-1 text-xs text-blue-700">
+          Últimas 10 partidas comparadas contra las 10 anteriores a esas.
+        </p>
+      </div>
+      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+        <table className="w-full text-sm">
+          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+            <tr>
+              <th className="px-4 py-2 font-medium">Métrica</th>
+              <th className="px-4 py-2 text-center font-medium">Anteriores</th>
+              <th className="px-4 py-2 text-center font-medium">Últimas</th>
+              <th className="px-4 py-2 text-center font-medium">Cambio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <FilaComparacion
+              etiqueta="Pérdida promedio por jugada"
+              anterior={anteriores.perdidaPromedioGeneral}
+              reciente={recientes.perdidaPromedioGeneral}
+              sufijo=" cp"
+            />
+            <FilaComparacion
+              etiqueta="Errores graves"
+              anterior={anteriores.totalErroresGraves}
+              reciente={recientes.totalErroresGraves}
+            />
+            <FilaComparacion
+              etiqueta="Errores"
+              anterior={anteriores.totalErrores}
+              reciente={recientes.totalErrores}
+            />
+            <FilaComparacion
+              etiqueta="Imprecisiones"
+              anterior={anteriores.totalImprecisiones}
+              reciente={recientes.totalImprecisiones}
+            />
+            <FilaComparacion
+              etiqueta="Piezas colgadas"
+              anterior={anteriores.totalPiezasColgadas}
+              reciente={recientes.totalPiezasColgadas}
+            />
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <h3 className="text-xs font-medium uppercase text-zinc-500">Patrones — antes</h3>
+          <div className="mt-2 flex flex-col gap-2">
+            {anteriores.patronesRecurrentes.slice(0, 4).map((p) => (
+              <BarraPatron key={p.etiqueta} patron={p} />
+            ))}
+            {anteriores.patronesRecurrentes.length === 0 && (
+              <p className="text-xs text-zinc-400">Sin errores marcados en este período.</p>
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <h3 className="text-xs font-medium uppercase text-zinc-500">Patrones — ahora</h3>
+          <div className="mt-2 flex flex-col gap-2">
+            {recientes.patronesRecurrentes.slice(0, 4).map((p) => (
+              <BarraPatron key={p.etiqueta} patron={p} />
+            ))}
+            {recientes.patronesRecurrentes.length === 0 && (
+              <p className="text-xs text-zinc-400">Sin errores marcados en este período.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EntrenamientoPage() {
   return (
     <Suspense fallback={<p className="text-sm text-zinc-500">Cargando...</p>}>
@@ -109,6 +234,18 @@ function EntrenamientoContenido() {
   } | null>(null);
   const [patrones, setPatrones] = useState<AnalisisPatrones | null>(null);
   const [errorPatrones, setErrorPatrones] = useState<string | null>(null);
+
+  const [comparando, setComparando] = useState(false);
+  const [progresoComparacion, setProgresoComparacion] = useState<{
+    etapa: "recientes" | "anteriores";
+    partida: number;
+    totalPartidas: number;
+  } | null>(null);
+  const [comparacion, setComparacion] = useState<{
+    recientes: AnalisisPatrones;
+    anteriores: AnalisisPatrones;
+  } | null>(null);
+  const [errorComparacion, setErrorComparacion] = useState<string | null>(null);
 
   const motorRef = useRef<MotorAjedrez | null>(null);
   const ultimaEvalRef = useRef<AnalisisPosicion>({
@@ -219,6 +356,53 @@ function EntrenamientoContenido() {
     setProgresoPatrones(null);
   }
 
+  async function handleCompararProgreso() {
+    if (!usuario.trim()) return;
+    setComparando(true);
+    setErrorComparacion(null);
+    setComparacion(null);
+    setProgresoComparacion(null);
+    try {
+      const lista =
+        fuente === "lichess"
+          ? await obtenerPartidasLichess(usuario, 20)
+          : await obtenerPartidasChessCom(usuario, 20);
+      const recientes = lista.slice(0, 10);
+      const anteriores = lista.slice(10, 20);
+      if (anteriores.length < 3) {
+        setErrorComparacion("No hay suficientes partidas anteriores todavía para comparar un progreso.");
+        setComparando(false);
+        return;
+      }
+      if (!motorRef.current) {
+        motorRef.current = new MotorAjedrez((a) => {
+          ultimaEvalRef.current = a;
+        });
+      }
+      const resRecientes = await analizarPatrones(
+        recientes,
+        usuario,
+        motorRef.current,
+        (partida, totalPartidas) =>
+          setProgresoComparacion({ etapa: "recientes", partida, totalPartidas }),
+        () => ultimaEvalRef.current
+      );
+      const resAnteriores = await analizarPatrones(
+        anteriores,
+        usuario,
+        motorRef.current,
+        (partida, totalPartidas) =>
+          setProgresoComparacion({ etapa: "anteriores", partida, totalPartidas }),
+        () => ultimaEvalRef.current
+      );
+      setComparacion({ recientes: resRecientes, anteriores: resAnteriores });
+    } catch (err) {
+      setErrorComparacion(err instanceof Error ? err.message : "Error comparando el progreso.");
+    }
+    setComparando(false);
+    setProgresoComparacion(null);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -266,9 +450,33 @@ function EntrenamientoContenido() {
         >
           {buscando ? "Buscando..." : "Buscar partidas"}
         </button>
+        <button
+          type="button"
+          onClick={handleCompararProgreso}
+          disabled={comparando || !usuario.trim()}
+          className="rounded-md border border-blue-300 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {comparando ? "Comparando..." : "📈 Comparar progreso"}
+        </button>
       </form>
 
       {errorBusqueda && <p className="text-sm text-red-600">{errorBusqueda}</p>}
+
+      {comparando && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+          Analizando {progresoComparacion?.etapa === "anteriores" ? "las 10 partidas anteriores" : "las últimas 10 partidas"}
+          {progresoComparacion
+            ? ` — partida ${progresoComparacion.partida} de ${progresoComparacion.totalPartidas}...`
+            : "..."}{" "}
+          Esto puede tardar varios minutos (se analizan 20 partidas en total).
+        </div>
+      )}
+
+      {errorComparacion && <p className="text-sm text-red-600">{errorComparacion}</p>}
+
+      {comparacion && (
+        <ComparacionProgreso usuario={usuario} comparacion={comparacion} />
+      )}
 
       {partidas.length > 0 && (
         <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4">
