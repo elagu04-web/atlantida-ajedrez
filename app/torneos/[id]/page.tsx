@@ -14,6 +14,7 @@ import {
   puedeEditarEmparejamientos,
   determinarCampeon,
   SlotEmparejamiento,
+  DESEMPATES_DISPONIBLES,
   type FormatoTorneo,
 } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
@@ -55,6 +56,7 @@ export default function TorneoPage() {
     standingsDeTorneo,
     registrarFinalDesempate,
     cambiarFormato,
+    cambiarDesempates,
     cargando,
   } = useTorneos();
   const { session } = useAuth();
@@ -88,6 +90,24 @@ export default function TorneoPage() {
   function nombreDe(jugadorId: string) {
     const j = jugadores.find((j) => j.id === jugadorId);
     return j ? nombreVisible(j) : "?";
+  }
+
+  function toggleDesempate(nombreDesempate: string) {
+    const actuales = torneo!.desempates;
+    const nuevo = actuales.includes(nombreDesempate)
+      ? actuales.filter((d) => d !== nombreDesempate)
+      : [...actuales, nombreDesempate];
+    cambiarDesempates(torneo!.id, nuevo);
+  }
+
+  function moverDesempate(nombreDesempate: string, direccion: -1 | 1) {
+    const actuales = torneo!.desempates;
+    const i = actuales.indexOf(nombreDesempate);
+    const j = i + direccion;
+    if (i < 0 || j < 0 || j >= actuales.length) return;
+    const copia = [...actuales];
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+    cambiarDesempates(torneo!.id, copia);
   }
 
   async function handleNuevoJugador(e: React.FormEvent) {
@@ -229,6 +249,50 @@ export default function TorneoPage() {
                 {formatoLabel[f]}
               </label>
             ))}
+          </div>
+        )}
+        {puedeEditar && (
+          <div className="mt-3 flex flex-col gap-1">
+            <span className="text-xs font-medium text-zinc-500">Desempates a usar:</span>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-3">
+              {DESEMPATES_DISPONIBLES.map((d) => (
+                <label key={d} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={torneo.desempates.includes(d)}
+                    onChange={() => toggleDesempate(d)}
+                  />
+                  {d}
+                </label>
+              ))}
+            </div>
+            {torneo.desempates.length > 0 && (
+              <div className="mt-1 flex flex-col gap-1 rounded-md border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-xs text-zinc-500">
+                  Orden de prioridad (se usa el primero; si empatan, se pasa al siguiente):
+                </span>
+                {torneo.desempates.map((d, i) => (
+                  <div key={d} className="flex items-center gap-2 text-xs">
+                    <span className="w-4 text-zinc-400">{i + 1}.</span>
+                    <span className="flex-1">{d}</span>
+                    <button
+                      onClick={() => moverDesempate(d, -1)}
+                      disabled={i === 0}
+                      className="rounded border border-zinc-300 px-1.5 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => moverDesempate(d, 1)}
+                      disabled={i === torneo.desempates.length - 1}
+                      className="rounded border border-zinc-300 px-1.5 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      ↓
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

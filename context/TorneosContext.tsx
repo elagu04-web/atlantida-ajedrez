@@ -54,6 +54,7 @@ type TorneosContextType = {
   ) => Promise<string>;
   crearTorneoRapido: (nombre: string) => Promise<string>;
   cambiarFormato: (torneoId: string, formato: FormatoTorneo) => Promise<void>;
+  cambiarDesempates: (torneoId: string, desempates: string[]) => Promise<void>;
   alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -195,6 +196,17 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (!torneo || torneo.estado !== "armado" || torneo.rondas.length > 0) return;
     setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, formato } : t)));
     await supabase.from("torneos").update({ formato }).eq("id", torneoId);
+  }
+
+  /**
+   * A diferencia del formato, los desempates se pueden cambiar en cualquier
+   * momento (armado, en curso, hasta finalizado) — no afectan cómo se
+   * emparejó nada, solo cómo se ordena la tabla de posiciones a partir de
+   * los resultados ya cargados.
+   */
+  async function cambiarDesempates(torneoId: string, desempates: string[]) {
+    setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, desempates } : t)));
+    await supabase.from("torneos").update({ desempates }).eq("id", torneoId);
   }
 
   /**
@@ -446,6 +458,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         crearTorneo,
         crearTorneoRapido,
         cambiarFormato,
+        cambiarDesempates,
         alternarInscripcion,
         obtenerTorneo,
         agregarJugadorATorneo,
