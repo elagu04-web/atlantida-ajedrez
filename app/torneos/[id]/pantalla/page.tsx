@@ -14,6 +14,26 @@ const ETIQUETA_RESULTADO: Record<string, string> = {
   "1/2-1/2": "½ – ½",
 };
 
+const MEDALLA: Record<number, string> = { 0: "🥇", 1: "🥈", 2: "🥉" };
+
+const LOGO_CLUB_URL = "/imagenes/logo-club.png";
+
+function LogoClub() {
+  const [falloLogo, setFalloLogo] = useState(false);
+  if (falloLogo) {
+    return <span className="text-2xl">♞</span>;
+  }
+  return (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={LOGO_CLUB_URL}
+      alt=""
+      className="h-10 w-10 object-contain drop-shadow-[0_0_12px_rgba(96,165,250,0.5)]"
+      onError={() => setFalloLogo(true)}
+    />
+  );
+}
+
 export default function PantallaTorneoPage() {
   const { id } = useParams<{ id: string }>();
   const { obtenerTorneo } = useTorneos();
@@ -21,12 +41,16 @@ export default function PantallaTorneoPage() {
   const torneoBase = obtenerTorneo(id);
 
   const [enVivo, setEnVivo] = useState<{ rondas: RondaTorneo[]; estado: EstadoTorneo } | null>(null);
+  const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
 
   useEffect(() => {
     let activo = true;
     async function refrescar() {
       const { data } = await supabase.from("torneos").select("rondas, estado").eq("id", id).single();
-      if (activo && data) setEnVivo({ rondas: data.rondas ?? [], estado: data.estado });
+      if (activo && data) {
+        setEnVivo({ rondas: data.rondas ?? [], estado: data.estado });
+        setUltimaActualizacion(new Date());
+      }
     }
     refrescar();
     const intervalo = setInterval(refrescar, 3000);
@@ -52,72 +76,128 @@ export default function PantallaTorneoPage() {
   const torneo = enVivo ? { ...torneoBase, rondas: enVivo.rondas, estado: enVivo.estado } : torneoBase;
   const rondaActual = torneo.rondas[torneo.rondas.length - 1] ?? null;
   const standings = standingsConDesempates(torneo);
+  const lider = standings[0];
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-8 text-white">
-      <div className="mb-8 flex items-center justify-between border-b border-zinc-800 pb-6">
-        <div>
-          <div className="text-lg font-medium text-blue-400">♞ Atlántida Ajedrez</div>
-          <h1 className="text-4xl font-bold tracking-tight">{torneo.nombre}</h1>
+    <div
+      className="min-h-screen bg-zinc-950 p-8 text-white"
+      style={{
+        backgroundImage:
+          "radial-gradient(ellipse 90% 60% at 50% -10%, rgba(37,99,235,0.28), transparent), " +
+          "repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 40px, transparent 40px 80px)",
+      }}
+    >
+      <div className="mb-10 flex items-center justify-between border-b border-white/10 pb-7">
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-900/20 ring-1 ring-white/10">
+            <LogoClub />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-400">
+              Atlántida Ajedrez
+              <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-0.5 text-[11px] font-bold tracking-normal text-red-400 ring-1 ring-red-500/30">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+                EN VIVO
+              </span>
+            </div>
+            <h1 className="bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
+              {torneo.nombre}
+            </h1>
+          </div>
         </div>
         {rondaActual && (
-          <div className="rounded-xl bg-blue-600 px-6 py-3 text-2xl font-bold">
-            Ronda {rondaActual.numero}
+          <div className="rounded-2xl bg-gradient-to-b from-blue-500 to-blue-700 px-8 py-4 text-center shadow-lg shadow-blue-900/40">
+            <div className="text-xs font-semibold uppercase tracking-widest text-blue-100">Ronda</div>
+            <div className="text-4xl font-extrabold leading-none">{rondaActual.numero}</div>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.6fr_1fr]">
         <div>
-          <h2 className="mb-4 text-2xl font-semibold text-zinc-400">Partidos de esta ronda</h2>
+          <h2 className="mb-4 text-2xl font-bold text-zinc-300">Partidos de esta ronda</h2>
           {!rondaActual ? (
             <p className="text-xl text-zinc-500">El torneo todavía no arrancó.</p>
           ) : (
             <div className="flex flex-col gap-3">
-              {rondaActual.emparejamientos.map((e) => (
-                <div
-                  key={e.numero}
-                  className="flex items-center gap-4 rounded-xl bg-zinc-900 px-6 py-4"
-                >
-                  <span className="w-10 shrink-0 text-xl font-medium text-zinc-500">{e.numero}</span>
-                  {e.negrasId ? (
-                    <>
-                      <span className="flex-1 truncate text-right text-3xl font-semibold">
-                        {nombreDe(e.blancasId)}
-                      </span>
-                      <span className="shrink-0 text-2xl text-zinc-600">⚪ vs ⚫</span>
-                      <span className="flex-1 truncate text-3xl font-semibold">
-                        {nombreDe(e.negrasId)}
-                      </span>
-                      <span
-                        className={`w-24 shrink-0 rounded-lg py-1 text-center text-xl font-bold ${
-                          e.resultado ? "bg-emerald-700 text-white" : "text-zinc-600"
-                        }`}
-                      >
-                        {e.resultado ? ETIQUETA_RESULTADO[e.resultado] : "—"}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="flex-1 text-3xl font-semibold text-zinc-400">
-                      {nombreDe(e.blancasId)} — descansa
+              {rondaActual.emparejamientos.map((e) => {
+                const ganoBlancas = e.resultado === "1-0";
+                const ganoNegras = e.resultado === "0-1";
+                return (
+                  <div
+                    key={e.numero}
+                    className="flex items-center gap-4 rounded-2xl bg-white/[0.04] px-6 py-4 ring-1 ring-white/10"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-lg font-bold text-zinc-300">
+                      {e.numero}
                     </span>
-                  )}
-                </div>
-              ))}
+                    {e.negrasId ? (
+                      <>
+                        <span
+                          className={`flex-1 truncate text-right text-3xl font-bold ${
+                            ganoBlancas ? "text-amber-300" : "text-white"
+                          }`}
+                        >
+                          {nombreDe(e.blancasId)}
+                        </span>
+                        <span className="flex shrink-0 items-center gap-1.5 text-xl text-zinc-500">
+                          <span className="h-4 w-4 rounded-sm border border-zinc-500 bg-white" />
+                          <span className="text-sm font-medium">vs</span>
+                          <span className="h-4 w-4 rounded-sm border border-zinc-500 bg-zinc-900" />
+                        </span>
+                        <span
+                          className={`flex-1 truncate text-3xl font-bold ${
+                            ganoNegras ? "text-amber-300" : "text-white"
+                          }`}
+                        >
+                          {nombreDe(e.negrasId)}
+                        </span>
+                        <span
+                          className={`flex w-28 shrink-0 items-center justify-center gap-1.5 rounded-xl py-2 text-center text-xl font-extrabold ${
+                            e.resultado
+                              ? "bg-gradient-to-b from-emerald-500 to-emerald-700 text-white shadow shadow-emerald-900/40"
+                              : "text-zinc-600"
+                          }`}
+                        >
+                          {e.resultado ? (
+                            ETIQUETA_RESULTADO[e.resultado]
+                          ) : (
+                            <>
+                              <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-500" />
+                              <span className="text-sm font-semibold">jugando</span>
+                            </>
+                          )}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="flex-1 text-3xl font-bold text-zinc-400">
+                        {nombreDe(e.blancasId)} <span className="text-xl font-medium">— descansa</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
 
         <div>
-          <h2 className="mb-4 text-2xl font-semibold text-zinc-400">Tabla de posiciones</h2>
-          <div className="overflow-hidden rounded-xl bg-zinc-900">
+          <h2 className="mb-4 text-2xl font-bold text-zinc-300">Tabla de posiciones</h2>
+          <div className="overflow-hidden rounded-2xl bg-white/[0.04] ring-1 ring-white/10">
             <table className="w-full">
               <tbody>
                 {standings.map((s, i) => (
-                  <tr key={s.jugadorId} className="border-b border-zinc-800 last:border-0">
-                    <td className="px-4 py-3 text-lg text-zinc-500">{i + 1}</td>
-                    <td className="px-4 py-3 text-xl font-medium">{nombreDe(s.jugadorId)}</td>
-                    <td className="px-4 py-3 text-right font-mono text-xl font-bold text-blue-400">
+                  <tr
+                    key={s.jugadorId}
+                    className={`border-b border-white/5 last:border-0 ${
+                      i === 0 && lider ? "bg-amber-400/10" : ""
+                    }`}
+                  >
+                    <td className="w-12 px-4 py-3 text-lg text-zinc-500">
+                      {MEDALLA[i] ?? i + 1}
+                    </td>
+                    <td className="px-2 py-3 text-xl font-semibold">{nombreDe(s.jugadorId)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-2xl font-extrabold text-blue-400">
                       {s.puntos}
                     </td>
                   </tr>
@@ -132,6 +212,13 @@ export default function PantallaTorneoPage() {
           </div>
         </div>
       </div>
+
+      {ultimaActualizacion && (
+        <p className="mt-8 text-center text-xs text-zinc-600">
+          Se actualiza solo · última actualización{" "}
+          {ultimaActualizacion.toLocaleTimeString("es-UY", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+        </p>
+      )}
     </div>
   );
 }
