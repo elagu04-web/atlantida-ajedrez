@@ -71,6 +71,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     rondasObjetivo: fila.rondas_objetivo ?? null,
     creadoEn: fila.created_at,
     excluirDeElo: fila.excluir_elo === true,
+    inscriptosIds: [],
   };
 }
 

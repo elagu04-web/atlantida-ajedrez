@@ -24,9 +24,22 @@ const formatoLabel: Record<string, string> = {
 export default function TorneosPage() {
   const router = useRouter();
   const jugadoresConStats = useJugadoresEnVivo();
-  const { torneos, crearTorneo, eliminarTorneo, cargando } = useTorneos();
+  const { torneos, crearTorneo, crearTorneoRapido, eliminarTorneo, cargando } = useTorneos();
   const { session } = useAuth();
   const puedeEditar = Boolean(session);
+
+  const [nombreRapido, setNombreRapido] = useState("");
+  const [creandoRapido, setCreandoRapido] = useState(false);
+
+  async function handleCrearRapido(e: React.FormEvent) {
+    e.preventDefault();
+    const nombreLimpio = nombreRapido.trim();
+    if (!nombreLimpio) return;
+    setCreandoRapido(true);
+    const id = await crearTorneoRapido(nombreLimpio);
+    setCreandoRapido(false);
+    if (id) router.push(`/torneos/${id}`);
+  }
 
   const [nombre, setNombre] = useState("");
   const [formato, setFormato] = useState<FormatoTorneo>("suizo");
@@ -107,11 +120,47 @@ export default function TorneosPage() {
           Iniciá sesión para crear torneos o borrarlos.
         </p>
       )}
+
+      {puedeEditar && (
+        <form
+          onSubmit={handleCrearRapido}
+          className="flex flex-wrap items-end gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4"
+        >
+          <div className="flex flex-col gap-1">
+            <label htmlFor="nombreRapido" className="text-xs font-medium text-blue-800">
+              Creación rápida — solo el nombre
+            </label>
+            <input
+              id="nombreRapido"
+              type="text"
+              value={nombreRapido}
+              onChange={(e) => setNombreRapido(e.target.value)}
+              placeholder="Ej: Torneo del jueves"
+              className="w-64 rounded-md border border-blue-300 px-3 py-2 text-sm"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={!nombreRapido.trim() || creandoRapido}
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {creandoRapido ? "Creando..." : "Crear y abrir inscripción"}
+          </button>
+          <span className="text-xs text-blue-700">
+            Formato, jugadores y desempates se eligen después — esto solo publica el torneo para
+            que la gente se pueda anotar.
+          </span>
+        </form>
+      )}
+
       {puedeEditar && (
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-5"
       >
+        <span className="text-xs font-medium text-zinc-500">
+          O crear con todos los detalles de una:
+        </span>
         <div className="flex flex-col gap-1">
           <label htmlFor="nombre" className="text-xs font-medium text-zinc-600">
             Nombre del torneo

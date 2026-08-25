@@ -14,6 +14,7 @@ import {
   puedeEditarEmparejamientos,
   determinarCampeon,
   SlotEmparejamiento,
+  type FormatoTorneo,
 } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
 
@@ -53,6 +54,7 @@ export default function TorneoPage() {
     finalizarTorneo,
     standingsDeTorneo,
     registrarFinalDesempate,
+    cambiarFormato,
     cargando,
   } = useTorneos();
   const { session } = useAuth();
@@ -213,7 +215,66 @@ export default function TorneoPage() {
           {torneo.rondasObjetivo && <> · {torneo.rondasObjetivo} rondas planificadas</>}
           {torneo.desempates.length > 0 && <> · Desempates: {torneo.desempates.join(", ")}</>}
         </p>
+        {puedeEditar && torneo.estado === "armado" && torneo.rondas.length === 0 && (
+          <div className="mt-2 flex items-center gap-3 text-xs">
+            <span className="font-medium text-zinc-500">Cambiar formato:</span>
+            {(["suizo", "round-robin", "match"] as FormatoTorneo[]).map((f) => (
+              <label key={f} className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="formatoEdit"
+                  checked={torneo.formato === f}
+                  onChange={() => cambiarFormato(torneo.id, f)}
+                />
+                {formatoLabel[f]}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
+
+      {torneo.estado === "armado" && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-semibold text-blue-900">
+              Anotados para este torneo ({torneo.inscriptosIds.length})
+            </h2>
+            <Link
+              href={`/torneos/${torneo.id}/inscribirse`}
+              target="_blank"
+              className="rounded-md border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+            >
+              🔗 Abrir página para anotarse
+            </Link>
+          </div>
+          {torneo.inscriptosIds.length === 0 ? (
+            <p className="text-sm text-blue-700">Todavía no se anotó nadie.</p>
+          ) : (
+            <ul className="flex flex-col gap-1">
+              {torneo.inscriptosIds.map((jid) => {
+                const j = jugadores.find((x) => x.id === jid);
+                const yaEnLista = torneo.jugadoresIds.includes(jid);
+                return (
+                  <li key={jid} className="flex items-center justify-between text-sm">
+                    <span>{j ? nombreVisible(j) : "?"}</span>
+                    {puedeEditar &&
+                      (yaEnLista ? (
+                        <span className="text-xs text-emerald-700">✓ ya está en el torneo</span>
+                      ) : (
+                        <button
+                          onClick={() => agregarJugadorATorneo(torneo.id, jid)}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          + Agregar al torneo
+                        </button>
+                      ))}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="mb-3 font-semibold">Jugadores inscriptos ({inscriptos.length})</h2>

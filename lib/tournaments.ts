@@ -37,6 +37,10 @@ export type Torneo = {
   // Registro de la final de desempate jugada aparte (tradición del club:
   // un empate en la punta no se resuelve por planilla, se juega una final).
   finalDesempate?: FinalDesempate | null;
+  // Jugadores que se anotaron solos para este torneo (antes de que el
+  // admin arme la lista final de jugadoresIds). Solo tiene sentido
+  // mientras el torneo está "armado".
+  inscriptosIds: string[];
 };
 
 export type FinalDesempate = {

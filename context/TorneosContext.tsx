@@ -39,6 +39,7 @@ type FilaTorneo = {
   created_at: string;
   excluir_elo: boolean | null;
   final_desempate: FinalDesempate | null;
+  inscriptos_ids: string[] | null;
 };
 
 type TorneosContextType = {
@@ -51,6 +52,9 @@ type TorneosContextType = {
     desempates: string[],
     rondasObjetivo: number | null
   ) => Promise<string>;
+  crearTorneoRapido: (nombre: string) => Promise<string>;
+  cambiarFormato: (torneoId: string, formato: FormatoTorneo) => Promise<void>;
+  alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
   quitarJugadorDeTorneo: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -99,6 +103,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     creadoEn: fila.created_at,
     excluirDeElo: fila.excluir_elo === true,
     finalDesempate: fila.final_desempate ?? null,
+    inscriptosIds: fila.inscriptos_ids ?? [],
   };
 }
 
@@ -155,6 +160,62 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       `Se creó el torneo "${nuevo.nombre}" (${etiquetaFormato}, ${jugadoresIds.length} jugadores).`
     );
     return nuevo.id;
+  }
+
+  /**
+   * Crea un torneo con solo el nombre — formato, jugadores y desempates se
+   * terminan de definir después desde la página del torneo, mientras siga
+   * "armado". Pensado para dejarlo publicado rápido y abrir la inscripción.
+   */
+  async function crearTorneoRapido(nombre: string) {
+    const { data, error } = await supabase
+      .from("torneos")
+      .insert({
+        nombre,
+        formato: "suizo",
+        desempates: [],
+        jugadores_ids: [],
+        rondas: [],
+        estado: "armado",
+        rondas_objetivo: null,
+        inscriptos_ids: [],
+      })
+      .select()
+      .single();
+    if (error || !data) return "";
+    const nuevo = filaATorneo(data);
+    setTorneos((actuales) => [...actuales, nuevo]);
+    registrar("torneo", `Se creó el torneo "${nuevo.nombre}" (a definir) — abierto para inscripción.`);
+    return nuevo.id;
+  }
+
+  /** Solo tiene sentido mientras el torneo sigue armado, sin rondas generadas. */
+  async function cambiarFormato(torneoId: string, formato: FormatoTorneo) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo || torneo.estado !== "armado" || torneo.rondas.length > 0) return;
+    setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, formato } : t)));
+    await supabase.from("torneos").update({ formato }).eq("id", torneoId);
+  }
+
+  /**
+   * Anotarse/desanotarse de un torneo próximo. A propósito no exige sesión
+   * de admin — cualquiera puede tocar su propio nombre en la lista pública
+   * de inscripción (como una planilla física, funciona a confianza). El
+   * permiso real que lo hace posible sin login vive en Supabase: una
+   * política RLS que solo deja tocar la columna inscriptos_ids, y solo
+   * mientras el torneo sigue "armado".
+   */
+  async function alternarInscripcion(torneoId: string, jugadorId: string) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo || torneo.estado !== "armado") return;
+    const yaInscripto = torneo.inscriptosIds.includes(jugadorId);
+    const nuevosIds = yaInscripto
+      ? torneo.inscriptosIds.filter((id) => id !== jugadorId)
+      : [...torneo.inscriptosIds, jugadorId];
+    setTorneos((actuales) =>
+      actuales.map((t) => (t.id === torneoId ? { ...t, inscriptosIds: nuevosIds } : t))
+    );
+    await supabase.from("torneos").update({ inscriptos_ids: nuevosIds }).eq("id", torneoId);
   }
 
   function obtenerTorneo(id: string) {
@@ -383,6 +444,9 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         torneos,
         cargando,
         crearTorneo,
+        crearTorneoRapido,
+        cambiarFormato,
+        alternarInscripcion,
         obtenerTorneo,
         agregarJugadorATorneo,
         quitarJugadorDeTorneo,
