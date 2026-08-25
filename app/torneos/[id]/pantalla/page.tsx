@@ -231,16 +231,16 @@ export default function PantallaTorneoPage() {
                 return (
                   <div
                     key={e.numero}
-                    className="flex items-center gap-5 rounded-2xl bg-white/[0.04] px-7 py-6 ring-1 ring-white/10"
+                    className="grid grid-cols-[56px_1fr_110px_1fr_140px] items-center gap-5 rounded-2xl bg-white/[0.04] px-7 py-6 ring-1 ring-white/10"
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-zinc-300">
                       {e.numero}
                     </span>
                     {e.negrasId ? (
                       <>
-                        <span className="flex flex-1 items-center justify-end gap-4">
+                        <span className="flex min-w-0 items-center justify-end gap-4">
                           <span
-                            className={`truncate text-right text-4xl font-bold ${
+                            className={`min-w-0 truncate text-right text-4xl font-bold ${
                               ganoBlancas ? "text-amber-300" : "text-white"
                             }`}
                           >
@@ -248,15 +248,15 @@ export default function PantallaTorneoPage() {
                           </span>
                           <FotoJugador fotoUrl={fotoDe(e.blancasId)} nombre={nombreDe(e.blancasId)} tam={64} />
                         </span>
-                        <span className="flex shrink-0 items-center gap-2 text-2xl text-zinc-500">
+                        <span className="flex shrink-0 items-center justify-center gap-2 text-2xl text-zinc-500">
                           <span className="h-5 w-5 rounded-sm border border-zinc-500 bg-white" />
                           <span className="text-base font-medium">vs</span>
                           <span className="h-5 w-5 rounded-sm border border-zinc-500 bg-zinc-900" />
                         </span>
-                        <span className="flex flex-1 items-center gap-4">
+                        <span className="flex min-w-0 items-center gap-4">
                           <FotoJugador fotoUrl={fotoDe(e.negrasId)} nombre={nombreDe(e.negrasId)} tam={64} />
                           <span
-                            className={`truncate text-4xl font-bold ${
+                            className={`min-w-0 truncate text-4xl font-bold ${
                               ganoNegras ? "text-amber-300" : "text-white"
                             }`}
                           >
@@ -264,7 +264,7 @@ export default function PantallaTorneoPage() {
                           </span>
                         </span>
                         <span
-                          className={`flex w-32 shrink-0 items-center justify-center gap-1.5 rounded-xl py-3 text-center text-2xl font-extrabold ${
+                          className={`flex items-center justify-center gap-1.5 rounded-xl py-3 text-center text-2xl font-extrabold ${
                             e.resultado
                               ? "bg-gradient-to-b from-emerald-500 to-emerald-700 text-white shadow shadow-emerald-900/40"
                               : "text-zinc-600"
@@ -281,9 +281,10 @@ export default function PantallaTorneoPage() {
                         </span>
                       </>
                     ) : (
-                      <span className="flex flex-1 items-center gap-4 text-4xl font-bold text-zinc-400">
+                      <span className="col-span-4 flex min-w-0 items-center gap-4 text-4xl font-bold text-zinc-400">
                         <FotoJugador fotoUrl={fotoDe(e.blancasId)} nombre={nombreDe(e.blancasId)} tam={64} />
-                        {nombreDe(e.blancasId)} <span className="text-2xl font-medium">— descansa</span>
+                        <span className="truncate">{nombreDe(e.blancasId)}</span>
+                        <span className="shrink-0 text-2xl font-medium">— descansa</span>
                       </span>
                     )}
                   </div>
