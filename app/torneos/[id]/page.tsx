@@ -190,11 +190,20 @@ export default function TorneoPage() {
         <Link href="/torneos" className="text-sm text-blue-600 hover:underline">
           ← Volver a torneos
         </Link>
-        <div className="mt-2 flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{torneo.nombre}</h1>
-          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
-            {estadoLabel[torneo.estado]}
-          </span>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">{torneo.nombre}</h1>
+            <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+              {estadoLabel[torneo.estado]}
+            </span>
+          </div>
+          <Link
+            href={`/torneos/${torneo.id}/pantalla`}
+            target="_blank"
+            className="rounded-md border border-blue-300 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50"
+          >
+            📺 Abrir pantalla para mostrar
+          </Link>
         </div>
         <p className="mt-1 text-sm text-zinc-500">
           {formatoLabel[torneo.formato]}
