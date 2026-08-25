@@ -7,7 +7,6 @@ import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useTorneos } from "@/context/TorneosContext";
 import { useAuth } from "@/context/AuthContext";
-import { jugoRecientemente } from "@/lib/elo";
 import { nombreVisible } from "@/lib/players";
 
 export default function InscribirseTorneoPage() {
@@ -23,10 +22,9 @@ export default function InscribirseTorneoPage() {
   const [errorReclamo, setErrorReclamo] = useState<string | null>(null);
 
   const elegibles = useMemo(() => {
-    const activos = jugadores.filter(jugoRecientemente);
     const filtrados = busqueda.trim()
-      ? activos.filter((j) => nombreVisible(j).toLowerCase().includes(busqueda.trim().toLowerCase()))
-      : activos;
+      ? jugadores.filter((j) => nombreVisible(j).toLowerCase().includes(busqueda.trim().toLowerCase()))
+      : jugadores;
     return [...filtrados].sort((a, b) => nombreVisible(a).localeCompare(nombreVisible(b)));
   }, [jugadores, busqueda]);
 
