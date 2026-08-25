@@ -1,7 +1,7 @@
 import { RoundRobin, Swiss } from "tournament-pairings";
 import type { Match } from "tournament-pairings/interfaces";
 
-export type FormatoTorneo = "round-robin" | "suizo";
+export type FormatoTorneo = "round-robin" | "suizo" | "match";
 export type ResultadoPartida = "1-0" | "0-1" | "1/2-1/2";
 
 export type EmparejamientoTorneo = {
@@ -86,6 +86,28 @@ export function generarRoundRobin(jugadoresIds: string[]): RondaTorneo[] {
       numero,
       emparejamientos: ms.map((m, i) => construirEmparejamiento(m, i + 1)),
     }));
+}
+
+export const PARTIDAS_MATCH_POR_DEFECTO = 2;
+
+/**
+ * Formato "match": dos jugadores se enfrentan varias partidas seguidas,
+ * alternando quién juega con blancas cada vez (empieza el primero de la
+ * lista). Pensado para cuando vienen solo dos personas al club — no tiene
+ * sentido armar un suizo ni un round robin con dos jugadores.
+ */
+export function generarMatch(jugadoresIds: string[], cantidad: number): RondaTorneo[] {
+  const [a, b] = jugadoresIds;
+  const rondas: RondaTorneo[] = [];
+  for (let i = 0; i < cantidad; i++) {
+    const blancasId = i % 2 === 0 ? a : b;
+    const negrasId = i % 2 === 0 ? b : a;
+    rondas.push({
+      numero: i + 1,
+      emparejamientos: [{ numero: 1, blancasId, negrasId, resultado: null }],
+    });
+  }
+  return rondas;
 }
 
 export function calcularStandings(torneo: Torneo): Map<string, Standing> {

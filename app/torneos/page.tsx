@@ -18,6 +18,7 @@ const estadoLabel: Record<string, string> = {
 const formatoLabel: Record<string, string> = {
   "round-robin": "Round robin",
   suizo: "Sistema suizo",
+  match: "Match",
 };
 
 export default function TorneosPage() {
@@ -69,11 +70,13 @@ export default function TorneosPage() {
     });
   }
 
+  const formatoInvalido = formato === "match" && seleccionados.size !== 2;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const nombreLimpio = nombre.trim();
-    if (!nombreLimpio || seleccionados.size < 2) return;
-    const rondas = formato === "suizo" && rondasObjetivo ? Number(rondasObjetivo) : null;
+    if (!nombreLimpio || seleccionados.size < 2 || formatoInvalido) return;
+    const rondas = (formato === "suizo" || formato === "match") && rondasObjetivo ? Number(rondasObjetivo) : null;
     const confirmado = window.confirm(
       `¿Crear el torneo "${nombreLimpio}"?\n\nFormato: ${formatoLabel[formato]}\nJugadores: ${seleccionados.size}${
         rondas ? `\nRondas planificadas: ${rondas}` : ""
@@ -144,13 +147,28 @@ export default function TorneosPage() {
               />
               Round robin (todos contra todos)
             </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="formato"
+                checked={formato === "match"}
+                onChange={() => setFormato("match")}
+              />
+              Match (2 jugadores)
+            </label>
           </div>
+          {formato === "match" && (
+            <span className="text-xs text-zinc-500">
+              Para cuando vienen solo dos personas: se enfrentan varias partidas seguidas,
+              alternando quién juega con blancas. Elegí exactamente 2 jugadores abajo.
+            </span>
+          )}
         </div>
 
-        {formato === "suizo" && (
+        {(formato === "suizo" || formato === "match") && (
           <div className="flex flex-col gap-1">
             <label htmlFor="rondasObjetivo" className="text-xs font-medium text-zinc-600">
-              Cantidad de rondas (opcional)
+              {formato === "match" ? "Cantidad de partidas" : "Cantidad de rondas (opcional)"}
             </label>
             <input
               id="rondasObjetivo"
@@ -158,11 +176,13 @@ export default function TorneosPage() {
               min={1}
               value={rondasObjetivo}
               onChange={(e) => setRondasObjetivo(e.target.value)}
-              placeholder="Ej: 5"
+              placeholder={formato === "match" ? "Ej: 2" : "Ej: 5"}
               className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm"
             />
             <span className="text-xs text-zinc-500">
-              Si la dejás vacía, vas generando rondas de a una sin límite fijo.
+              {formato === "match"
+                ? "Si la dejás vacía, el match es a 2 partidas."
+                : "Si la dejás vacía, vas generando rondas de a una sin límite fijo."}
             </span>
           </div>
         )}
@@ -282,9 +302,16 @@ export default function TorneosPage() {
           )}
         </div>
 
+        {formatoInvalido && (
+          <p className="text-xs text-amber-600">
+            El formato Match necesita exactamente 2 jugadores seleccionados (elegiste{" "}
+            {seleccionados.size}).
+          </p>
+        )}
+
         <button
           type="submit"
-          disabled={!nombre.trim() || seleccionados.size < 2}
+          disabled={!nombre.trim() || seleccionados.size < 2 || formatoInvalido}
           className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Crear torneo

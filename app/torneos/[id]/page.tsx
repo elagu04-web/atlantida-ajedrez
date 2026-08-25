@@ -26,6 +26,7 @@ const estadoLabel: Record<string, string> = {
 const formatoLabel: Record<string, string> = {
   "round-robin": "Round robin",
   suizo: "Sistema suizo",
+  match: "Match",
 };
 
 const ABREVIATURA_DESEMPATE: Record<string, string> = {
@@ -169,20 +170,22 @@ export default function TorneoPage() {
     torneo.formato === "suizo" &&
     torneo.rondasObjetivo !== null &&
     torneo.rondas.length >= torneo.rondasObjetivo;
+  const generaTodoDeUnaVez = torneo.formato === "round-robin" || torneo.formato === "match";
+  const cantidadInvalidaParaMatch = torneo.formato === "match" && torneo.jugadoresIds.length !== 2;
   const puedeGenerarRondas =
     torneo.estado !== "finalizado" &&
     torneo.jugadoresIds.length >= 2 &&
+    !cantidadInvalidaParaMatch &&
     !alcanzoRondasObjetivo &&
-    (torneo.formato === "round-robin"
-      ? torneo.rondas.length === 0
-      : !ultimaRonda || rondaCompleta(ultimaRonda));
+    (generaTodoDeUnaVez ? torneo.rondas.length === 0 : !ultimaRonda || rondaCompleta(ultimaRonda));
 
-  const textoBotonRondas =
-    torneo.formato === "round-robin"
-      ? "Generar todas las rondas"
-      : torneo.rondas.length === 0
-      ? "Generar ronda 1"
-      : `Generar ronda ${torneo.rondas.length + 1}`;
+  const textoBotonRondas = generaTodoDeUnaVez
+    ? torneo.formato === "match"
+      ? "Generar partidas del match"
+      : "Generar todas las rondas"
+    : torneo.rondas.length === 0
+    ? "Generar ronda 1"
+    : `Generar ronda ${torneo.rondas.length + 1}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -293,6 +296,12 @@ export default function TorneoPage() {
           </p>
         )}
       </div>
+
+      {cantidadInvalidaParaMatch && torneo.rondas.length === 0 && (
+        <p className="text-sm text-amber-600">
+          El formato Match necesita exactamente 2 jugadores inscriptos (hay {torneo.jugadoresIds.length}).
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         {puedeGenerarRondas && puedeEditar && (

@@ -10,6 +10,8 @@ import {
   StandingConDesempates,
   FinalDesempate,
   generarRoundRobin,
+  generarMatch,
+  PARTIDAS_MATCH_POR_DEFECTO,
   generarRondaUnoDutch,
   generarRondaSuiza,
   standingsConDesempates,
@@ -146,9 +148,11 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (error || !data) return "";
     const nuevo = filaATorneo(data);
     setTorneos((actuales) => [...actuales, nuevo]);
+    const etiquetaFormato =
+      formato === "suizo" ? "Sistema suizo" : formato === "match" ? "Match" : "Round robin";
     registrar(
       "torneo",
-      `Se creó el torneo "${nuevo.nombre}" (${formato === "suizo" ? "Sistema suizo" : "Round robin"}, ${jugadoresIds.length} jugadores).`
+      `Se creó el torneo "${nuevo.nombre}" (${etiquetaFormato}, ${jugadoresIds.length} jugadores).`
     );
     return nuevo.id;
   }
@@ -191,6 +195,10 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (torneo.formato === "round-robin") {
       if (torneo.rondas.length > 0) return;
       nuevasRondas = generarRoundRobin(torneo.jugadoresIds);
+    } else if (torneo.formato === "match") {
+      if (torneo.rondas.length > 0) return;
+      if (torneo.jugadoresIds.length !== 2) return;
+      nuevasRondas = generarMatch(torneo.jugadoresIds, torneo.rondasObjetivo ?? PARTIDAS_MATCH_POR_DEFECTO);
     } else {
       if (torneo.rondasObjetivo && torneo.rondas.length >= torneo.rondasObjetivo) {
         return; // ya se jugaron todas las rondas planificadas
@@ -220,7 +228,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       .eq("id", torneoId);
     registrar(
       "torneo",
-      torneo.formato === "round-robin"
+      torneo.formato === "round-robin" || torneo.formato === "match"
         ? `Se generaron todas las rondas del torneo "${torneo.nombre}".`
         : `Se generó la ronda ${nuevasRondas.length} del torneo "${torneo.nombre}".`
     );
