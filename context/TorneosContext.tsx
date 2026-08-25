@@ -40,6 +40,7 @@ type FilaTorneo = {
   excluir_elo: boolean | null;
   final_desempate: FinalDesempate | null;
   inscriptos_ids: string[] | null;
+  asistieron_ids: string[] | null;
 };
 
 type TorneosContextType = {
@@ -56,6 +57,7 @@ type TorneosContextType = {
   cambiarFormato: (torneoId: string, formato: FormatoTorneo) => Promise<void>;
   cambiarDesempates: (torneoId: string, desempates: string[]) => Promise<void>;
   alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
+  alternarAsistencia: (torneoId: string, jugadorId: string) => Promise<void>;
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
   quitarJugadorDeTorneo: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -105,6 +107,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     excluirDeElo: fila.excluir_elo === true,
     finalDesempate: fila.final_desempate ?? null,
     inscriptosIds: fila.inscriptos_ids ?? [],
+    asistieronIds: fila.asistieron_ids ?? [],
   };
 }
 
@@ -228,6 +231,24 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       actuales.map((t) => (t.id === torneoId ? { ...t, inscriptosIds: nuevosIds } : t))
     );
     await supabase.from("torneos").update({ inscriptos_ids: nuevosIds }).eq("id", torneoId);
+  }
+
+  /**
+   * Marca (o desmarca) que un inscripto efectivamente vino — a diferencia de
+   * inscribirse, esto es solo para que el admin se organice, no requiere que
+   * el torneo siga armado ni afecta nada del torneo en sí.
+   */
+  async function alternarAsistencia(torneoId: string, jugadorId: string) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo) return;
+    const yaVino = torneo.asistieronIds.includes(jugadorId);
+    const nuevosIds = yaVino
+      ? torneo.asistieronIds.filter((id) => id !== jugadorId)
+      : [...torneo.asistieronIds, jugadorId];
+    setTorneos((actuales) =>
+      actuales.map((t) => (t.id === torneoId ? { ...t, asistieronIds: nuevosIds } : t))
+    );
+    await supabase.from("torneos").update({ asistieron_ids: nuevosIds }).eq("id", torneoId);
   }
 
   function obtenerTorneo(id: string) {
@@ -460,6 +481,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         cambiarFormato,
         cambiarDesempates,
         alternarInscripcion,
+        alternarAsistencia,
         obtenerTorneo,
         agregarJugadorATorneo,
         quitarJugadorDeTorneo,

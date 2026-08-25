@@ -25,7 +25,7 @@ type JugadoresContextType = {
   actualizarFoto: (id: string, fotoUrl: string | null) => Promise<void>;
   actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
-  reclamarJugador: (id: string, email: string) => Promise<boolean>;
+  reclamarJugador: (id: string, email: string) => Promise<{ ok: boolean; error: string | null }>;
 };
 
 const JugadoresContext = createContext<JugadoresContextType | null>(null);
@@ -144,9 +144,10 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
       .is("email", null)
       .select()
       .single();
-    if (error || !data) return false;
+    if (error) return { ok: false, error: error.message };
+    if (!data) return { ok: false, error: null };
     setJugadores((actuales) => actuales.map((j) => (j.id === id ? { ...j, email } : j)));
-    return true;
+    return { ok: true, error: null };
   }
 
   return (

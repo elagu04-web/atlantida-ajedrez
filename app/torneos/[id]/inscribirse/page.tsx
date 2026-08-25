@@ -63,11 +63,13 @@ export default function InscribirseTorneoPage() {
     if (!session) return;
     setEnVuelo(jugadorId);
     setErrorReclamo(null);
-    const ok = await reclamarJugador(jugadorId, session.user.email!);
+    const resultado = await reclamarJugador(jugadorId, session.user.email!);
     setEnVuelo(null);
-    if (!ok) {
+    if (!resultado.ok) {
       setErrorReclamo(
-        "Ese nombre ya fue reclamado por otra persona. Si te parece que es un error, avisale al admin."
+        resultado.error
+          ? `No se pudo guardar: ${resultado.error}`
+          : "Ese nombre ya fue reclamado por otra persona. Si te parece que es un error, avisale al admin."
       );
     }
   }

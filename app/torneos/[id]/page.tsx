@@ -57,6 +57,7 @@ export default function TorneoPage() {
     registrarFinalDesempate,
     cambiarFormato,
     cambiarDesempates,
+    alternarAsistencia,
     cargando,
   } = useTorneos();
   const { esAdmin } = useAuth();
@@ -318,9 +319,21 @@ export default function TorneoPage() {
               {torneo.inscriptosIds.map((jid) => {
                 const j = jugadores.find((x) => x.id === jid);
                 const yaEnLista = torneo.jugadoresIds.includes(jid);
+                const vino = torneo.asistieronIds.includes(jid);
                 return (
                   <li key={jid} className="flex items-center justify-between text-sm">
-                    <span>{j ? nombreVisible(j) : "?"}</span>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={vino}
+                        onChange={() => alternarAsistencia(torneo.id, jid)}
+                        disabled={!puedeEditar}
+                        title="Marcar si vino de verdad"
+                      />
+                      <span className={vino ? "font-medium text-emerald-800" : ""}>
+                        {j ? nombreVisible(j) : "?"}
+                      </span>
+                    </label>
                     {puedeEditar &&
                       (yaEnLista ? (
                         <span className="text-xs text-emerald-700">✓ ya está en el torneo</span>

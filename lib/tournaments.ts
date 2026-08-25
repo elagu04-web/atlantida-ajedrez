@@ -41,6 +41,10 @@ export type Torneo = {
   // admin arme la lista final de jugadoresIds). Solo tiene sentido
   // mientras el torneo está "armado".
   inscriptosIds: string[];
+  // De los inscriptos, cuáles marcó el admin como que efectivamente
+  // vinieron — anotarse y venir son cosas distintas, esto es solo para
+  // organizarse (no afecta nada del torneo en sí).
+  asistieronIds: string[];
 };
 
 export type FinalDesempate = {
