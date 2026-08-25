@@ -34,6 +34,66 @@ function LogoClub() {
   );
 }
 
+function FotoJugador({
+  fotoUrl,
+  nombre,
+  tam,
+}: {
+  fotoUrl: string | null | undefined;
+  nombre: string;
+  tam: number;
+}) {
+  const estilo = { width: tam, height: tam };
+  if (fotoUrl) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element */
+      <img
+        src={fotoUrl}
+        alt=""
+        style={estilo}
+        className="shrink-0 rounded-full border-2 border-white/20 object-cover"
+      />
+    );
+  }
+  return (
+    <span
+      style={estilo}
+      className="flex shrink-0 items-center justify-center rounded-full border-2 border-white/20 bg-white/10 font-bold text-zinc-300"
+    >
+      {nombre.charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
+function BotonPantallaCompleta() {
+  const [enPantallaCompleta, setEnPantallaCompleta] = useState(false);
+
+  useEffect(() => {
+    function actualizar() {
+      setEnPantallaCompleta(Boolean(document.fullscreenElement));
+    }
+    document.addEventListener("fullscreenchange", actualizar);
+    return () => document.removeEventListener("fullscreenchange", actualizar);
+  }, []);
+
+  function alternar() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }
+
+  return (
+    <button
+      onClick={alternar}
+      className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-zinc-300 ring-1 ring-white/10 hover:bg-white/20"
+    >
+      {enPantallaCompleta ? "⤡ Salir de pantalla completa" : "⛶ Pantalla completa"}
+    </button>
+  );
+}
+
 export default function PantallaTorneoPage() {
   const { id } = useParams<{ id: string }>();
   const { obtenerTorneo } = useTorneos();
@@ -63,6 +123,10 @@ export default function PantallaTorneoPage() {
   function nombreDe(jugadorId: string) {
     const j = jugadores.find((x) => x.id === jugadorId);
     return j ? nombreVisible(j) : "?";
+  }
+
+  function fotoDe(jugadorId: string) {
+    return jugadores.find((x) => x.id === jugadorId)?.fotoUrl ?? null;
   }
 
   if (!torneoBase) {
@@ -105,12 +169,15 @@ export default function PantallaTorneoPage() {
             </h1>
           </div>
         </div>
-        {rondaActual && (
-          <div className="rounded-2xl bg-gradient-to-b from-blue-500 to-blue-700 px-8 py-4 text-center shadow-lg shadow-blue-900/40">
-            <div className="text-xs font-semibold uppercase tracking-widest text-blue-100">Ronda</div>
-            <div className="text-4xl font-extrabold leading-none">{rondaActual.numero}</div>
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          <BotonPantallaCompleta />
+          {rondaActual && (
+            <div className="rounded-2xl bg-gradient-to-b from-blue-500 to-blue-700 px-8 py-4 text-center shadow-lg shadow-blue-900/40">
+              <div className="text-xs font-semibold uppercase tracking-widest text-blue-100">Ronda</div>
+              <div className="text-4xl font-extrabold leading-none">{rondaActual.numero}</div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.6fr_1fr]">
@@ -133,24 +200,30 @@ export default function PantallaTorneoPage() {
                     </span>
                     {e.negrasId ? (
                       <>
-                        <span
-                          className={`flex-1 truncate text-right text-3xl font-bold ${
-                            ganoBlancas ? "text-amber-300" : "text-white"
-                          }`}
-                        >
-                          {nombreDe(e.blancasId)}
+                        <span className="flex flex-1 items-center justify-end gap-3">
+                          <span
+                            className={`truncate text-right text-3xl font-bold ${
+                              ganoBlancas ? "text-amber-300" : "text-white"
+                            }`}
+                          >
+                            {nombreDe(e.blancasId)}
+                          </span>
+                          <FotoJugador fotoUrl={fotoDe(e.blancasId)} nombre={nombreDe(e.blancasId)} tam={48} />
                         </span>
                         <span className="flex shrink-0 items-center gap-1.5 text-xl text-zinc-500">
                           <span className="h-4 w-4 rounded-sm border border-zinc-500 bg-white" />
                           <span className="text-sm font-medium">vs</span>
                           <span className="h-4 w-4 rounded-sm border border-zinc-500 bg-zinc-900" />
                         </span>
-                        <span
-                          className={`flex-1 truncate text-3xl font-bold ${
-                            ganoNegras ? "text-amber-300" : "text-white"
-                          }`}
-                        >
-                          {nombreDe(e.negrasId)}
+                        <span className="flex flex-1 items-center gap-3">
+                          <FotoJugador fotoUrl={fotoDe(e.negrasId)} nombre={nombreDe(e.negrasId)} tam={48} />
+                          <span
+                            className={`truncate text-3xl font-bold ${
+                              ganoNegras ? "text-amber-300" : "text-white"
+                            }`}
+                          >
+                            {nombreDe(e.negrasId)}
+                          </span>
                         </span>
                         <span
                           className={`flex w-28 shrink-0 items-center justify-center gap-1.5 rounded-xl py-2 text-center text-xl font-extrabold ${
@@ -170,7 +243,8 @@ export default function PantallaTorneoPage() {
                         </span>
                       </>
                     ) : (
-                      <span className="flex-1 text-3xl font-bold text-zinc-400">
+                      <span className="flex flex-1 items-center gap-3 text-3xl font-bold text-zinc-400">
+                        <FotoJugador fotoUrl={fotoDe(e.blancasId)} nombre={nombreDe(e.blancasId)} tam={48} />
                         {nombreDe(e.blancasId)} <span className="text-xl font-medium">— descansa</span>
                       </span>
                     )}
@@ -196,7 +270,12 @@ export default function PantallaTorneoPage() {
                     <td className="w-12 px-4 py-3 text-lg text-zinc-500">
                       {MEDALLA[i] ?? i + 1}
                     </td>
-                    <td className="px-2 py-3 text-xl font-semibold">{nombreDe(s.jugadorId)}</td>
+                    <td className="px-2 py-3">
+                      <span className="flex items-center gap-3 text-xl font-semibold">
+                        <FotoJugador fotoUrl={fotoDe(s.jugadorId)} nombre={nombreDe(s.jugadorId)} tam={36} />
+                        {nombreDe(s.jugadorId)}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-right font-mono text-2xl font-extrabold text-blue-400">
                       {s.puntos}
                     </td>

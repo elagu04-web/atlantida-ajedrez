@@ -9,7 +9,7 @@ import { ColegioJugadoresProvider } from "@/context/ColegioJugadoresContext";
 import { ColegioTorneosProvider } from "@/context/ColegioTorneosContext";
 import { EpicoJugadoresProvider } from "@/context/EpicoJugadoresContext";
 import { EpicoTorneosProvider } from "@/context/EpicoTorneosContext";
-import { HeaderNav } from "@/components/HeaderNav";
+import { ChromeDelSitio } from "@/components/ChromeDelSitio";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,24 +34,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 font-sans">
         <AuthProvider>
-          <header className="border-b border-zinc-200 bg-white">
-            <HeaderNav />
-          </header>
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-            <ActividadProvider>
-              <JugadoresProvider>
-                <TorneosProvider>
-                  <ColegioJugadoresProvider>
-                    <ColegioTorneosProvider>
-                      <EpicoJugadoresProvider>
-                        <EpicoTorneosProvider>{children}</EpicoTorneosProvider>
-                      </EpicoJugadoresProvider>
-                    </ColegioTorneosProvider>
-                  </ColegioJugadoresProvider>
-                </TorneosProvider>
-              </JugadoresProvider>
-            </ActividadProvider>
-          </main>
+          <ActividadProvider>
+            <JugadoresProvider>
+              <TorneosProvider>
+                <ColegioJugadoresProvider>
+                  <ColegioTorneosProvider>
+                    <EpicoJugadoresProvider>
+                      <EpicoTorneosProvider>
+                        <ChromeDelSitio>{children}</ChromeDelSitio>
+                      </EpicoTorneosProvider>
+                    </EpicoJugadoresProvider>
+                  </ColegioTorneosProvider>
+                </ColegioJugadoresProvider>
+              </TorneosProvider>
+            </JugadoresProvider>
+          </ActividadProvider>
         </AuthProvider>
       </body>
     </html>
