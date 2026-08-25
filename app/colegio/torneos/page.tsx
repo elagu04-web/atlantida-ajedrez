@@ -143,7 +143,7 @@ export default function ColegioTorneosPage() {
                 checked={formato === "round-robin"}
                 onChange={() => setFormato("round-robin")}
               />
-              Round robin (todos contra todos)
+              Round robin (todos contra todos, ida y vuelta)
             </label>
           </div>
         </div>

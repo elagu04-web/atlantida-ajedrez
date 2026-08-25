@@ -194,7 +194,7 @@ export default function TorneosPage() {
                 checked={formato === "round-robin"}
                 onChange={() => setFormato("round-robin")}
               />
-              Round robin (todos contra todos)
+              Round robin (todos contra todos, ida y vuelta)
             </label>
             <label className="flex items-center gap-2">
               <input

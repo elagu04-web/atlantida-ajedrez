@@ -81,6 +81,12 @@ function construirEmparejamiento(m: Match, numero: number): EmparejamientoTorneo
   return { numero, blancasId: p1 as string, negrasId: p2, resultado: null };
 }
 
+/**
+ * Round robin a ida y vuelta: cada jugador se enfrenta una vez a cada rival
+ * (la "ida", armada con la librería) y una segunda vez más con los colores
+ * invertidos (la "vuelta"). La librería de emparejamientos no trae esto de
+ * fábrica, así que la vuelta se arma a mano espejando la ida.
+ */
 export function generarRoundRobin(jugadoresIds: string[]): RondaTorneo[] {
   const matches = RoundRobin(jugadoresIds, 1, false) as Match[];
   const porRonda = new Map<number, Match[]>();
@@ -88,12 +94,26 @@ export function generarRoundRobin(jugadoresIds: string[]): RondaTorneo[] {
     if (!porRonda.has(m.round)) porRonda.set(m.round, []);
     porRonda.get(m.round)!.push(m);
   }
-  return [...porRonda.entries()]
+  const rondasIda: RondaTorneo[] = [...porRonda.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([numero, ms]) => ({
       numero,
       emparejamientos: ms.map((m, i) => construirEmparejamiento(m, i + 1)),
     }));
+
+  const cantidadRondasIda = rondasIda.length;
+  const rondasVuelta: RondaTorneo[] = rondasIda.map((ronda) => ({
+    numero: ronda.numero + cantidadRondasIda,
+    emparejamientos: ronda.emparejamientos.map((e) =>
+      // El descanso (bye) no tiene colores para invertir: el mismo jugador
+      // vuelve a descansar en la ronda espejada.
+      e.negrasId
+        ? { numero: e.numero, blancasId: e.negrasId, negrasId: e.blancasId, resultado: null }
+        : { ...e }
+    ),
+  }));
+
+  return [...rondasIda, ...rondasVuelta];
 }
 
 export const PARTIDAS_MATCH_POR_DEFECTO = 2;
