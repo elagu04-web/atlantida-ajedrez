@@ -6,11 +6,11 @@ import { useEpicoJugadoresEnVivo } from "@/context/useEpicoJugadoresEnVivo";
 import { useEpicoTorneos } from "@/context/EpicoTorneosContext";
 
 export default function EpicoPage() {
-  const { session } = useAuth();
+  const { esAdmin } = useAuth();
   const alumnos = useEpicoJugadoresEnVivo();
   const { torneos } = useEpicoTorneos();
 
-  if (!session) {
+  if (!esAdmin) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
         <p className="text-zinc-500">Esta sección es solo para administradores.</p>

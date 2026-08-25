@@ -22,7 +22,7 @@ const formatoLabel: Record<string, string> = {
 
 export default function EpicoTorneosPage() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { esAdmin } = useAuth();
   const jugadoresConStats = useEpicoJugadoresEnVivo();
   const { torneos, crearTorneo, eliminarTorneo, cargando } = useEpicoTorneos();
 
@@ -40,7 +40,7 @@ export default function EpicoTorneosPage() {
     return base.filter((j) => `${j.nombre} ${j.apodo ?? ""}`.toLowerCase().includes(q));
   }, [jugadoresConStats, busquedaJugadores]);
 
-  if (!session) {
+  if (!esAdmin) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
         <p className="text-zinc-500">Esta sección es solo para administradores.</p>

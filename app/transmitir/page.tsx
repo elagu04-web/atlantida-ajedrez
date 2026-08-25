@@ -36,8 +36,8 @@ export default function TransmitirPage() {
 }
 
 function TransmitirContenido() {
-  const { session } = useAuth();
-  const puedeUsar = Boolean(session);
+  const { esAdmin } = useAuth();
+  const puedeUsar = esAdmin;
   const parametros = useSearchParams();
   const { torneos, registrarResultado } = useTorneos();
   const jugadoresEnVivo = useJugadoresEnVivo();

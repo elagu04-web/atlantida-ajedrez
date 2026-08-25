@@ -59,8 +59,8 @@ export default function TorneoPage() {
     cambiarDesempates,
     cargando,
   } = useTorneos();
-  const { session } = useAuth();
-  const puedeEditar = Boolean(session);
+  const { esAdmin } = useAuth();
+  const puedeEditar = esAdmin;
 
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
   const [nombreNuevo, setNombreNuevo] = useState("");

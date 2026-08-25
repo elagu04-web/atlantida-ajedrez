@@ -212,7 +212,7 @@ export default function EntrenamientoPage() {
 }
 
 function EntrenamientoContenido() {
-  const { session } = useAuth();
+  const { esAdmin } = useAuth();
   const parametros = useSearchParams();
   const [usuario, setUsuario] = useState(() => parametros.get("usuario") ?? "");
   const [fuente, setFuente] = useState<FuentePartida>("lichess");
@@ -269,7 +269,7 @@ function EntrenamientoContenido() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!session) {
+  if (!esAdmin) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
         <p className="text-zinc-500">Esta sección es solo para administradores.</p>

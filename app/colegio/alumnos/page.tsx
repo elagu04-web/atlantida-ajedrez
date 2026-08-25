@@ -33,7 +33,7 @@ function LichessCelda({
 }
 
 export default function ColegioAlumnosPage() {
-  const { session } = useAuth();
+  const { esAdmin } = useAuth();
   const { agregarJugador, eliminarJugador, actualizarJugador, actualizarLichess } = useColegioJugadores();
   const alumnos = useColegioJugadoresEnVivo();
 
@@ -43,7 +43,7 @@ export default function ColegioAlumnosPage() {
   const [editNombre, setEditNombre] = useState("");
   const [editElo, setEditElo] = useState("");
 
-  if (!session) {
+  if (!esAdmin) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
         <p className="text-zinc-500">Esta sección es solo para administradores.</p>

@@ -25,8 +25,8 @@ export default function TorneosPage() {
   const router = useRouter();
   const jugadoresConStats = useJugadoresEnVivo();
   const { torneos, crearTorneo, crearTorneoRapido, eliminarTorneo, cargando } = useTorneos();
-  const { session } = useAuth();
-  const puedeEditar = Boolean(session);
+  const { esAdmin } = useAuth();
+  const puedeEditar = esAdmin;
 
   const [nombreRapido, setNombreRapido] = useState("");
   const [creandoRapido, setCreandoRapido] = useState(false);

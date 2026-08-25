@@ -100,8 +100,8 @@ export default function JugadoresPage() {
   const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId, actualizarJugador, cargando } =
     useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
-  const { session } = useAuth();
-  const puedeEditar = Boolean(session);
+  const { esAdmin } = useAuth();
+  const puedeEditar = esAdmin;
 
   const [nombre, setNombre] = useState("");
   const [apodo, setApodo] = useState("");

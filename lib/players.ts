@@ -19,6 +19,10 @@ export type Jugador = {
   eloAtlantida: number;
   partidas: Partida[];
   lichessUsuario?: string | null;
+  // Email de Google con el que este jugador "reclamó" su perfil, para
+  // poder anotarse solo a torneos sin que nadie más pueda hacerlo en su
+  // nombre. null hasta que el jugador se loguea por primera vez y lo elige.
+  email?: string | null;
 };
 
 export function nombreVisible(j: { nombre: string; apodo: string | null }): string {

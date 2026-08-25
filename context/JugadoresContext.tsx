@@ -12,6 +12,7 @@ type FilaJugador = {
   fide_id: string | null;
   foto_url: string | null;
   elo_inicial: number;
+  email: string | null;
 };
 
 type JugadoresContextType = {
@@ -24,6 +25,7 @@ type JugadoresContextType = {
   actualizarFoto: (id: string, fotoUrl: string | null) => Promise<void>;
   actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
+  reclamarJugador: (id: string, email: string) => Promise<boolean>;
 };
 
 const JugadoresContext = createContext<JugadoresContextType | null>(null);
@@ -37,6 +39,7 @@ function filaAJugador(fila: FilaJugador): Jugador {
     fotoUrl: fila.foto_url,
     eloAtlantida: fila.elo_inicial,
     partidas: [],
+    email: fila.email,
   };
 }
 
@@ -125,6 +128,27 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
     return jugadores.find((j) => j.id === id);
   }
 
+  /**
+   * Un socio logueado con Google "reclama" el jugador que le corresponde de
+   * la lista, una sola vez — queda su email guardado ahí para futuras
+   * inscripciones. La política de Supabase solo deja completar el email si
+   * todavía está vacío, así que si dos personas intentan reclamar el mismo
+   * nombre casi al mismo tiempo, gana la primera y a la segunda le vuelve
+   * `false`.
+   */
+  async function reclamarJugador(id: string, email: string) {
+    const { data, error } = await supabase
+      .from("jugadores")
+      .update({ email })
+      .eq("id", id)
+      .is("email", null)
+      .select()
+      .single();
+    if (error || !data) return false;
+    setJugadores((actuales) => actuales.map((j) => (j.id === id ? { ...j, email } : j)));
+    return true;
+  }
+
   return (
     <JugadoresContext.Provider
       value={{
@@ -137,6 +161,7 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
         actualizarFoto,
         actualizarJugador,
         obtenerJugador,
+        reclamarJugador,
       }}
     >
       {children}

@@ -17,8 +17,8 @@ const navLinks = [
 export function HeaderNav() {
   const [abierto, setAbierto] = useState(false);
   const pathname = usePathname();
-  const { session } = useAuth();
-  const links = session
+  const { esAdmin } = useAuth();
+  const links = esAdmin
     ? [
         ...navLinks,
         { href: "/colegio", label: "Colegio Pinares" },

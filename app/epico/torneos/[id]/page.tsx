@@ -32,7 +32,7 @@ const ABREVIATURA_DESEMPATE: Record<string, string> = {
 
 export default function EpicoTorneoPage() {
   const { id } = useParams<{ id: string }>();
-  const { session } = useAuth();
+  const { esAdmin } = useAuth();
   const { agregarJugador } = useEpicoJugadores();
   const jugadores = useEpicoJugadoresEnVivo();
   const {
@@ -53,7 +53,7 @@ export default function EpicoTorneoPage() {
 
   const torneo = obtenerTorneo(id);
 
-  if (!session) {
+  if (!esAdmin) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
         <p className="text-zinc-500">Esta sección es solo para administradores.</p>

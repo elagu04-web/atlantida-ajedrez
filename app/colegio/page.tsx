@@ -6,11 +6,11 @@ import { useColegioJugadoresEnVivo } from "@/context/useColegioJugadoresEnVivo";
 import { useColegioTorneos } from "@/context/ColegioTorneosContext";
 
 export default function ColegioPage() {
-  const { session } = useAuth();
+  const { esAdmin } = useAuth();
   const alumnos = useColegioJugadoresEnVivo();
   const { torneos } = useColegioTorneos();
 
-  if (!session) {
+  if (!esAdmin) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
         <p className="text-zinc-500">Esta sección es solo para administradores.</p>

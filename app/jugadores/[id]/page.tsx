@@ -29,8 +29,8 @@ export default function JugadorPage() {
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
   const { actualizarFoto, cargando } = useJugadores();
-  const { session } = useAuth();
-  const puedeEditar = Boolean(session);
+  const { esAdmin } = useAuth();
+  const puedeEditar = esAdmin;
   const inputFotoRef = useRef<HTMLInputElement>(null);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);

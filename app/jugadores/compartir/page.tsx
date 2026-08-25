@@ -42,7 +42,7 @@ function truncarTexto(ctx: CanvasRenderingContext2D, texto: string, maxAncho: nu
 }
 
 export default function CompartirElosPage() {
-  const { session } = useAuth();
+  const { esAdmin } = useAuth();
   const jugadoresConStats = useJugadoresEnVivo();
   const { torneos } = useTorneos();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -178,7 +178,7 @@ export default function CompartirElosPage() {
     }, "image/png");
   }
 
-  if (!session) {
+  if (!esAdmin) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
         <p className="text-zinc-500">Esta sección es solo para administradores.</p>
