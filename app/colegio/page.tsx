@@ -13,8 +13,8 @@ export default function ColegioPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-        <p className="text-zinc-500">Esta sección es solo para administradores.</p>
+      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+        <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
   }
@@ -29,17 +29,17 @@ export default function ColegioPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link
           href="/colegio/alumnos"
-          className="rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
+          className="rounded-lg border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:shadow-sm"
         >
           <div className="font-semibold">Alumnos</div>
-          <div className="mt-1 text-sm text-zinc-500">{alumnos.length} cargados</div>
+          <div className="mt-1 text-sm text-zinc-400">{alumnos.length} cargados</div>
         </Link>
         <Link
           href="/colegio/torneos"
-          className="rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
+          className="rounded-lg border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:shadow-sm"
         >
           <div className="font-semibold">Torneos</div>
-          <div className="mt-1 text-sm text-zinc-500">{torneos.length} creados</div>
+          <div className="mt-1 text-sm text-zinc-400">{torneos.length} creados</div>
         </Link>
       </div>
     </div>

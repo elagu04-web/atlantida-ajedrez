@@ -13,9 +13,9 @@ import { GraficoElo } from "@/components/GraficoElo";
 const FOTOS_BUCKET = "fotos-jugadores";
 
 const resultadoColor: Record<string, string> = {
-  victoria: "text-green-700",
-  empate: "text-zinc-500",
-  derrota: "text-red-700",
+  victoria: "text-green-400",
+  empate: "text-zinc-400",
+  derrota: "text-red-400",
 };
 
 const resultadoLabel: Record<string, string> = {
@@ -143,10 +143,10 @@ export default function JugadorPage() {
   if (!jugador) {
     return (
       <div className="flex flex-col gap-4">
-        <Link href="/jugadores" className="text-sm text-blue-600 hover:underline">
+        <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
           ← Volver a jugadores
         </Link>
-        <p className="text-zinc-600">
+        <p className="text-zinc-400">
           {cargando ? "Cargando..." : "Ese jugador no existe (o fue eliminado)."}
         </p>
       </div>
@@ -156,7 +156,7 @@ export default function JugadorPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/jugadores" className="text-sm text-blue-600 hover:underline">
+        <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
           ← Volver a jugadores
         </Link>
         <div className="mt-2 flex items-center gap-4">
@@ -166,10 +166,10 @@ export default function JugadorPage() {
               <img
                 src={jugador.fotoUrl}
                 alt={nombreVisible(jugador)}
-                className="h-20 w-20 rounded-full border border-zinc-200 object-cover"
+                className="h-20 w-20 rounded-full border border-white/10 object-cover"
               />
             ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-2xl font-semibold text-zinc-500">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/10 text-2xl font-semibold text-zinc-400">
                 {nombreVisible(jugador).charAt(0).toUpperCase()}
               </div>
             )}
@@ -177,7 +177,7 @@ export default function JugadorPage() {
               <button
                 onClick={() => inputFotoRef.current?.click()}
                 disabled={subiendoFoto}
-                className="absolute -bottom-1 -right-1 rounded-full border border-zinc-300 bg-white px-1.5 py-1 text-xs shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+                className="absolute -bottom-1 -right-1 rounded-full border border-white/20 bg-white/5 px-1.5 py-1 text-xs shadow-sm hover:bg-white/10 disabled:opacity-50"
                 title="Cambiar foto"
               >
                 {subiendoFoto ? "..." : "✏️"}
@@ -195,14 +195,14 @@ export default function JugadorPage() {
             <h1 className="text-2xl font-semibold tracking-tight">
               {nombreVisible(jugador)}
             </h1>
-            {jugador.apodo && <p className="text-sm text-zinc-500">{jugador.nombre}</p>}
+            {jugador.apodo && <p className="text-sm text-zinc-400">{jugador.nombre}</p>}
           </div>
         </div>
-        {errorFoto && <p className="mt-2 text-sm text-red-600">{errorFoto}</p>}
+        {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
       </div>
 
       {(editandoDescripcion || jugador.descripcion || puedeEditar) && (
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="rounded-lg border border-white/10 bg-white/5 p-4">
         {editandoDescripcion ? (
           <div className="flex flex-col gap-2">
             <textarea
@@ -211,18 +211,18 @@ export default function JugadorPage() {
               onChange={(e) => setDescripcionValor(e.target.value)}
               placeholder="Estilo de juego, observaciones, notas para el coach..."
               rows={3}
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-white/20 px-3 py-2 text-sm"
             />
             <div className="flex gap-3 text-xs">
               <button
                 onClick={guardarDescripcion}
-                className="font-medium text-blue-600 hover:underline"
+                className="font-medium text-blue-400 hover:underline"
               >
                 Guardar
               </button>
               <button
                 onClick={() => setEditandoDescripcion(false)}
-                className="text-zinc-500 hover:underline"
+                className="text-zinc-400 hover:underline"
               >
                 Cancelar
               </button>
@@ -230,11 +230,11 @@ export default function JugadorPage() {
           </div>
         ) : jugador.descripcion ? (
           <div className="flex items-start justify-between gap-3">
-            <p className="whitespace-pre-wrap text-sm text-zinc-700">{jugador.descripcion}</p>
+            <p className="whitespace-pre-wrap text-sm text-zinc-300">{jugador.descripcion}</p>
             {puedeEditar && (
               <button
                 onClick={empezarEdicionDescripcion}
-                className="shrink-0 text-xs text-blue-600 hover:underline"
+                className="shrink-0 text-xs text-blue-400 hover:underline"
               >
                 Editar
               </button>
@@ -243,7 +243,7 @@ export default function JugadorPage() {
         ) : puedeEditar ? (
           <button
             onClick={empezarEdicionDescripcion}
-            className="text-xs text-zinc-500 hover:text-blue-600 hover:underline"
+            className="text-xs text-zinc-400 hover:text-blue-400 hover:underline"
           >
             + agregar descripción
           </button>
@@ -260,9 +260,9 @@ export default function JugadorPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-lg border border-zinc-200 bg-white p-4"
+            className="rounded-lg border border-white/10 bg-white/5 p-4"
           >
-            <div className="text-xs text-zinc-500">{stat.label}</div>
+            <div className="text-xs text-zinc-400">{stat.label}</div>
             <div className="mt-1 text-xl font-semibold font-mono">
               {stat.value}
             </div>
@@ -270,14 +270,14 @@ export default function JugadorPage() {
         ))}
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="rounded-lg border border-white/10 bg-white/5 p-4">
         <h2 className="mb-3 font-semibold">Evolución de Elo</h2>
         <GraficoElo puntos={puntosElo} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <div className="text-xs text-zinc-500">Racha actual</div>
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+          <div className="text-xs text-zinc-400">Racha actual</div>
           <div className="mt-1 text-xl font-semibold">
             {rachaActual ? (
               <span className={resultadoColor[rachaActual.tipo]}>
@@ -286,38 +286,38 @@ export default function JugadorPage() {
                 {rachaActual.cantidad > 1 ? "s" : ""}
               </span>
             ) : (
-              <span className="text-zinc-500 text-base">Sin partidas</span>
+              <span className="text-zinc-400 text-base">Sin partidas</span>
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <div className="text-xs text-zinc-500">Mejor victoria</div>
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+          <div className="text-xs text-zinc-400">Mejor victoria</div>
           <div className="mt-1 text-xl font-semibold">
             {mejorVictoria ? (
               <>
                 {mejorVictoria.rival}{" "}
-                <span className="font-mono text-sm text-zinc-500">{mejorVictoria.elo}</span>
+                <span className="font-mono text-sm text-zinc-400">{mejorVictoria.elo}</span>
               </>
             ) : (
-              <span className="text-zinc-500 text-base">Sin victorias todavía</span>
+              <span className="text-zinc-400 text-base">Sin victorias todavía</span>
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <div className="text-xs text-zinc-500">Rendimiento por color</div>
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+          <div className="text-xs text-zinc-400">Rendimiento por color</div>
           {rendimientoPorColor && (rendimientoPorColor.blancas.jugadas > 0 || rendimientoPorColor.negras.jugadas > 0) ? (
             <div className="mt-1 flex gap-4 text-sm">
               <span>
                 ♔ {rendimientoPorColor.blancas.porcentaje}%{" "}
-                <span className="text-zinc-500">({rendimientoPorColor.blancas.jugadas})</span>
+                <span className="text-zinc-400">({rendimientoPorColor.blancas.jugadas})</span>
               </span>
               <span>
                 ♚ {rendimientoPorColor.negras.porcentaje}%{" "}
-                <span className="text-zinc-500">({rendimientoPorColor.negras.jugadas})</span>
+                <span className="text-zinc-400">({rendimientoPorColor.negras.jugadas})</span>
               </span>
             </div>
           ) : (
-            <div className="mt-1 text-base text-zinc-500">Sin partidas</div>
+            <div className="mt-1 text-base text-zinc-400">Sin partidas</div>
           )}
         </div>
       </div>
@@ -325,14 +325,14 @@ export default function JugadorPage() {
       <div>
         <button
           onClick={() => setVerTodasLasPartidas((v) => !v)}
-          className="mb-3 text-sm font-medium text-blue-600 hover:underline"
+          className="mb-3 text-sm font-medium text-blue-400 hover:underline"
         >
           {verTodasLasPartidas ? "▾" : "▸"} Ver todas las partidas ({jugador.partidas.length})
         </button>
         {verTodasLasPartidas && (
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+      <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+          <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
               <th className="px-4 py-3 font-medium">Fecha</th>
               <th className="px-4 py-3 font-medium">Torneo</th>
@@ -343,8 +343,8 @@ export default function JugadorPage() {
           </thead>
           <tbody>
             {jugador.partidas.map((p, i) => (
-              <tr key={i} className="border-b border-zinc-100 last:border-0">
-                <td className="px-4 py-3 text-zinc-500">{p.fecha}</td>
+              <tr key={i} className="border-b border-white/5 last:border-0">
+                <td className="px-4 py-3 text-zinc-400">{p.fecha}</td>
                 <td className="px-4 py-3">{p.torneo}</td>
                 <td className="px-4 py-3">{p.rival}</td>
                 <td className="px-4 py-3 capitalize">{p.color}</td>
@@ -355,7 +355,7 @@ export default function JugadorPage() {
             ))}
             {jugador.partidas.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
                   Todavía no tiene partidas cargadas.
                 </td>
               </tr>
@@ -368,9 +368,9 @@ export default function JugadorPage() {
 
       <div>
         <h2 className="mb-3 font-semibold">Cabeza a cabeza</h2>
-        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
           <table className="w-full text-sm">
-            <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+            <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
               <tr>
                 <th className="px-4 py-3 font-medium">Rival</th>
                 <th className="px-4 py-3 text-center font-medium">PJ</th>
@@ -381,7 +381,7 @@ export default function JugadorPage() {
             </thead>
             <tbody>
               {cabezaACabeza.map((h) => (
-                <tr key={h.rival} className="border-b border-zinc-100 last:border-0">
+                <tr key={h.rival} className="border-b border-white/5 last:border-0">
                   <td className="px-4 py-3 font-medium">
                     {h.rivalId ? (
                       <Link href={`/jugadores/${h.rivalId}`} className="hover:underline">
@@ -392,14 +392,14 @@ export default function JugadorPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-center font-mono">{h.jugadas}</td>
-                  <td className="px-4 py-3 text-center font-mono text-green-700">{h.victorias}</td>
-                  <td className="px-4 py-3 text-center font-mono text-zinc-500">{h.empates}</td>
-                  <td className="px-4 py-3 text-center font-mono text-red-700">{h.derrotas}</td>
+                  <td className="px-4 py-3 text-center font-mono text-green-400">{h.victorias}</td>
+                  <td className="px-4 py-3 text-center font-mono text-zinc-400">{h.empates}</td>
+                  <td className="px-4 py-3 text-center font-mono text-red-400">{h.derrotas}</td>
                 </tr>
               ))}
               {cabezaACabeza.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
+                  <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
                     Todavía no enfrentó a ningún rival.
                   </td>
                 </tr>

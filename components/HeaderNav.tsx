@@ -34,15 +34,15 @@ export function HeaderNav() {
           ♞ Atlántida Ajedrez
         </Link>
 
-        <nav className="hidden items-center gap-5 text-sm font-medium text-zinc-600 md:flex">
+        <nav className="hidden items-center gap-5 text-sm font-medium text-zinc-400 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={
                 pathname === link.href
-                  ? "font-semibold text-zinc-900"
-                  : "hover:text-zinc-900"
+                  ? "font-semibold text-white"
+                  : "hover:text-white"
               }
             >
               {link.label}
@@ -56,14 +56,14 @@ export function HeaderNav() {
           onClick={() => setAbierto((v) => !v)}
           aria-label={abierto ? "Cerrar menú" : "Abrir menú"}
           aria-expanded={abierto}
-          className="flex h-9 w-9 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 md:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-white/20 text-zinc-300 md:hidden"
         >
           {abierto ? "✕" : "☰"}
         </button>
       </div>
 
       {abierto && (
-        <nav className="flex flex-col gap-1 border-t border-zinc-200 pb-4 pt-2 text-sm font-medium text-zinc-600 md:hidden">
+        <nav className="flex flex-col gap-1 border-t border-white/10 pb-4 pt-2 text-sm font-medium text-zinc-400 md:hidden">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -71,14 +71,14 @@ export function HeaderNav() {
               onClick={() => setAbierto(false)}
               className={
                 pathname === link.href
-                  ? "rounded-md px-2 py-2 font-semibold text-zinc-900"
-                  : "rounded-md px-2 py-2 hover:bg-zinc-50 hover:text-zinc-900"
+                  ? "rounded-md px-2 py-2 font-semibold text-white"
+                  : "rounded-md px-2 py-2 hover:bg-white/10 hover:text-white"
               }
             >
               {link.label}
             </Link>
           ))}
-          <div className="mt-2 border-t border-zinc-100 px-2 pt-3">
+          <div className="mt-2 border-t border-white/5 px-2 pt-3">
             <AuthWidget />
           </div>
         </nav>

@@ -1,12 +1,9 @@
 @import "tailwindcss";
 
 /*
- * Este sitio es siempre de tema claro (todas las tarjetas, tablas y bordes
- * usan colores claros fijos como bg-white/zinc-200). No hay soporte real
- * para modo oscuro del sistema — antes había un @media (prefers-color-scheme:
- * dark) acá que solo cambiaba el color de letra a uno claro sin cambiar el
- * fondo de las tarjetas (que sigue blanco), dejando el texto casi invisible
- * en celulares con el modo oscuro activado.
+ * Este sitio es siempre de tema oscuro (todas las tarjetas, tablas y bordes
+ * usan colores oscuros fijos como bg-white/5 y border-white/10) — no cambia
+ * según el modo claro/oscuro del sistema, es la única estética del sitio.
  */
 @theme inline {
   --font-sans: var(--font-geist-sans);
@@ -14,9 +11,11 @@
 }
 
 :root {
-  /* Le decimos al navegador que no intente oscurecer nada por su cuenta
-     (scrollbars, inputs, date pickers) aunque el sistema esté en modo oscuro. */
-  color-scheme: light;
+  /* Le decimos al navegador que los controles nativos (checkboxes, radios,
+     selects, date pickers, scrollbars) se dibujen con su variante oscura —
+     así los inputs sin bg/text explícito (la mayoría del sitio) ya quedan
+     legibles sin tener que tocar uno por uno. */
+  color-scheme: dark;
 }
 
 /* Prueba de interfaz: un brillo sutil que recorre el texto (inspirado en

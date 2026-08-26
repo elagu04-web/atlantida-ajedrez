@@ -104,7 +104,7 @@ export const CamaraTablero = forwardRef<CamaraTableroHandle, { onCambiaActiva?: 
     }, []);
 
     return (
-      <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">📷 Cámara del tablero</h3>
           <button
@@ -113,15 +113,15 @@ export const CamaraTablero = forwardRef<CamaraTableroHandle, { onCambiaActiva?: 
             className={`rounded-md px-3 py-1.5 text-xs font-medium disabled:opacity-50 ${
               activa
                 ? "bg-red-600 text-white hover:bg-red-700"
-                : "border border-zinc-300 hover:bg-zinc-50"
+                : "border border-white/20 hover:bg-white/10"
             }`}
           >
             {activa ? "Apagar cámara" : activando ? "Activando..." : "Activar cámara"}
           </button>
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
         {activa && (
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-400">
             Subiendo una foto del tablero cada {INTERVALO_MS / 1000}s para que se vea en la
             transmisión pública. Apuntá la cámara al tablero real.
           </p>
@@ -131,7 +131,7 @@ export const CamaraTablero = forwardRef<CamaraTableroHandle, { onCambiaActiva?: 
           autoPlay
           playsInline
           muted
-          className={`w-full max-w-xs rounded-md border border-zinc-200 ${activa ? "" : "hidden"}`}
+          className={`w-full max-w-xs rounded-md border border-white/10 ${activa ? "" : "hidden"}`}
         />
         <canvas ref={canvasRef} className="hidden" />
       </div>

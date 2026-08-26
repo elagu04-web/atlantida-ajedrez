@@ -43,8 +43,8 @@ export default function EpicoTorneosPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-        <p className="text-zinc-500">Esta sección es solo para administradores.</p>
+      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+        <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export default function EpicoTorneosPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <Link href="/epico" className="text-sm text-blue-600 hover:underline">
+        <Link href="/epico" className="text-sm text-blue-400 hover:underline">
           ← Volver a Épico
         </Link>
         <EncabezadoPagina titulo="Torneos de Épico" />
@@ -109,10 +109,10 @@ export default function EpicoTorneosPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-5"
+        className="flex flex-col gap-5 rounded-lg border border-white/10 bg-white/5 p-5"
       >
         <div className="flex flex-col gap-1">
-          <label htmlFor="nombre" className="text-xs font-medium text-zinc-600">
+          <label htmlFor="nombre" className="text-xs font-medium text-zinc-400">
             Nombre del torneo
           </label>
           <input
@@ -121,12 +121,12 @@ export default function EpicoTorneosPage() {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Ej: Torneo interno 5to año"
-            className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-zinc-600">Formato</span>
+          <span className="text-xs font-medium text-zinc-400">Formato</span>
           <div className="flex gap-4 text-sm">
             <label className="flex items-center gap-2">
               <input
@@ -151,7 +151,7 @@ export default function EpicoTorneosPage() {
 
         {formato === "suizo" && (
           <div className="flex flex-col gap-1">
-            <label htmlFor="rondasObjetivo" className="text-xs font-medium text-zinc-600">
+            <label htmlFor="rondasObjetivo" className="text-xs font-medium text-zinc-400">
               Cantidad de rondas (opcional)
             </label>
             <input
@@ -161,9 +161,9 @@ export default function EpicoTorneosPage() {
               value={rondasObjetivo}
               onChange={(e) => setRondasObjetivo(e.target.value)}
               placeholder="Ej: 5"
-              className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="w-28 rounded-md border border-white/20 px-3 py-2 text-sm"
             />
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-zinc-400">
               Si la dejás vacía, vas generando rondas de a una sin límite fijo.
             </span>
           </div>
@@ -171,7 +171,7 @@ export default function EpicoTorneosPage() {
 
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-medium text-zinc-600">
+            <span className="text-xs font-medium text-zinc-400">
               Alumnos ({seleccionados.size} seleccionados)
             </span>
             {jugadoresConStats.length > 0 && (
@@ -181,14 +181,14 @@ export default function EpicoTorneosPage() {
                   onClick={() =>
                     setSeleccionados(new Set(jugadoresFiltrados.map((j) => j.id)))
                   }
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-400 hover:underline"
                 >
                   Seleccionar {busquedaJugadores ? "filtrados" : "todos"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setSeleccionados(new Set())}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-400 hover:underline"
                 >
                   Deseleccionar todos
                 </button>
@@ -197,9 +197,9 @@ export default function EpicoTorneosPage() {
           </div>
 
           {jugadoresConStats.length === 0 ? (
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-zinc-400">
               No hay alumnos cargados todavía —{" "}
-              <Link href="/epico/alumnos" className="text-blue-600 hover:underline">
+              <Link href="/epico/alumnos" className="text-blue-400 hover:underline">
                 agregá algunos primero
               </Link>
               .
@@ -211,9 +211,9 @@ export default function EpicoTorneosPage() {
                 value={busquedaJugadores}
                 onChange={(e) => setBusquedaJugadores(e.target.value)}
                 placeholder="Buscar alumno..."
-                className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
               />
-              <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-md border border-zinc-100 p-2 sm:grid-cols-3">
+              <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-md border border-white/5 p-2 sm:grid-cols-3">
                 {jugadoresFiltrados.map((j) => (
                   <label key={j.id} className="flex items-center gap-2 text-sm">
                     <input
@@ -222,13 +222,13 @@ export default function EpicoTorneosPage() {
                       onChange={() => toggleJugador(j.id)}
                     />
                     {nombreVisible(j)}{" "}
-                    <span className="font-mono text-xs text-zinc-500">
+                    <span className="font-mono text-xs text-zinc-400">
                       {j.eloAtlantida}
                     </span>
                   </label>
                 ))}
                 {jugadoresFiltrados.length === 0 && (
-                  <p className="col-span-full py-2 text-center text-sm text-zinc-500">
+                  <p className="col-span-full py-2 text-center text-sm text-zinc-400">
                     Ningún alumno coincide con la búsqueda.
                   </p>
                 )}
@@ -238,7 +238,7 @@ export default function EpicoTorneosPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-zinc-600">
+          <span className="text-xs font-medium text-zinc-400">
             Desempates a usar
           </span>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
@@ -254,8 +254,8 @@ export default function EpicoTorneosPage() {
             ))}
           </div>
           {desempates.length > 0 && (
-            <div className="mt-2 flex flex-col gap-1 rounded-md border border-zinc-200 bg-zinc-50 p-2">
-              <span className="text-xs text-zinc-500">
+            <div className="mt-2 flex flex-col gap-1 rounded-md border border-white/10 bg-white/10 p-2">
+              <span className="text-xs text-zinc-400">
                 Orden de prioridad (se usa el primero; si empatan, se pasa al siguiente):
               </span>
               {desempates.map((d, i) => (
@@ -266,7 +266,7 @@ export default function EpicoTorneosPage() {
                     type="button"
                     onClick={() => moverDesempate(d, -1)}
                     disabled={i === 0}
-                    className="rounded border border-zinc-300 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                    className="rounded border border-white/20 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     ↑
                   </button>
@@ -274,7 +274,7 @@ export default function EpicoTorneosPage() {
                     type="button"
                     onClick={() => moverDesempate(d, 1)}
                     disabled={i === desempates.length - 1}
-                    className="rounded border border-zinc-300 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                    className="rounded border border-white/20 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     ↓
                   </button>
@@ -287,7 +287,7 @@ export default function EpicoTorneosPage() {
         <button
           type="submit"
           disabled={!nombre.trim() || seleccionados.size < 2}
-          className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="w-fit rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Crear torneo
         </button>
@@ -296,23 +296,23 @@ export default function EpicoTorneosPage() {
       <div className="flex flex-col gap-3">
         <h2 className="font-semibold">Torneos creados</h2>
         {torneos.length === 0 && (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-400">
             {cargando ? "Cargando torneos..." : "Todavía no creaste ningún torneo."}
           </p>
         )}
         {[...torneos].reverse().map((t) => (
           <div
             key={t.id}
-            className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
+            className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:shadow-sm"
           >
             <Link href={`/epico/torneos/${t.id}`} className="flex-1">
               <div className="font-medium">{t.nombre}</div>
-              <div className="text-sm text-zinc-500">
+              <div className="text-sm text-zinc-400">
                 {formatoLabel[t.formato]} · {t.jugadoresIds.length} alumnos
               </div>
             </Link>
             <div className="flex items-center gap-3">
-              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-zinc-400">
                 {estadoLabel[t.estado]}
               </span>
               <button
@@ -321,7 +321,7 @@ export default function EpicoTorneosPage() {
                     eliminarTorneo(t.id);
                   }
                 }}
-                className="text-xs text-red-600 hover:underline"
+                className="text-xs text-red-400 hover:underline"
               >
                 Eliminar
               </button>

@@ -60,7 +60,7 @@ export function AnalisisMotor({ fen }: { fen: string }) {
           setCargandoMotor(true);
           setActivo(true);
         }}
-        className="text-xs font-medium text-blue-600 hover:underline"
+        className="text-xs font-medium text-blue-400 hover:underline"
       >
         🔍 Mostrar análisis (motor de ajedrez)
       </button>
@@ -85,19 +85,19 @@ export function AnalisisMotor({ fen }: { fen: string }) {
   const jugadaSugerida = analisis ? notacionLegible(fen, analisis.mejorJugada) : null;
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
-      <div className="h-4 w-32 overflow-hidden rounded-sm border border-zinc-300 bg-zinc-900">
+    <div className="flex items-center gap-3 rounded-md border border-white/10 bg-white/10 px-3 py-2 text-xs">
+      <div className="h-4 w-32 overflow-hidden rounded-sm border border-white/20 bg-blue-600">
         <div
-          className="h-full bg-zinc-50 transition-all"
+          className="h-full bg-white/10 transition-all"
           style={{ width: `${porcentajeBlancas}%` }}
         />
       </div>
-      <span className="font-mono font-semibold text-zinc-700">{etiqueta}</span>
-      {cargandoMotor && <span className="text-zinc-500">cargando motor (puede tardar unos segundos)...</span>}
-      {!cargandoMotor && cargando && <span className="text-zinc-500">pensando...</span>}
+      <span className="font-mono font-semibold text-zinc-300">{etiqueta}</span>
+      {cargandoMotor && <span className="text-zinc-400">cargando motor (puede tardar unos segundos)...</span>}
+      {!cargandoMotor && cargando && <span className="text-zinc-400">pensando...</span>}
       {jugadaSugerida && (
-        <span className="text-zinc-500">
-          Sugiere: <span className="font-medium text-zinc-700">{jugadaSugerida}</span>
+        <span className="text-zinc-400">
+          Sugiere: <span className="font-medium text-zinc-300">{jugadaSugerida}</span>
         </span>
       )}
       <button
@@ -105,7 +105,7 @@ export function AnalisisMotor({ fen }: { fen: string }) {
           setActivo(false);
           setAnalisis(null);
         }}
-        className="ml-auto text-zinc-500 hover:text-zinc-600"
+        className="ml-auto text-zinc-400 hover:text-zinc-400"
       >
         Ocultar
       </button>

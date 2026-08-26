@@ -180,8 +180,8 @@ export default function CompartirElosPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-        <p className="text-zinc-500">Esta sección es solo para administradores.</p>
+      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+        <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
   }
@@ -190,11 +190,11 @@ export default function CompartirElosPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/jugadores" className="text-sm text-blue-600 hover:underline">
+          <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
             ← Volver a jugadores
           </Link>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">Imagen para compartir</h1>
-          <p className="mt-1 text-zinc-600">
+          <p className="mt-1 text-zinc-400">
             El ranking de Elo con flecha de cambio desde el último torneo, listo para mandar por
             WhatsApp — solo incluye a quien jugó en el último año.
           </p>
@@ -202,16 +202,16 @@ export default function CompartirElosPage() {
         <button
           onClick={descargar}
           disabled={lista.length === 0}
-          className="shrink-0 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           ⬇️ Descargar imagen
         </button>
       </div>
 
       {lista.length === 0 ? (
-        <p className="text-sm text-zinc-500">No hay jugadores activos para mostrar.</p>
+        <p className="text-sm text-zinc-400">No hay jugadores activos para mostrar.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-100 p-4">
+        <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/10 p-4">
           <canvas ref={canvasRef} className="mx-auto rounded-md shadow-sm" />
         </div>
       )}

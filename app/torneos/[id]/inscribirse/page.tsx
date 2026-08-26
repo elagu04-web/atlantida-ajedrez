@@ -31,21 +31,21 @@ export default function InscribirseTorneoPage() {
   const miJugador = session ? jugadores.find((j) => j.email === session.user.email) : undefined;
 
   if (cargando || cargandoAuth) {
-    return <p className="text-sm text-zinc-500">Cargando...</p>;
+    return <p className="text-sm text-zinc-400">Cargando...</p>;
   }
 
   if (!torneo) {
-    return <p className="text-sm text-zinc-500">Ese torneo no existe.</p>;
+    return <p className="text-sm text-zinc-400">Ese torneo no existe.</p>;
   }
 
   if (torneo.estado !== "armado") {
     return (
       <div className="flex flex-col gap-4">
-        <Link href={`/torneos/${torneo.id}`} className="text-sm text-blue-600 hover:underline">
+        <Link href={`/torneos/${torneo.id}`} className="text-sm text-blue-400 hover:underline">
           ← Ver el torneo
         </Link>
-        <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-          <p className="text-zinc-500">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+          <p className="text-zinc-400">
             La inscripción para &quot;{torneo.nombre}&quot; ya está cerrada — el torneo ya arrancó.
           </p>
         </div>
@@ -77,50 +77,50 @@ export default function InscribirseTorneoPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href={`/torneos/${torneo.id}`} className="text-sm text-blue-600 hover:underline">
+        <Link href={`/torneos/${torneo.id}`} className="text-sm text-blue-400 hover:underline">
           ← Ver el torneo
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">Anotarse — {torneo.nombre}</h1>
       </div>
 
       {!session ? (
-        <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-          <p className="mb-4 text-zinc-600">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+          <p className="mb-4 text-zinc-400">
             Iniciá sesión con Google para anotarte — así solo vos podés anotarte o sacarte a vos
             mismo.
           </p>
           <button
             onClick={() => iniciarSesionConGoogle()}
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
             Iniciar sesión con Google
           </button>
         </div>
       ) : !miJugador ? (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+          <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-200">
             <span>
               Entraste como <strong>{session.user.email}</strong> — ¿cuál de estos nombres sos vos?
               Elegilo una sola vez.
             </span>
-            <button onClick={() => cerrarSesion()} className="shrink-0 text-xs text-blue-700 hover:underline">
+            <button onClick={() => cerrarSesion()} className="shrink-0 text-xs text-blue-300 hover:underline">
               No soy yo, cerrar sesión
             </button>
           </div>
 
-          {errorReclamo && <p className="text-sm text-red-600">{errorReclamo}</p>}
+          {errorReclamo && <p className="text-sm text-red-400">{errorReclamo}</p>}
 
           <input
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar tu nombre..."
-            className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
           />
 
-          <div className="rounded-lg border border-zinc-200 bg-white p-2">
+          <div className="rounded-lg border border-white/10 bg-white/5 p-2">
             {elegibles.length === 0 ? (
-              <p className="p-4 text-center text-sm text-zinc-500">
+              <p className="p-4 text-center text-sm text-zinc-400">
                 {busqueda ? "Nadie coincide con la búsqueda." : "No hay jugadores activos cargados."}
               </p>
             ) : (
@@ -133,7 +133,7 @@ export default function InscribirseTorneoPage() {
                       onClick={() => reclamar(j.id)}
                       disabled={reclamado || enVuelo === j.id}
                       className={`flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm font-medium disabled:cursor-not-allowed ${
-                        reclamado ? "text-zinc-400" : "hover:bg-zinc-50"
+                        reclamado ? "text-zinc-400" : "hover:bg-white/10"
                       }`}
                     >
                       <span>{nombreVisible(j)}</span>
@@ -147,12 +147,12 @@ export default function InscribirseTorneoPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+          <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">
             <span>
               Sos <strong>{nombreVisible(miJugador)}</strong>. Tocá tu nombre abajo para
               anotarte o sacarte.
             </span>
-            <button onClick={() => cerrarSesion()} className="shrink-0 text-xs text-emerald-700 hover:underline">
+            <button onClick={() => cerrarSesion()} className="shrink-0 text-xs text-emerald-400 hover:underline">
               Cerrar sesión
             </button>
           </div>
@@ -162,10 +162,10 @@ export default function InscribirseTorneoPage() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar un nombre..."
-            className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
           />
 
-          <div className="rounded-lg border border-zinc-200 bg-white p-2">
+          <div className="rounded-lg border border-white/10 bg-white/5 p-2">
             <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
               {elegibles.map((j) => {
                 const anotado = torneo.inscriptosIds.includes(j.id);
@@ -176,12 +176,12 @@ export default function InscribirseTorneoPage() {
                     onClick={() => esVos && alternar(j.id)}
                     disabled={!esVos || enVuelo === j.id}
                     className={`flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm font-medium ${
-                      !esVos ? "cursor-default text-zinc-500" : ""
+                      !esVos ? "cursor-default text-zinc-400" : ""
                     } ${
                       anotado
-                        ? "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                        ? "bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
                         : esVos
-                        ? "hover:bg-zinc-50"
+                        ? "hover:bg-white/10"
                         : ""
                     }`}
                   >
@@ -197,7 +197,7 @@ export default function InscribirseTorneoPage() {
         </div>
       )}
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-zinc-400">
         {torneo.inscriptosIds.length} anotado{torneo.inscriptosIds.length === 1 ? "" : "s"} hasta
         ahora.
       </p>

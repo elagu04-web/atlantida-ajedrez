@@ -16,10 +16,10 @@ export function AuthWidget() {
   if (session) {
     return (
       <div className="flex items-center gap-2 text-xs">
-        <span className="text-zinc-500">{session.user.email}</span>
+        <span className="text-zinc-400">{session.user.email}</span>
         <button
           onClick={() => cerrarSesion()}
-          className="rounded-md border border-zinc-300 px-2 py-1 font-medium hover:bg-zinc-50"
+          className="rounded-md border border-white/20 px-2 py-1 font-medium hover:bg-white/10"
         >
           Cerrar sesión
         </button>
@@ -31,7 +31,7 @@ export function AuthWidget() {
     return (
       <button
         onClick={() => setMostrarForm(true)}
-        className="text-xs font-medium text-zinc-500 hover:text-zinc-900"
+        className="text-xs font-medium text-zinc-400 hover:text-white"
       >
         Iniciar sesión
       </button>
@@ -61,7 +61,7 @@ export function AuthWidget() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
-        className="w-32 rounded-md border border-zinc-300 px-2 py-1 text-xs"
+        className="w-32 rounded-md border border-white/20 px-2 py-1 text-xs"
       />
       <input
         type="password"
@@ -69,12 +69,12 @@ export function AuthWidget() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Contraseña"
-        className="w-28 rounded-md border border-zinc-300 px-2 py-1 text-xs"
+        className="w-28 rounded-md border border-white/20 px-2 py-1 text-xs"
       />
       <button
         type="submit"
         disabled={enviando}
-        className="rounded-md bg-zinc-900 px-2 py-1 text-xs font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
+        className="rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
       >
         Entrar
       </button>
@@ -84,11 +84,11 @@ export function AuthWidget() {
           setMostrarForm(false);
           setError(null);
         }}
-        className="text-xs text-zinc-500 hover:text-zinc-700"
+        className="text-xs text-zinc-400 hover:text-zinc-300"
       >
         Cancelar
       </button>
-      {error && <span className="text-xs text-red-600">{error}</span>}
+      {error && <span className="text-xs text-red-400">{error}</span>}
     </form>
   );
 }

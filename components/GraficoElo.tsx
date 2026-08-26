@@ -8,7 +8,7 @@ export function GraficoElo({ puntos }: { puntos: Punto[] }) {
   const [activo, setActivo] = useState<number | null>(null);
 
   if (puntos.length < 2) {
-    return <p className="text-sm text-zinc-500">Todavía no hay suficientes partidas para graficar.</p>;
+    return <p className="text-sm text-zinc-400">Todavía no hay suficientes partidas para graficar.</p>;
   }
 
   const ancho = 640;
@@ -35,10 +35,10 @@ export function GraficoElo({ puntos }: { puntos: Punto[] }) {
   return (
     <div className="relative">
       <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full" onMouseLeave={() => setActivo(null)}>
-        <text x={4} y={y(eloMax) + 4} className="fill-zinc-500 text-[10px]">
+        <text x={4} y={y(eloMax) + 4} className="fill-zinc-400 text-[10px]">
           {eloMax}
         </text>
-        <text x={4} y={y(eloMin) + 4} className="fill-zinc-500 text-[10px]">
+        <text x={4} y={y(eloMin) + 4} className="fill-zinc-400 text-[10px]">
           {eloMin}
         </text>
         <polyline points={linea} fill="none" stroke="#2563eb" strokeWidth={2} />
@@ -56,7 +56,7 @@ export function GraficoElo({ puntos }: { puntos: Punto[] }) {
         ))}
       </svg>
       {punto && (
-        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs shadow-sm">
+        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs shadow-sm">
           <span className="font-semibold">{punto.elo}</span> · {punto.fecha} · {punto.torneo}
         </div>
       )}

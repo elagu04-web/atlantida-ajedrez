@@ -29,9 +29,9 @@ const ETIQUETA_FASE: Record<FaseJuego, string> = {
 };
 
 function claseSeveridad(perdida: number): string {
-  if (perdida >= 300) return "bg-red-100 text-red-800";
+  if (perdida >= 300) return "bg-red-500/20 text-red-300";
   if (perdida >= 100) return "bg-orange-100 text-orange-800";
-  if (perdida >= 50) return "bg-amber-100 text-amber-800";
+  if (perdida >= 50) return "bg-amber-500/20 text-amber-300";
   return "";
 }
 
@@ -46,15 +46,15 @@ function DetalleJugada({ jugada }: { jugada: JugadaAnalizada }) {
   return (
     <>
       {jugada.llevaAMate && (
-        <div className="text-sm text-red-700">☠ Esta jugada lleva a un jaque mate forzado</div>
+        <div className="text-sm text-red-400">☠ Esta jugada lleva a un jaque mate forzado</div>
       )}
       {jugada.varianteSan && (
-        <div className="text-sm text-zinc-600">
+        <div className="text-sm text-zinc-400">
           Mejor era: <span className="font-mono font-medium">{jugada.varianteSan.join(" ")}</span>
         </div>
       )}
       {jugada.piezaColgada && (
-        <div className="text-sm text-red-600">
+        <div className="text-sm text-red-400">
           ⚠ Quedó {jugada.piezaColgada.nombrePieza} colgada en {jugada.piezaColgada.casilla}
         </div>
       )}
@@ -66,13 +66,13 @@ function BarraPatron({ patron }: { patron: PatronRecurrente }) {
   return (
     <div className="flex items-center gap-3 text-sm">
       <span className="w-56 shrink-0 truncate">{patron.etiqueta}</span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-100">
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
         <div
           className="h-full rounded-full bg-blue-500"
           style={{ width: `${Math.max(patron.porcentaje, 4)}%` }}
         />
       </div>
-      <span className="w-20 shrink-0 text-right text-xs text-zinc-500">
+      <span className="w-20 shrink-0 text-right text-xs text-zinc-400">
         {patron.cantidad} ({patron.porcentaje}%)
       </span>
     </div>
@@ -96,8 +96,8 @@ function FilaComparacion({
   const mejoro = menorEsMejor ? diff < 0 : diff > 0;
   const empeoro = menorEsMejor ? diff > 0 : diff < 0;
   return (
-    <tr className="border-b border-zinc-100 last:border-0">
-      <td className="px-4 py-2 text-zinc-600">{etiqueta}</td>
+    <tr className="border-b border-white/5 last:border-0">
+      <td className="px-4 py-2 text-zinc-400">{etiqueta}</td>
       <td className="px-4 py-2 text-center font-mono">
         {anterior}
         {sufijo}
@@ -108,7 +108,7 @@ function FilaComparacion({
       </td>
       <td
         className={`px-4 py-2 text-center font-mono text-xs ${
-          mejoro ? "text-green-700" : empeoro ? "text-red-700" : "text-zinc-400"
+          mejoro ? "text-green-400" : empeoro ? "text-red-400" : "text-zinc-400"
         }`}
       >
         {diff === 0 ? "=" : `${diff > 0 ? "+" : ""}${diff}${sufijo}`}
@@ -129,15 +129,15 @@ function ComparacionProgreso({
   const { recientes, anteriores } = comparacion;
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-5">
-        <h2 className="font-semibold text-blue-900">Progreso de {usuario}</h2>
-        <p className="mt-1 text-xs text-blue-700">
+      <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-5">
+        <h2 className="font-semibold text-blue-200">Progreso de {usuario}</h2>
+        <p className="mt-1 text-xs text-blue-300">
           Últimas 10 partidas comparadas contra las 10 anteriores a esas.
         </p>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+          <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
               <th className="px-4 py-2 font-medium">Métrica</th>
               <th className="px-4 py-2 text-center font-medium">Anteriores</th>
@@ -177,8 +177,8 @@ function ComparacionProgreso({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <h3 className="text-xs font-medium uppercase text-zinc-500">Patrones — antes</h3>
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+          <h3 className="text-xs font-medium uppercase text-zinc-400">Patrones — antes</h3>
           <div className="mt-2 flex flex-col gap-2">
             {anteriores.patronesRecurrentes.slice(0, 4).map((p) => (
               <BarraPatron key={p.etiqueta} patron={p} />
@@ -188,8 +188,8 @@ function ComparacionProgreso({
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <h3 className="text-xs font-medium uppercase text-zinc-500">Patrones — ahora</h3>
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+          <h3 className="text-xs font-medium uppercase text-zinc-400">Patrones — ahora</h3>
           <div className="mt-2 flex flex-col gap-2">
             {recientes.patronesRecurrentes.slice(0, 4).map((p) => (
               <BarraPatron key={p.etiqueta} patron={p} />
@@ -206,7 +206,7 @@ function ComparacionProgreso({
 
 export default function EntrenamientoPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-zinc-500">Cargando...</p>}>
+    <Suspense fallback={<p className="text-sm text-zinc-400">Cargando...</p>}>
       <EntrenamientoContenido />
     </Suspense>
   );
@@ -272,8 +272,8 @@ function EntrenamientoContenido() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-        <p className="text-zinc-500">Esta sección es solo para administradores.</p>
+      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+        <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
   }
@@ -412,9 +412,9 @@ function EntrenamientoContenido() {
           para encontrar sus errores más grandes — herramienta solo para vos, no la ven los alumnos."
       />
 
-      <form onSubmit={handleBuscar} className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+      <form onSubmit={handleBuscar} className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-zinc-600">Plataforma</span>
+          <span className="text-xs font-medium text-zinc-400">Plataforma</span>
           <div className="flex gap-3 py-2">
             {(Object.keys(ETIQUETA_FUENTE) as FuentePartida[]).map((f) => (
               <label key={f} className="flex items-center gap-1 text-sm">
@@ -430,7 +430,7 @@ function EntrenamientoContenido() {
           </div>
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="usuario" className="text-xs font-medium text-zinc-600">
+          <label htmlFor="usuario" className="text-xs font-medium text-zinc-400">
             Usuario de {ETIQUETA_FUENTE[fuente]}
           </label>
           <input
@@ -439,13 +439,13 @@ function EntrenamientoContenido() {
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
             placeholder={fuente === "lichess" ? "Ej: DrNykterstein" : "Ej: Hikaru"}
-            className="w-56 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-56 rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
         <button
           type="submit"
           disabled={buscando || !usuario.trim()}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {buscando ? "Buscando..." : "Buscar partidas"}
         </button>
@@ -453,16 +453,16 @@ function EntrenamientoContenido() {
           type="button"
           onClick={handleCompararProgreso}
           disabled={comparando || !usuario.trim()}
-          className="rounded-md border border-blue-300 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md border border-blue-500/40 px-4 py-2 text-sm font-medium text-blue-300 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {comparando ? "Comparando..." : "📈 Comparar progreso"}
         </button>
       </form>
 
-      {errorBusqueda && <p className="text-sm text-red-600">{errorBusqueda}</p>}
+      {errorBusqueda && <p className="text-sm text-red-400">{errorBusqueda}</p>}
 
       {comparando && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-300">
           Analizando {progresoComparacion?.etapa === "anteriores" ? "las 10 partidas anteriores" : "las últimas 10 partidas"}
           {progresoComparacion
             ? ` — partida ${progresoComparacion.partida} de ${progresoComparacion.totalPartidas}...`
@@ -471,14 +471,14 @@ function EntrenamientoContenido() {
         </div>
       )}
 
-      {errorComparacion && <p className="text-sm text-red-600">{errorComparacion}</p>}
+      {errorComparacion && <p className="text-sm text-red-400">{errorComparacion}</p>}
 
       {comparacion && (
         <ComparacionProgreso usuario={usuario} comparacion={comparacion} />
       )}
 
       {partidas.length > 0 && (
-        <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4">
+        <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">Últimas partidas</h2>
             <button
@@ -492,22 +492,22 @@ function EntrenamientoContenido() {
           {partidas.map((p, i) => (
             <div
               key={i}
-              className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 py-2 text-sm last:border-0"
+              className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 py-2 text-sm last:border-0"
             >
               <span>
                 <span className="font-medium">{p.blancas}</span> vs{" "}
                 <span className="font-medium">{p.negras}</span>{" "}
-                <span className="font-mono text-xs text-zinc-500">{p.resultado}</span>
-                {p.fecha && <span className="ml-2 text-xs text-zinc-500">{p.fecha}</span>}
-                <span className="ml-2 text-xs text-zinc-500">· {p.apertura}</span>
-                <span className="ml-2 rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500">
+                <span className="font-mono text-xs text-zinc-400">{p.resultado}</span>
+                {p.fecha && <span className="ml-2 text-xs text-zinc-400">{p.fecha}</span>}
+                <span className="ml-2 text-xs text-zinc-400">· {p.apertura}</span>
+                <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-xs text-zinc-400">
                   {ETIQUETA_FUENTE[p.fuente]}
                 </span>
               </span>
               <button
                 onClick={() => handleAnalizar(p)}
                 disabled={analizando}
-                className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Analizar esta partida
               </button>
@@ -517,24 +517,24 @@ function EntrenamientoContenido() {
       )}
 
       {analizando && (
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-600">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
           Analizando con el motor
           {progreso ? ` — jugada ${progreso.hechas} de ${progreso.total}...` : "..."}
         </div>
       )}
 
-      {errorAnalisis && <p className="text-sm text-red-600">{errorAnalisis}</p>}
+      {errorAnalisis && <p className="text-sm text-red-400">{errorAnalisis}</p>}
 
       {resultado && (
         <div className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             {resultado.peorJugadaBlancas && resultado.peorJugadaBlancas.perdidaCentipeones > 0 && (
-              <div className="rounded-lg border border-zinc-200 bg-white p-4">
-                <div className="text-xs font-medium text-zinc-500">Peor jugada de blancas</div>
+              <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+                <div className="text-xs font-medium text-zinc-400">Peor jugada de blancas</div>
                 <div className="mt-1 text-lg font-semibold">
                   {resultado.peorJugadaBlancas.numero}. {resultado.peorJugadaBlancas.san}
                 </div>
-                <div className="text-sm text-red-600">
+                <div className="text-sm text-red-400">
                   -{resultado.peorJugadaBlancas.perdidaCentipeones} centipeones
                 </div>
                 <DetalleJugada jugada={resultado.peorJugadaBlancas} />
@@ -544,12 +544,12 @@ function EntrenamientoContenido() {
               </div>
             )}
             {resultado.peorJugadaNegras && resultado.peorJugadaNegras.perdidaCentipeones > 0 && (
-              <div className="rounded-lg border border-zinc-200 bg-white p-4">
-                <div className="text-xs font-medium text-zinc-500">Peor jugada de negras</div>
+              <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+                <div className="text-xs font-medium text-zinc-400">Peor jugada de negras</div>
                 <div className="mt-1 text-lg font-semibold">
                   {resultado.peorJugadaNegras.numero}...{resultado.peorJugadaNegras.san}
                 </div>
-                <div className="text-sm text-red-600">
+                <div className="text-sm text-red-400">
                   -{resultado.peorJugadaNegras.perdidaCentipeones} centipeones
                 </div>
                 <DetalleJugada jugada={resultado.peorJugadaNegras} />
@@ -560,8 +560,8 @@ function EntrenamientoContenido() {
             )}
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-            <h2 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 font-semibold">
+          <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+            <h2 className="border-b border-white/10 bg-white/10 px-4 py-3 font-semibold">
               Jugada por jugada
             </h2>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 p-4 text-sm sm:grid-cols-3 md:grid-cols-4">
@@ -588,17 +588,17 @@ function EntrenamientoContenido() {
                 </div>
               ))}
             </div>
-            <div className="flex gap-4 border-t border-zinc-100 px-4 py-2 text-xs text-zinc-500">
-              <span className="rounded bg-amber-100 px-1 text-amber-800">Imprecisión</span>
+            <div className="flex gap-4 border-t border-white/5 px-4 py-2 text-xs text-zinc-400">
+              <span className="rounded bg-amber-500/20 px-1 text-amber-300">Imprecisión</span>
               <span className="rounded bg-orange-100 px-1 text-orange-800">Error</span>
-              <span className="rounded bg-red-100 px-1 text-red-800">Error grave</span>
+              <span className="rounded bg-red-500/20 px-1 text-red-300">Error grave</span>
             </div>
           </div>
         </div>
       )}
 
       {analizandoPatrones && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-300">
           Analizando patrones
           {progresoPatrones
             ? ` — partida ${progresoPatrones.partida} de ${progresoPatrones.totalPartidas} (jugada ${progresoPatrones.jugada} de ${progresoPatrones.totalJugadas})...`
@@ -607,38 +607,38 @@ function EntrenamientoContenido() {
         </div>
       )}
 
-      {errorPatrones && <p className="text-sm text-red-600">{errorPatrones}</p>}
+      {errorPatrones && <p className="text-sm text-red-400">{errorPatrones}</p>}
 
       {patrones && (
         <div className="flex flex-col gap-4">
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-5">
-            <h2 className="font-semibold text-blue-900">
+          <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-5">
+            <h2 className="font-semibold text-blue-200">
               Patrones de {usuario} en {patrones.partidas.length} partidas
             </h2>
             <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-5">
               <div>
-                <div className="text-xs text-blue-700">Pérdida promedio por jugada</div>
-                <div className="text-lg font-semibold text-blue-900">{patrones.perdidaPromedioGeneral} cp</div>
+                <div className="text-xs text-blue-300">Pérdida promedio por jugada</div>
+                <div className="text-lg font-semibold text-blue-200">{patrones.perdidaPromedioGeneral} cp</div>
               </div>
               <div>
-                <div className="text-xs text-blue-700">Errores graves</div>
-                <div className="text-lg font-semibold text-red-700">{patrones.totalErroresGraves}</div>
+                <div className="text-xs text-blue-300">Errores graves</div>
+                <div className="text-lg font-semibold text-red-400">{patrones.totalErroresGraves}</div>
               </div>
               <div>
-                <div className="text-xs text-blue-700">Errores</div>
+                <div className="text-xs text-blue-300">Errores</div>
                 <div className="text-lg font-semibold text-orange-700">{patrones.totalErrores}</div>
               </div>
               <div>
-                <div className="text-xs text-blue-700">Imprecisiones</div>
-                <div className="text-lg font-semibold text-amber-700">{patrones.totalImprecisiones}</div>
+                <div className="text-xs text-blue-300">Imprecisiones</div>
+                <div className="text-lg font-semibold text-amber-300">{patrones.totalImprecisiones}</div>
               </div>
               <div>
-                <div className="text-xs text-blue-700">Piezas colgadas</div>
-                <div className="text-lg font-semibold text-red-700">{patrones.totalPiezasColgadas}</div>
+                <div className="text-xs text-blue-300">Piezas colgadas</div>
+                <div className="text-lg font-semibold text-red-400">{patrones.totalPiezasColgadas}</div>
               </div>
             </div>
             {patrones.faseMasDebil && (
-              <p className="mt-4 text-sm text-blue-900">
+              <p className="mt-4 text-sm text-blue-200">
                 💡 Donde más pierde en promedio es en <strong>{ETIQUETA_FASE[patrones.faseMasDebil]}</strong> — buen
                 punto de partida para la próxima clase.
               </p>
@@ -648,8 +648,8 @@ function EntrenamientoContenido() {
                 const datos = patrones.perdidaPorFase[fase];
                 const promedio = datos.cantidad > 0 ? Math.round(datos.total / datos.cantidad) : 0;
                 return (
-                  <div key={fase} className="rounded-md bg-white p-2 text-center">
-                    <div className="text-zinc-500">{ETIQUETA_FASE[fase]}</div>
+                  <div key={fase} className="rounded-md bg-white/5 p-2 text-center">
+                    <div className="text-zinc-400">{ETIQUETA_FASE[fase]}</div>
                     <div className="font-semibold">{datos.cantidad > 0 ? `${promedio} cp` : "—"}</div>
                   </div>
                 );
@@ -658,9 +658,9 @@ function EntrenamientoContenido() {
           </div>
 
           {patrones.patronesRecurrentes.length > 0 && (
-            <div className="rounded-lg border border-zinc-200 bg-white p-5">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-5">
               <h2 className="font-semibold">Patrones recurrentes</h2>
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-zinc-400">
                 Qué se repite entre todas las jugadas marcadas como error, de más a menos frecuente.
               </p>
               <div className="mt-3 flex flex-col gap-2">
@@ -671,9 +671,9 @@ function EntrenamientoContenido() {
             </div>
           )}
 
-          <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+          <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
             <table className="w-full text-sm">
-              <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+              <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
                 <tr>
                   <th className="px-4 py-2 font-medium">Fecha</th>
                   <th className="px-4 py-2 font-medium">Rival</th>
@@ -686,10 +686,10 @@ function EntrenamientoContenido() {
               </thead>
               <tbody>
                 {patrones.partidas.map((p, i) => (
-                  <tr key={i} className="border-b border-zinc-100 last:border-0">
-                    <td className="px-4 py-2 text-zinc-500">{p.fecha}</td>
+                  <tr key={i} className="border-b border-white/5 last:border-0">
+                    <td className="px-4 py-2 text-zinc-400">{p.fecha}</td>
                     <td className="px-4 py-2">{p.rival}</td>
-                    <td className="px-4 py-2 text-xs text-zinc-500">{p.apertura}</td>
+                    <td className="px-4 py-2 text-xs text-zinc-400">{p.apertura}</td>
                     <td className="px-4 py-2">{p.color === "w" ? "Blancas" : "Negras"}</td>
                     <td className="px-4 py-2 font-mono text-xs">{p.resultado}</td>
                     <td className="px-4 py-2 font-mono">{p.perdidaPromedio} cp</td>
@@ -705,12 +705,12 @@ function EntrenamientoContenido() {
           </div>
 
           {patrones.aperturas.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-              <h2 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 font-semibold">
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
+              <h2 className="border-b border-white/10 bg-white/10 px-4 py-3 font-semibold">
                 Rendimiento por apertura
               </h2>
               <table className="w-full text-sm">
-                <thead className="border-b border-zinc-200 text-left text-zinc-500">
+                <thead className="border-b border-white/10 text-left text-zinc-400">
                   <tr>
                     <th className="px-4 py-2 font-medium">Apertura</th>
                     <th className="px-4 py-2 font-medium">Partidas</th>
@@ -722,12 +722,12 @@ function EntrenamientoContenido() {
                 </thead>
                 <tbody>
                   {patrones.aperturas.map((a, i) => (
-                    <tr key={i} className="border-b border-zinc-100 last:border-0">
+                    <tr key={i} className="border-b border-white/5 last:border-0">
                       <td className="px-4 py-2">{a.apertura}</td>
                       <td className="px-4 py-2 text-center">{a.partidas}</td>
-                      <td className="px-4 py-2 text-center text-green-700">{a.victorias}</td>
-                      <td className="px-4 py-2 text-center text-zinc-500">{a.empates}</td>
-                      <td className="px-4 py-2 text-center text-red-700">{a.derrotas}</td>
+                      <td className="px-4 py-2 text-center text-green-400">{a.victorias}</td>
+                      <td className="px-4 py-2 text-center text-zinc-400">{a.empates}</td>
+                      <td className="px-4 py-2 text-center text-red-400">{a.derrotas}</td>
                       <td className="px-4 py-2 font-mono">{a.perdidaPromedio} cp</td>
                     </tr>
                   ))}

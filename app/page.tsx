@@ -30,15 +30,15 @@ export default function Home() {
         subtitulo="Ranking, torneos y estadísticas del club de ajedrez Atlántida."
       />
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold">Ranking Elo Atlántida (top 3)</h2>
-          <Link href="/jugadores" className="text-sm text-blue-600 hover:underline">
+          <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
             Ver todos los jugadores →
           </Link>
         </div>
         {top3.length === 0 ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-400">
             {cargando ? "Cargando..." : "Todavía no hay jugadores cargados."}
           </p>
         ) : (
@@ -46,7 +46,7 @@ export default function Home() {
             {top3.map((j, i) => (
               <li key={j.id} className="flex items-center justify-between text-sm">
                 <span>
-                  <span className="mr-2 text-zinc-500">{i + 1}.</span>
+                  <span className="mr-2 text-zinc-400">{i + 1}.</span>
                   {nombreVisible(j)}
                 </span>
                 <span className="font-mono font-semibold">{j.eloAtlantida}</span>
@@ -66,10 +66,10 @@ export default function Home() {
             key={card.href}
             href={card.href}
             onMouseMove={manejarSpotlight}
-            className="tarjeta-spotlight rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
+            className="tarjeta-spotlight rounded-lg border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:shadow-sm"
           >
             <div className="font-semibold">{card.label}</div>
-            <div className="mt-1 text-sm text-zinc-500">{card.desc}</div>
+            <div className="mt-1 text-sm text-zinc-400">{card.desc}</div>
           </Link>
         ))}
       </div>

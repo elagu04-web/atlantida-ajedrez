@@ -55,8 +55,8 @@ export default function EpicoTorneoPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-        <p className="text-zinc-500">Esta sección es solo para administradores.</p>
+      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+        <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
   }
@@ -64,10 +64,10 @@ export default function EpicoTorneoPage() {
   if (!torneo) {
     return (
       <div className="flex flex-col gap-4">
-        <Link href="/epico/torneos" className="text-sm text-blue-600 hover:underline">
+        <Link href="/epico/torneos" className="text-sm text-blue-400 hover:underline">
           ← Volver a torneos
         </Link>
-        <p className="text-zinc-600">{cargando ? "Cargando..." : "Ese torneo no existe."}</p>
+        <p className="text-zinc-400">{cargando ? "Cargando..." : "Ese torneo no existe."}</p>
       </div>
     );
   }
@@ -126,34 +126,34 @@ export default function EpicoTorneoPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/epico/torneos" className="text-sm text-blue-600 hover:underline">
+        <Link href="/epico/torneos" className="text-sm text-blue-400 hover:underline">
           ← Volver a torneos
         </Link>
         <div className="mt-2 flex items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{torneo.nombre}</h1>
-          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-zinc-400">
             {estadoLabel[torneo.estado]}
           </span>
         </div>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-zinc-400">
           {formatoLabel[torneo.formato]}
           {torneo.rondasObjetivo && <> · {torneo.rondasObjetivo} rondas planificadas</>}
         </p>
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
         <h2 className="mb-3 font-semibold">Alumnos inscriptos ({inscriptos.length})</h2>
         <ul className="flex flex-col gap-1">
           {inscriptos.map((j) => (
             <li key={j!.id} className="flex items-center justify-between text-sm">
               <span>
                 {nombreVisible(j!)}{" "}
-                <span className="font-mono text-xs text-zinc-500">{j!.eloAtlantida}</span>
+                <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
               </span>
               {puedeEditarJugadores(torneo) && (
                 <button
                   onClick={() => quitarJugadorDeTorneo(torneo.id, j!.id)}
-                  className="text-xs text-red-600 hover:underline"
+                  className="text-xs text-red-400 hover:underline"
                 >
                   Quitar
                 </button>
@@ -163,13 +163,13 @@ export default function EpicoTorneoPage() {
         </ul>
 
         {puedeEditarJugadores(torneo) && (
-          <div className="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4">
+          <div className="mt-4 flex flex-col gap-3 border-t border-white/5 pt-4">
             {disponiblesParaAgregar.length > 0 && (
               <div className="flex items-center gap-2">
                 <select
                   value={jugadorAAgregar}
                   onChange={(e) => setJugadorAAgregar(e.target.value)}
-                  className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
+                  className="rounded-md border border-white/20 px-2 py-1.5 text-sm"
                 >
                   <option value="">Elegir alumno...</option>
                   {disponiblesParaAgregar.map((j) => (
@@ -184,7 +184,7 @@ export default function EpicoTorneoPage() {
                     agregarJugadorATorneo(torneo.id, jugadorAAgregar);
                     setJugadorAAgregar("");
                   }}
-                  className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700"
+                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
                 >
                   Agregar
                 </button>
@@ -196,18 +196,18 @@ export default function EpicoTorneoPage() {
                 value={nombreNuevo}
                 onChange={(e) => setNombreNuevo(e.target.value)}
                 placeholder="Nombre de alumno nuevo"
-                className="w-52 rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
+                className="w-52 rounded-md border border-white/20 px-2 py-1.5 text-sm"
               />
               <input
                 type="number"
                 min={ELO_MINIMO}
                 value={eloNuevo}
                 onChange={(e) => setEloNuevo(e.target.value)}
-                className="w-24 rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
+                className="w-24 rounded-md border border-white/20 px-2 py-1.5 text-sm"
               />
               <button
                 type="submit"
-                className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+                className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
               >
                 Crear y agregar
               </button>
@@ -220,7 +220,7 @@ export default function EpicoTorneoPage() {
         {puedeGenerarRondas && (
           <button
             onClick={() => generarRondas(torneo.id)}
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
             {textoBotonRondas}
           </button>
@@ -228,7 +228,7 @@ export default function EpicoTorneoPage() {
         {torneo.rondas.length > 0 && torneo.estado !== "finalizado" && (
           <button
             onClick={handleEliminarUltimaRonda}
-            className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            className="rounded-md border border-red-500/30 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10"
           >
             Eliminar ronda {torneo.rondas.length}
           </button>
@@ -236,25 +236,25 @@ export default function EpicoTorneoPage() {
         {torneo.estado === "en_curso" && (
           <button
             onClick={() => finalizarTorneo(torneo.id)}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+            className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/10"
           >
             Finalizar torneo
           </button>
         )}
         {alcanzoRondasObjetivo && (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-400">
             Se jugaron las {torneo.rondasObjetivo} rondas planificadas.
           </p>
         )}
       </div>
 
       {standings.length > 0 && torneo.rondas.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-          <h2 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 font-semibold">
+        <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+          <h2 className="border-b border-white/10 bg-white/10 px-4 py-3 font-semibold">
             Tabla de posiciones
           </h2>
           <table className="w-full text-sm">
-            <thead className="border-b border-zinc-200 text-left text-zinc-500">
+            <thead className="border-b border-white/10 text-left text-zinc-400">
               <tr>
                 <th className="px-4 py-2 font-medium">#</th>
                 <th className="px-4 py-2 font-medium">Alumno</th>
@@ -269,13 +269,13 @@ export default function EpicoTorneoPage() {
             </thead>
             <tbody>
               {standings.map((s, i) => (
-                <tr key={s.jugadorId} className="border-b border-zinc-100 last:border-0">
-                  <td className="px-4 py-2 text-zinc-500">{i + 1}</td>
+                <tr key={s.jugadorId} className="border-b border-white/5 last:border-0">
+                  <td className="px-4 py-2 text-zinc-400">{i + 1}</td>
                   <td className="px-4 py-2">{nombreDe(s.jugadorId)}</td>
                   <td className="px-4 py-2 font-mono">{s.puntos}</td>
                   <td className="px-4 py-2">{s.partidasJugadas}</td>
                   {torneo.desempates.map((d) => (
-                    <td key={d} className="px-4 py-2 font-mono text-xs text-zinc-500">
+                    <td key={d} className="px-4 py-2 font-mono text-xs text-zinc-400">
                       {s.desempates[d] ?? "—"}
                     </td>
                   ))}
@@ -288,15 +288,15 @@ export default function EpicoTorneoPage() {
 
       <div className="flex flex-col gap-4">
         {[...torneo.rondas].reverse().map((ronda) => (
-          <div key={ronda.numero} className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-            <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
+          <div key={ronda.numero} className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+            <div className="border-b border-white/10 bg-white/10 px-4 py-3">
               <h3 className="font-semibold">Ronda {ronda.numero}</h3>
             </div>
-            <div className="flex flex-col divide-y divide-zinc-100">
+            <div className="flex flex-col divide-y divide-white/5">
               {ronda.emparejamientos.map((e) => {
                 if (!e.negrasId) {
                   return (
-                    <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-500">
+                    <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-400">
                       <span>{nombreDe(e.blancasId)}</span>
                       <span>— descansa (punto libre) —</span>
                     </div>
@@ -319,8 +319,8 @@ export default function EpicoTorneoPage() {
                         }
                         className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
                           e.resultado === "1-0"
-                            ? "border-green-600 bg-green-600 text-white"
-                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                            ? "border-green-500 bg-green-600 text-white"
+                            : "border-white/20 bg-white/5 text-zinc-300 hover:bg-white/10"
                         }`}
                       >
                         🏆 {nombreDe(e.blancasId)}
@@ -336,8 +336,8 @@ export default function EpicoTorneoPage() {
                         }
                         className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
                           e.resultado === "1/2-1/2"
-                            ? "border-zinc-600 bg-zinc-600 text-white"
-                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                            ? "border-white/20 bg-white/20 text-white"
+                            : "border-white/20 bg-white/5 text-zinc-300 hover:bg-white/10"
                         }`}
                       >
                         ½ Tablas
@@ -353,8 +353,8 @@ export default function EpicoTorneoPage() {
                         }
                         className={`rounded-md border px-3 py-3 text-sm font-medium transition-colors ${
                           e.resultado === "0-1"
-                            ? "border-green-600 bg-green-600 text-white"
-                            : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+                            ? "border-green-500 bg-green-600 text-white"
+                            : "border-white/20 bg-white/5 text-zinc-300 hover:bg-white/10"
                         }`}
                       >
                         🏆 {nombreDe(e.negrasId)}

@@ -119,7 +119,7 @@ export default function TorneosPage() {
       />
 
       {!puedeEditar && (
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-zinc-400">
           Iniciá sesión para crear torneos o borrarlos.
         </p>
       )}
@@ -127,10 +127,10 @@ export default function TorneosPage() {
       {puedeEditar && (
         <form
           onSubmit={handleCrearRapido}
-          className="flex flex-wrap items-end gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4"
+          className="flex flex-wrap items-end gap-3 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
         >
           <div className="flex flex-col gap-1">
-            <label htmlFor="nombreRapido" className="text-xs font-medium text-blue-800">
+            <label htmlFor="nombreRapido" className="text-xs font-medium text-blue-300">
               Creación rápida — solo el nombre
             </label>
             <input
@@ -139,7 +139,7 @@ export default function TorneosPage() {
               value={nombreRapido}
               onChange={(e) => setNombreRapido(e.target.value)}
               placeholder="Ej: Torneo del jueves"
-              className="w-64 rounded-md border border-blue-300 px-3 py-2 text-sm"
+              className="w-64 rounded-md border border-blue-500/40 px-3 py-2 text-sm"
             />
           </div>
           <button
@@ -149,7 +149,7 @@ export default function TorneosPage() {
           >
             {creandoRapido ? "Creando..." : "Crear y abrir inscripción"}
           </button>
-          <span className="text-xs text-blue-700">
+          <span className="text-xs text-blue-300">
             Formato, jugadores y desempates se eligen después — esto solo publica el torneo para
             que la gente se pueda anotar.
           </span>
@@ -159,13 +159,13 @@ export default function TorneosPage() {
       {puedeEditar && (
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-5"
+        className="flex flex-col gap-5 rounded-lg border border-white/10 bg-white/5 p-5"
       >
-        <span className="text-xs font-medium text-zinc-500">
+        <span className="text-xs font-medium text-zinc-400">
           O crear con todos los detalles de una:
         </span>
         <div className="flex flex-col gap-1">
-          <label htmlFor="nombre" className="text-xs font-medium text-zinc-600">
+          <label htmlFor="nombre" className="text-xs font-medium text-zinc-400">
             Nombre del torneo
           </label>
           <input
@@ -174,12 +174,12 @@ export default function TorneosPage() {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Ej: Copa de Primavera"
-            className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-zinc-600">Formato</span>
+          <span className="text-xs font-medium text-zinc-400">Formato</span>
           <div className="flex gap-4 text-sm">
             <label className="flex items-center gap-2">
               <input
@@ -220,7 +220,7 @@ export default function TorneosPage() {
             </label>
           )}
           {formato === "match" && (
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-zinc-400">
               Para cuando vienen solo dos personas: se enfrentan varias partidas seguidas,
               alternando quién juega con blancas. Elegí exactamente 2 jugadores abajo.
             </span>
@@ -229,7 +229,7 @@ export default function TorneosPage() {
 
         {(formato === "suizo" || formato === "match") && (
           <div className="flex flex-col gap-1">
-            <label htmlFor="rondasObjetivo" className="text-xs font-medium text-zinc-600">
+            <label htmlFor="rondasObjetivo" className="text-xs font-medium text-zinc-400">
               {formato === "match" ? "Cantidad de partidas" : "Cantidad de rondas (opcional)"}
             </label>
             <input
@@ -239,9 +239,9 @@ export default function TorneosPage() {
               value={rondasObjetivo}
               onChange={(e) => setRondasObjetivo(e.target.value)}
               placeholder={formato === "match" ? "Ej: 2" : "Ej: 5"}
-              className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              className="w-28 rounded-md border border-white/20 px-3 py-2 text-sm"
             />
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-zinc-400">
               {formato === "match"
                 ? "Si la dejás vacía, el match es a 2 partidas."
                 : "Si la dejás vacía, vas generando rondas de a una sin límite fijo."}
@@ -251,7 +251,7 @@ export default function TorneosPage() {
 
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-medium text-zinc-600">
+            <span className="text-xs font-medium text-zinc-400">
               Jugadores ({seleccionados.size} seleccionados)
             </span>
             {jugadoresConStats.length > 0 && (
@@ -261,14 +261,14 @@ export default function TorneosPage() {
                   onClick={() =>
                     setSeleccionados(new Set(jugadoresFiltrados.map((j) => j.id)))
                   }
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-400 hover:underline"
                 >
                   Seleccionar {busquedaJugadores ? "filtrados" : "todos"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setSeleccionados(new Set())}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-400 hover:underline"
                 >
                   Deseleccionar todos
                 </button>
@@ -277,9 +277,9 @@ export default function TorneosPage() {
           </div>
 
           {jugadoresConStats.length === 0 ? (
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-zinc-400">
               No hay jugadores cargados todavía —{" "}
-              <Link href="/jugadores" className="text-blue-600 hover:underline">
+              <Link href="/jugadores" className="text-blue-400 hover:underline">
                 agregá algunos primero
               </Link>
               .
@@ -291,9 +291,9 @@ export default function TorneosPage() {
                 value={busquedaJugadores}
                 onChange={(e) => setBusquedaJugadores(e.target.value)}
                 placeholder="Buscar jugador..."
-                className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
               />
-              <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-md border border-zinc-100 p-2 sm:grid-cols-3">
+              <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-md border border-white/5 p-2 sm:grid-cols-3">
                 {jugadoresFiltrados.map((j) => (
                   <label key={j.id} className="flex items-center gap-2 text-sm">
                     <input
@@ -302,13 +302,13 @@ export default function TorneosPage() {
                       onChange={() => toggleJugador(j.id)}
                     />
                     {nombreVisible(j)}{" "}
-                    <span className="font-mono text-xs text-zinc-500">
+                    <span className="font-mono text-xs text-zinc-400">
                       {j.eloAtlantida}
                     </span>
                   </label>
                 ))}
                 {jugadoresFiltrados.length === 0 && (
-                  <p className="col-span-full py-2 text-center text-sm text-zinc-500">
+                  <p className="col-span-full py-2 text-center text-sm text-zinc-400">
                     Ningún jugador coincide con la búsqueda.
                   </p>
                 )}
@@ -318,7 +318,7 @@ export default function TorneosPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-zinc-600">
+          <span className="text-xs font-medium text-zinc-400">
             Desempates a usar
           </span>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
@@ -334,8 +334,8 @@ export default function TorneosPage() {
             ))}
           </div>
           {desempates.length > 0 && (
-            <div className="mt-2 flex flex-col gap-1 rounded-md border border-zinc-200 bg-zinc-50 p-2">
-              <span className="text-xs text-zinc-500">
+            <div className="mt-2 flex flex-col gap-1 rounded-md border border-white/10 bg-white/10 p-2">
+              <span className="text-xs text-zinc-400">
                 Orden de prioridad (se usa el primero; si empatan, se pasa al siguiente):
               </span>
               {desempates.map((d, i) => (
@@ -346,7 +346,7 @@ export default function TorneosPage() {
                     type="button"
                     onClick={() => moverDesempate(d, -1)}
                     disabled={i === 0}
-                    className="rounded border border-zinc-300 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                    className="rounded border border-white/20 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     ↑
                   </button>
@@ -354,7 +354,7 @@ export default function TorneosPage() {
                     type="button"
                     onClick={() => moverDesempate(d, 1)}
                     disabled={i === desempates.length - 1}
-                    className="rounded border border-zinc-300 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                    className="rounded border border-white/20 px-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     ↓
                   </button>
@@ -365,7 +365,7 @@ export default function TorneosPage() {
         </div>
 
         {formatoInvalido && (
-          <p className="text-xs text-amber-600">
+          <p className="text-xs text-amber-400">
             El formato Match necesita exactamente 2 jugadores seleccionados (elegiste{" "}
             {seleccionados.size}).
           </p>
@@ -374,7 +374,7 @@ export default function TorneosPage() {
         <button
           type="submit"
           disabled={!nombre.trim() || seleccionados.size < 2 || formatoInvalido}
-          className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="w-fit rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Crear torneo
         </button>
@@ -384,7 +384,7 @@ export default function TorneosPage() {
       <div className="flex flex-col gap-3">
         <h2 className="font-semibold">Torneos creados</h2>
         {torneos.length === 0 && (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-400">
             {cargando ? "Cargando torneos..." : "Todavía no creaste ningún torneo."}
           </p>
         )}
@@ -393,15 +393,15 @@ export default function TorneosPage() {
           return (
             <div
               key={t.id}
-              className="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-blue-200 hover:shadow-sm"
+              className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-blue-500/30 hover:shadow-sm"
             >
               <div
                 className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg ${
                   t.estado === "en_curso"
-                    ? "bg-blue-50 ring-1 ring-blue-200"
+                    ? "bg-blue-500/10 ring-1 ring-blue-500/30"
                     : t.estado === "finalizado"
-                    ? "bg-amber-50 ring-1 ring-amber-200"
-                    : "bg-zinc-100 ring-1 ring-zinc-200"
+                    ? "bg-amber-500/10 ring-1 ring-amber-500/30"
+                    : "bg-white/10 ring-1 ring-white/10"
                 }`}
               >
                 {formatoIcono[t.formato]}
@@ -411,23 +411,23 @@ export default function TorneosPage() {
                 <div className="flex items-center gap-2">
                   <span className="truncate font-medium">{t.nombre}</span>
                   {t.estado === "en_curso" && (
-                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-600 ring-1 ring-red-200">
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-400 ring-1 ring-red-500/30">
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
                       En vivo
                     </span>
                   )}
                   {t.estado === "armado" && (
-                    <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+                    <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
                       Armado
                     </span>
                   )}
                   {t.estado === "finalizado" && (
-                    <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700">
+                    <span className="shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-300">
                       Finalizado
                     </span>
                   )}
                 </div>
-                <div className="text-sm text-zinc-500">
+                <div className="text-sm text-zinc-400">
                   {formatoLabel[t.formato]} · {t.jugadoresIds.length} jugadores
                 </div>
               </Link>
@@ -439,7 +439,7 @@ export default function TorneosPage() {
                     return (
                       <span
                         key={s.jugadorId}
-                        className="flex items-center gap-1 text-xs font-medium text-zinc-600"
+                        className="flex items-center gap-1 text-xs font-medium text-zinc-400"
                       >
                         <span>{MEDALLA[i]}</span>
                         <span className="max-w-[6rem] truncate">{j ? nombreVisible(j) : "?"}</span>
@@ -456,7 +456,7 @@ export default function TorneosPage() {
                       eliminarTorneo(t.id);
                     }
                   }}
-                  className="shrink-0 text-xs text-red-600 hover:underline"
+                  className="shrink-0 text-xs text-red-400 hover:underline"
                 >
                   Eliminar
                 </button>

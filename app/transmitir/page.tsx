@@ -29,7 +29,7 @@ const INTENTOS_ANTES_DE_DESINCRONIZAR = 3;
 
 export default function TransmitirPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-zinc-500">Cargando...</p>}>
+    <Suspense fallback={<p className="text-sm text-zinc-400">Cargando...</p>}>
       <TransmitirContenido />
     </Suspense>
   );
@@ -595,7 +595,7 @@ function TransmitirContenido() {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Transmitir</h1>
-        <p className="text-zinc-600">Iniciá sesión para transmitir una partida.</p>
+        <p className="text-zinc-400">Iniciá sesión para transmitir una partida.</p>
       </div>
     );
   }
@@ -604,12 +604,12 @@ function TransmitirContenido() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Transmitir</h1>
-        <p className="mt-1 text-zinc-600">
+        <p className="mt-1 text-zinc-400">
           Conectá el tablero DGT Pegasus por Bluetooth (Chrome o Edge de computadora, tablero
           prendido y cerca) y transmitilo en vivo en /transmision.
         </p>
         {torneoId && (
-          <p className="mt-1 text-sm text-blue-700">
+          <p className="mt-1 text-sm text-blue-300">
             🔗 Vinculada al torneo &quot;{torneos.find((t) => t.id === torneoId)?.nombre ?? "?"}&quot;
             — ronda {rondaNumero}, partida {empNumero}. El resultado se va a cargar ahí también.
           </p>
@@ -617,7 +617,7 @@ function TransmitirContenido() {
       </div>
 
       {(jugadorBlancas || jugadorNegras) && (
-        <div className="flex flex-wrap items-center justify-center gap-6 rounded-lg border border-zinc-200 bg-white p-4">
+        <div className="flex flex-wrap items-center justify-center gap-6 rounded-lg border border-white/10 bg-white/5 p-4">
           {[
             { jugador: jugadorBlancas, nombre: blancas, color: "Blancas" },
             { jugador: jugadorNegras, nombre: negras, color: "Negras" },
@@ -629,16 +629,16 @@ function TransmitirContenido() {
                   <img
                     src={jugador.fotoUrl}
                     alt={nombre}
-                    className="h-12 w-12 rounded-full border border-zinc-200 object-cover"
+                    className="h-12 w-12 rounded-full border border-white/10 object-cover"
                   />
                 ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-lg font-semibold text-zinc-500">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/10 text-lg font-semibold text-zinc-400">
                     {nombre.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
                   <p className="text-sm font-medium">{nombre}</p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-zinc-400">
                     {color} · Elo {jugador.eloAtlantida}
                   </p>
                 </div>
@@ -648,25 +648,25 @@ function TransmitirContenido() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-600">Blancas</label>
+          <label className="text-xs font-medium text-zinc-400">Blancas</label>
           <input
             type="text"
             value={blancas}
             onChange={(e) => cambiarBlancas(e.target.value)}
             placeholder="Nombre jugador blancas"
-            className="w-48 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-48 rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-600">Negras</label>
+          <label className="text-xs font-medium text-zinc-400">Negras</label>
           <input
             type="text"
             value={negras}
             onChange={(e) => cambiarNegras(e.target.value)}
             placeholder="Nombre jugador negras"
-            className="w-48 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-48 rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
         {!transmitiendo ? (
@@ -679,43 +679,43 @@ function TransmitirContenido() {
         ) : (
           <button
             onClick={handleTerminarTransmision}
-            className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            className="rounded-md border border-red-500/40 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10"
           >
             Terminar transmisión
           </button>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4">
-        <span className="text-xs font-medium text-zinc-600">Terminar partida con resultado:</span>
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+        <span className="text-xs font-medium text-zinc-400">Terminar partida con resultado:</span>
         <button
           onClick={() => handleTerminarPartida("1-0")}
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+          className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
         >
           1 – 0
         </button>
         <button
           onClick={() => handleTerminarPartida("1/2-1/2")}
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+          className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
         >
           ½ – ½
         </button>
         <button
           onClick={() => handleTerminarPartida("0-1")}
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+          className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
         >
           0 – 1
         </button>
-        {resultado && <span className="text-sm font-medium text-green-700">Resultado: {resultado}</span>}
+        {resultado && <span className="text-sm font-medium text-green-400">Resultado: {resultado}</span>}
       </div>
 
       {pgn && (
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-semibold">PGN de la partida</h2>
             <button
               onClick={descargarPgn}
-              className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-700"
+              className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
             >
               Descargar .pgn
             </button>
@@ -723,14 +723,14 @@ function TransmitirContenido() {
           <textarea
             readOnly
             value={pgn}
-            className="h-32 w-full rounded border border-zinc-200 bg-zinc-50 p-2 font-mono text-xs"
+            className="h-32 w-full rounded border border-white/10 bg-white/10 p-2 font-mono text-xs"
           />
         </div>
       )}
 
       {casillasSospechosas && !editandoPosicion && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-300 bg-red-50 p-4">
-          <p className="text-sm text-red-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-500/40 bg-red-500/10 p-4">
+          <p className="text-sm text-red-300">
             ⚠ El tablero físico no coincide con ninguna jugada legal. Casilleros distintos:{" "}
             <span className="font-mono font-semibold">{casillasSospechosas.join(", ")}</span>.
           </p>
@@ -747,21 +747,21 @@ function TransmitirContenido() {
         <button
           onClick={handleConectar}
           disabled={conectando || conectado}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
           {conectado ? "Conectado" : conectando ? "Conectando..." : "Conectar tablero"}
         </button>
         {conectado && (
           <button
             onClick={handleDesconectar}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+            className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/10"
           >
             Desconectar tablero
           </button>
         )}
         {bateria !== null && (
           <span
-            className={`text-sm font-medium ${bateria <= 20 ? "text-red-600" : "text-zinc-500"}`}
+            className={`text-sm font-medium ${bateria <= 20 ? "text-red-400" : "text-zinc-400"}`}
           >
             🔋 {bateria}%
           </span>
@@ -769,20 +769,20 @@ function TransmitirContenido() {
         <button
           onClick={handleDeshacer}
           disabled={jugadas.length === 0}
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
         >
           ⏪ Deshacer última jugada
         </button>
         <button
           onClick={handleReiniciar}
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+          className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/10"
         >
           Reiniciar partida
         </button>
         {!editandoPosicion && (
           <button
             onClick={() => setEditandoPosicion(true)}
-            className="rounded-md border border-amber-400 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50"
+            className="rounded-md border border-amber-500/50 px-4 py-2 text-sm font-medium text-amber-300 hover:bg-amber-500/10"
           >
             🛠 Corregir posición a mano
           </button>
@@ -817,27 +817,27 @@ function TransmitirContenido() {
       )}
 
       {ultimaPromocion && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4">
-          <p className="text-sm text-amber-800">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+          <p className="text-sm text-amber-300">
             👑 Se registró como coronación a <strong>Dama</strong>. Si en la mesa fue otra pieza,
             corregilo acá:
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => corregirPromocion("r")}
-              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium hover:bg-amber-100"
+              className="rounded-md border border-amber-500/50 bg-white/5 px-3 py-1.5 text-sm font-medium hover:bg-amber-500/20"
             >
               Torre
             </button>
             <button
               onClick={() => corregirPromocion("b")}
-              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium hover:bg-amber-100"
+              className="rounded-md border border-amber-500/50 bg-white/5 px-3 py-1.5 text-sm font-medium hover:bg-amber-500/20"
             >
               Alfil
             </button>
             <button
               onClick={() => corregirPromocion("n")}
-              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-sm font-medium hover:bg-amber-100"
+              className="rounded-md border border-amber-500/50 bg-white/5 px-3 py-1.5 text-sm font-medium hover:bg-amber-500/20"
             >
               Caballo
             </button>
@@ -846,18 +846,18 @@ function TransmitirContenido() {
       )}
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
           <h2 className="mb-3 font-semibold">Tablero (según lo que se movió)</h2>
           <TableroMini fen={fen} />
-          <p className="mt-3 text-xs text-zinc-500">
+          <p className="mt-3 text-xs text-zinc-400">
             Jugadas: {jugadas.length > 0 ? jugadas.join(", ") : "ninguna todavía"}
           </p>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
           <h2 className="mb-3 font-semibold">Registro</h2>
-          <div className="h-80 overflow-y-auto rounded bg-zinc-900 p-3 font-mono text-xs text-zinc-100">
-            {log.length === 0 && <p className="text-zinc-500">Todavía no hay actividad.</p>}
+          <div className="h-80 overflow-y-auto rounded bg-blue-600 p-3 font-mono text-xs text-zinc-100">
+            {log.length === 0 && <p className="text-zinc-400">Todavía no hay actividad.</p>}
             {log.map((linea, i) => (
               <div key={i}>{linea}</div>
             ))}

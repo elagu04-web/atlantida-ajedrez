@@ -55,7 +55,7 @@ export default function EstadisticasPage() {
         subtitulo="Tabla general por período y Copa de Campeones."
       />
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-semibold">Tabla general</h2>
           <div className="flex items-center gap-2 text-sm">
@@ -65,7 +65,7 @@ export default function EstadisticasPage() {
                 setPeriodo(null);
               }}
               className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-                modo === "mes" ? "bg-zinc-900 text-white" : "border border-zinc-300 hover:bg-zinc-50"
+                modo === "mes" ? "bg-blue-600 text-white" : "border border-white/20 hover:bg-white/10"
               }`}
             >
               Mensual
@@ -76,7 +76,7 @@ export default function EstadisticasPage() {
                 setPeriodo(null);
               }}
               className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-                modo === "anio" ? "bg-zinc-900 text-white" : "border border-zinc-300 hover:bg-zinc-50"
+                modo === "anio" ? "bg-blue-600 text-white" : "border border-white/20 hover:bg-white/10"
               }`}
             >
               Anual
@@ -85,7 +85,7 @@ export default function EstadisticasPage() {
               <select
                 value={periodoActivo}
                 onChange={(e) => setPeriodo(e.target.value)}
-                className="rounded-md border border-zinc-300 px-2 py-1.5 text-xs"
+                className="rounded-md border border-white/20 px-2 py-1.5 text-xs"
               >
                 {periodosDisponibles.map((p) => (
                   <option key={p} value={p}>
@@ -98,13 +98,13 @@ export default function EstadisticasPage() {
         </div>
 
         {tabla.columnas.length === 0 ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-400">
             {cargando ? "Cargando..." : "Todavía no hay torneos con resultados cargados."}
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-zinc-200 text-left text-zinc-500">
+              <thead className="border-b border-white/10 text-left text-zinc-400">
                 <tr>
                   <th className="px-3 py-2 font-medium">#</th>
                   <th className="px-3 py-2 font-medium">Jugador</th>
@@ -120,13 +120,13 @@ export default function EstadisticasPage() {
               </thead>
               <tbody>
                 {tabla.filas.map((f, i) => (
-                  <tr key={f.jugadorId} className="border-b border-zinc-100 last:border-0">
-                    <td className="px-3 py-2 text-zinc-500">
+                  <tr key={f.jugadorId} className="border-b border-white/5 last:border-0">
+                    <td className="px-3 py-2 text-zinc-400">
                       {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                     </td>
                     <td className="px-3 py-2 font-medium">{nombreDe(f.jugadorId)}</td>
                     {f.puntosPorTorneo.map((p, j) => (
-                      <td key={j} className="px-3 py-2 text-center font-mono text-zinc-600">
+                      <td key={j} className="px-3 py-2 text-center font-mono text-zinc-400">
                         {p === null ? <span className="text-zinc-400">–</span> : p}
                       </td>
                     ))}
@@ -137,23 +137,23 @@ export default function EstadisticasPage() {
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-xs text-zinc-500">
+            <p className="mt-2 text-xs text-zinc-400">
               {tabla.columnas.map((c, i) => `T${i + 1} = ${c.nombre}`).join(" · ")}
             </p>
           </div>
         )}
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
         <h2 className="mb-4 font-semibold">🏆 Copa de Campeones {anioActual}</h2>
         {campeones.length === 0 ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-400">
             {cargando ? "Cargando..." : "Todavía no hay torneos finalizados este año."}
           </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <h3 className="mb-2 text-xs font-medium uppercase text-zinc-500">Por torneo</h3>
+              <h3 className="mb-2 text-xs font-medium uppercase text-zinc-400">Por torneo</h3>
               <ul className="flex flex-col gap-2 text-sm">
                 {campeones.map(({ torneo, resultado }) => (
                   <li key={torneo.id} className="flex items-center justify-between gap-3">
@@ -172,7 +172,7 @@ export default function EstadisticasPage() {
               </ul>
             </div>
             <div>
-              <h3 className="mb-2 text-xs font-medium uppercase text-zinc-500">Títulos</h3>
+              <h3 className="mb-2 text-xs font-medium uppercase text-zinc-400">Títulos</h3>
               <ul className="flex flex-col gap-2 text-sm">
                 {titulos.map(([jugadorId, cantidad]) => (
                   <li key={jugadorId} className="flex items-center justify-between">

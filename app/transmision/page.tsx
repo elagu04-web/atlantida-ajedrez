@@ -47,7 +47,7 @@ function JugadorFila({
           src={foto}
           alt={nombre}
           className={`h-8 w-8 rounded-full border object-cover ${
-            oscuro ? "border-zinc-600" : "border-zinc-200"
+            oscuro ? "border-white/20" : "border-white/10"
           }`}
         />
       ) : (
@@ -56,7 +56,7 @@ function JugadorFila({
       <span>
         {nombre}
         {elo != null && (
-          <span className={`ml-1 font-mono text-xs ${oscuro ? "text-zinc-400" : "text-zinc-500"}`}>
+          <span className={`ml-1 font-mono text-xs ${oscuro ? "text-zinc-400" : "text-zinc-400"}`}>
             {elo}
           </span>
         )}
@@ -114,10 +114,10 @@ export default function TransmisionPage() {
       />
 
       {cargando ? (
-        <p className="text-sm text-zinc-500">Cargando...</p>
+        <p className="text-sm text-zinc-400">Cargando...</p>
       ) : !estado?.activa ? (
-        <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center">
-          <p className="text-zinc-500">No hay ninguna transmisión en este momento.</p>
+        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+          <p className="text-zinc-400">No hay ninguna transmisión en este momento.</p>
         </div>
       ) : (
         <>
@@ -140,7 +140,7 @@ export default function TransmisionPage() {
             )}
             <div className="absolute left-1/2 top-3 w-60 -translate-x-1/2 rounded-lg bg-zinc-950/90 p-2.5 shadow-xl backdrop-blur-sm sm:w-64">
               {ultimaJugada && (
-                <div className="mb-1.5 flex items-center justify-between border-b border-zinc-700 pb-1.5 text-[11px] font-medium text-zinc-300">
+                <div className="mb-1.5 flex items-center justify-between border-b border-white/20 pb-1.5 text-[11px] font-medium text-zinc-300">
                   <span>Última jugada</span>
                   <span className="font-mono text-white">
                     {numeroUltimaJugada}. {ultimaJugada}
@@ -168,18 +168,18 @@ export default function TransmisionPage() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <div className="rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <AnalisisMotor fen={estado.fen} />
               {estado.resultado && (
-                <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 px-3 py-2">
-                  <span className="text-sm font-semibold text-green-800">
+                <div className="mt-3 flex items-center justify-between rounded-md bg-green-500/10 px-3 py-2">
+                  <span className="text-sm font-semibold text-green-300">
                     🏁 Partida terminada: {estado.resultado}
                   </span>
                   {estado.pgn && (
                     <a
                       href={`data:application/x-chess-pgn;charset=utf-8,${encodeURIComponent(estado.pgn)}`}
                       download={`${(estado.blancas || "blancas")}_vs_${(estado.negras || "negras")}.pgn`}
-                      className="text-xs font-medium text-blue-700 hover:underline"
+                      className="text-xs font-medium text-blue-300 hover:underline"
                     >
                       Descargar .pgn
                     </a>
@@ -187,16 +187,16 @@ export default function TransmisionPage() {
                 </div>
               )}
             </div>
-            <div className="rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <h2 className="mb-3 font-semibold">Jugadas</h2>
               {estado.jugadas.length === 0 ? (
-                <p className="text-sm text-zinc-500">Todavía no se jugó ninguna jugada.</p>
+                <p className="text-sm text-zinc-400">Todavía no se jugó ninguna jugada.</p>
               ) : (
                 <ol className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
                   {estado.jugadas.map((j, i) => (
                     <li key={i} className="font-mono">
                       {i % 2 === 0 && (
-                        <span className="mr-1 text-zinc-500">{Math.floor(i / 2) + 1}.</span>
+                        <span className="mr-1 text-zinc-400">{Math.floor(i / 2) + 1}.</span>
                       )}
                       {j}
                     </li>

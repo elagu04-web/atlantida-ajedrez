@@ -26,21 +26,21 @@ function ApodoCelda({
   const [valor, setValor] = useState(apodoActual ?? "");
 
   if (!puedeEditar) {
-    return apodoActual ? <span className="text-xs text-zinc-500">{apodoActual}</span> : null;
+    return apodoActual ? <span className="text-xs text-zinc-400">{apodoActual}</span> : null;
   }
 
   if (!editando) {
     return apodoActual ? (
       <button
         onClick={() => setEditando(true)}
-        className="text-xs text-zinc-500 hover:text-blue-600 hover:underline"
+        className="text-xs text-zinc-400 hover:text-blue-400 hover:underline"
       >
         editar apodo
       </button>
     ) : (
       <button
         onClick={() => setEditando(true)}
-        className="text-xs text-zinc-500 hover:text-blue-600 hover:underline"
+        className="text-xs text-zinc-400 hover:text-blue-400 hover:underline"
       >
         + agregar apodo
       </button>
@@ -61,7 +61,7 @@ function ApodoCelda({
         if (e.key === "Enter") e.currentTarget.blur();
       }}
       placeholder="Apodo..."
-      className="w-32 rounded border border-zinc-300 bg-white px-1 py-0.5 text-xs"
+      className="w-32 rounded border border-white/20 bg-white/5 px-1 py-0.5 text-xs"
     />
   );
 }
@@ -80,7 +80,7 @@ function FideIdCelda({
   const [valor, setValor] = useState(fideIdActual ?? "");
 
   if (!puedeEditar) {
-    return <span className="text-xs text-zinc-500">{fideIdActual ?? ""}</span>;
+    return <span className="text-xs text-zinc-400">{fideIdActual ?? ""}</span>;
   }
 
   return (
@@ -92,7 +92,7 @@ function FideIdCelda({
         if (valor.trim() !== (fideIdActual ?? "")) onGuardar(jugadorId, valor);
       }}
       placeholder="ID FIDE..."
-      className="w-24 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 hover:border-zinc-200 focus:border-zinc-300 focus:bg-white focus:outline-none"
+      className="w-24 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-400 hover:border-white/10 focus:border-white/20 focus:bg-white/5 focus:outline-none"
     />
   );
 }
@@ -176,10 +176,10 @@ export default function JugadoresPage() {
       {puedeEditar && (
       <form
         onSubmit={handleSubmit}
-        className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4"
+        className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
       >
         <div className="flex flex-col gap-1">
-          <label htmlFor="nombre" className="text-xs font-medium text-zinc-600">
+          <label htmlFor="nombre" className="text-xs font-medium text-zinc-400">
             Nombre del jugador
           </label>
           <input
@@ -188,11 +188,11 @@ export default function JugadoresPage() {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Ej: Ana Rodríguez"
-            className="w-48 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-48 rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="apodo" className="text-xs font-medium text-zinc-600">
+          <label htmlFor="apodo" className="text-xs font-medium text-zinc-400">
             Apodo (opcional)
           </label>
           <input
@@ -201,11 +201,11 @@ export default function JugadoresPage() {
             value={apodo}
             onChange={(e) => setApodo(e.target.value)}
             placeholder="Ej: Fonchi"
-            className="w-36 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-36 rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="elo" className="text-xs font-medium text-zinc-600">
+          <label htmlFor="elo" className="text-xs font-medium text-zinc-400">
             Elo inicial
           </label>
           <input
@@ -214,12 +214,12 @@ export default function JugadoresPage() {
             min={ELO_MINIMO}
             value={elo}
             onChange={(e) => setElo(e.target.value)}
-            className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            className="w-28 rounded-md border border-white/20 px-3 py-2 text-sm"
           />
         </div>
         <button
           type="submit"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           Agregar jugador
         </button>
@@ -232,14 +232,14 @@ export default function JugadoresPage() {
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar jugador..."
-          className="w-64 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+          className="w-64 rounded-md border border-white/20 px-3 py-2 text-sm"
         />
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-xs font-medium text-zinc-500">Ordenar por:</span>
+          <span className="text-xs font-medium text-zinc-400">Ordenar por:</span>
           <button
             onClick={() => setOrden("elo")}
             className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-              orden === "elo" ? "bg-zinc-900 text-white" : "border border-zinc-300 hover:bg-zinc-50"
+              orden === "elo" ? "bg-blue-600 text-white" : "border border-white/20 hover:bg-white/10"
             }`}
           >
             Elo
@@ -247,7 +247,7 @@ export default function JugadoresPage() {
           <button
             onClick={() => setOrden("partidas")}
             className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-              orden === "partidas" ? "bg-zinc-900 text-white" : "border border-zinc-300 hover:bg-zinc-50"
+              orden === "partidas" ? "bg-blue-600 text-white" : "border border-white/20 hover:bg-white/10"
             }`}
           >
             Partidas jugadas
@@ -256,7 +256,7 @@ export default function JugadoresPage() {
       </div>
 
       {ocultosPorInactividad > 0 && (
-        <div className="flex items-center justify-between gap-3 rounded-md bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+        <div className="flex items-center justify-between gap-3 rounded-md bg-white/10 px-3 py-2 text-xs text-zinc-400">
           <span>
             {mostrarTodos
               ? `Mostrando a todos, incluidos ${ocultosPorInactividad} que no jugaron en el último año.`
@@ -266,16 +266,16 @@ export default function JugadoresPage() {
           </span>
           <button
             onClick={() => setMostrarTodos((v) => !v)}
-            className="shrink-0 font-medium text-blue-600 hover:underline"
+            className="shrink-0 font-medium text-blue-400 hover:underline"
           >
             {mostrarTodos ? "Ocultar inactivos" : "Mostrar a todos"}
           </button>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+          <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
               <th className="px-4 py-3 font-medium">#</th>
               <th className="px-4 py-3 font-medium">Nombre</th>
@@ -291,14 +291,14 @@ export default function JugadoresPage() {
           <tbody>
             {lista.map((j, i) =>
               editandoId === j.id && puedeEditar ? (
-                <tr key={j.id} className="border-b border-zinc-100 bg-zinc-50 last:border-0">
-                  <td className="px-4 py-3 text-zinc-500">{i + 1}</td>
+                <tr key={j.id} className="border-b border-white/5 bg-white/10 last:border-0">
+                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
                   <td className="px-4 py-3" colSpan={2}>
                     <input
                       type="text"
                       value={editNombre}
                       onChange={(e) => setEditNombre(e.target.value)}
-                      className="w-48 rounded border border-zinc-300 px-2 py-1 text-sm"
+                      className="w-48 rounded border border-white/20 px-2 py-1 text-sm"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -307,31 +307,31 @@ export default function JugadoresPage() {
                       min={ELO_MINIMO}
                       value={editElo}
                       onChange={(e) => setEditElo(e.target.value)}
-                      className="w-24 rounded border border-zinc-300 px-2 py-1 text-sm"
+                      className="w-24 rounded border border-white/20 px-2 py-1 text-sm"
                     />
-                    <div className="mt-0.5 text-[10px] text-zinc-500">Elo inicial</div>
+                    <div className="mt-0.5 text-[10px] text-zinc-400">Elo inicial</div>
                   </td>
-                  <td className="px-4 py-3 text-zinc-500" colSpan={3}>
+                  <td className="px-4 py-3 text-zinc-400" colSpan={3}>
                     Cambiar el nombre o el Elo inicial recalcula todo su historial.
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <button
                       onClick={guardarEdicion}
-                      className="mr-3 text-xs font-medium text-blue-600 hover:underline"
+                      className="mr-3 text-xs font-medium text-blue-400 hover:underline"
                     >
                       Guardar
                     </button>
                     <button
                       onClick={() => setEditandoId(null)}
-                      className="text-xs text-zinc-500 hover:underline"
+                      className="text-xs text-zinc-400 hover:underline"
                     >
                       Cancelar
                     </button>
                   </td>
                 </tr>
               ) : (
-                <tr key={j.id} className="border-b border-zinc-100 last:border-0">
-                  <td className="px-4 py-3 text-zinc-500">{i + 1}</td>
+                <tr key={j.id} className="border-b border-white/5 last:border-0">
+                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/jugadores/${j.id}`} className="flex items-center gap-2 hover:underline">
                       {j.fotoUrl ? (
@@ -339,10 +339,10 @@ export default function JugadoresPage() {
                         <img
                           src={j.fotoUrl}
                           alt=""
-                          className="h-7 w-7 shrink-0 rounded-full border border-zinc-200 object-cover"
+                          className="h-7 w-7 shrink-0 rounded-full border border-white/10 object-cover"
                         />
                       ) : (
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-xs font-semibold text-zinc-500">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-xs font-semibold text-zinc-400">
                           {nombreVisible(j).charAt(0).toUpperCase()}
                         </span>
                       )}
@@ -367,21 +367,21 @@ export default function JugadoresPage() {
                   </td>
                   <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
                   <td className="px-4 py-3">{j.jugadas}</td>
-                  <td className="px-4 py-3 text-green-700">{j.victorias}</td>
-                  <td className="px-4 py-3 text-zinc-500">{j.empates}</td>
-                  <td className="px-4 py-3 text-red-700">{j.derrotas}</td>
+                  <td className="px-4 py-3 text-green-400">{j.victorias}</td>
+                  <td className="px-4 py-3 text-zinc-400">{j.empates}</td>
+                  <td className="px-4 py-3 text-red-400">{j.derrotas}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     {puedeEditar && (
                       <>
                         <button
                           onClick={() => empezarEdicion(j)}
-                          className="mr-3 text-xs text-blue-600 hover:underline"
+                          className="mr-3 text-xs text-blue-400 hover:underline"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => eliminarJugador(j.id)}
-                          className="text-xs text-red-600 hover:underline"
+                          className="text-xs text-red-400 hover:underline"
                         >
                           Eliminar
                         </button>
@@ -393,7 +393,7 @@ export default function JugadoresPage() {
             )}
             {lista.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={9} className="px-4 py-6 text-center text-zinc-400">
                   {cargando
                     ? "Cargando jugadores..."
                     : busqueda
