@@ -28,13 +28,25 @@ export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
-  const { actualizarFoto, cargando } = useJugadores();
+  const { actualizarFoto, actualizarDescripcion, cargando } = useJugadores();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
   const inputFotoRef = useRef<HTMLInputElement>(null);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);
   const [verTodasLasPartidas, setVerTodasLasPartidas] = useState(false);
+  const [editandoDescripcion, setEditandoDescripcion] = useState(false);
+  const [descripcionValor, setDescripcionValor] = useState("");
+
+  function empezarEdicionDescripcion() {
+    setDescripcionValor(jugador?.descripcion ?? "");
+    setEditandoDescripcion(true);
+  }
+
+  async function guardarDescripcion() {
+    if (jugador) await actualizarDescripcion(jugador.id, descripcionValor);
+    setEditandoDescripcion(false);
+  }
 
   async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -188,6 +200,56 @@ export default function JugadorPage() {
         </div>
         {errorFoto && <p className="mt-2 text-sm text-red-600">{errorFoto}</p>}
       </div>
+
+      {(editandoDescripcion || jugador.descripcion || puedeEditar) && (
+      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+        {editandoDescripcion ? (
+          <div className="flex flex-col gap-2">
+            <textarea
+              autoFocus
+              value={descripcionValor}
+              onChange={(e) => setDescripcionValor(e.target.value)}
+              placeholder="Estilo de juego, observaciones, notas para el coach..."
+              rows={3}
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+            />
+            <div className="flex gap-3 text-xs">
+              <button
+                onClick={guardarDescripcion}
+                className="font-medium text-blue-600 hover:underline"
+              >
+                Guardar
+              </button>
+              <button
+                onClick={() => setEditandoDescripcion(false)}
+                className="text-zinc-500 hover:underline"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : jugador.descripcion ? (
+          <div className="flex items-start justify-between gap-3">
+            <p className="whitespace-pre-wrap text-sm text-zinc-700">{jugador.descripcion}</p>
+            {puedeEditar && (
+              <button
+                onClick={empezarEdicionDescripcion}
+                className="shrink-0 text-xs text-blue-600 hover:underline"
+              >
+                Editar
+              </button>
+            )}
+          </div>
+        ) : puedeEditar ? (
+          <button
+            onClick={empezarEdicionDescripcion}
+            className="text-xs text-zinc-500 hover:text-blue-600 hover:underline"
+          >
+            + agregar descripción
+          </button>
+        ) : null}
+      </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[

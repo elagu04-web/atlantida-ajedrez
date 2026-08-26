@@ -13,6 +13,7 @@ type FilaJugador = {
   foto_url: string | null;
   elo_inicial: number;
   email: string | null;
+  descripcion: string | null;
 };
 
 type JugadoresContextType = {
@@ -23,6 +24,7 @@ type JugadoresContextType = {
   actualizarApodo: (id: string, apodo: string) => Promise<void>;
   actualizarFideId: (id: string, fideId: string) => Promise<void>;
   actualizarFoto: (id: string, fotoUrl: string | null) => Promise<void>;
+  actualizarDescripcion: (id: string, descripcion: string) => Promise<void>;
   actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
   reclamarJugador: (id: string, email: string) => Promise<{ ok: boolean; error: string | null }>;
@@ -40,6 +42,7 @@ function filaAJugador(fila: FilaJugador): Jugador {
     eloAtlantida: fila.elo_inicial,
     partidas: [],
     email: fila.email,
+    descripcion: fila.descripcion,
   };
 }
 
@@ -124,6 +127,14 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
     await supabase.from("jugadores").update({ foto_url: fotoUrl }).eq("id", id);
   }
 
+  async function actualizarDescripcion(id: string, descripcion: string) {
+    const descripcionLimpia = descripcion.trim() || null;
+    setJugadores((actuales) =>
+      actuales.map((j) => (j.id === id ? { ...j, descripcion: descripcionLimpia } : j))
+    );
+    await supabase.from("jugadores").update({ descripcion: descripcionLimpia }).eq("id", id);
+  }
+
   function obtenerJugador(id: string) {
     return jugadores.find((j) => j.id === id);
   }
@@ -160,6 +171,7 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
         actualizarApodo,
         actualizarFideId,
         actualizarFoto,
+        actualizarDescripcion,
         actualizarJugador,
         obtenerJugador,
         reclamarJugador,

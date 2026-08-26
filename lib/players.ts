@@ -23,6 +23,9 @@ export type Jugador = {
   // poder anotarse solo a torneos sin que nadie más pueda hacerlo en su
   // nombre. null hasta que el jugador se loguea por primera vez y lo elige.
   email?: string | null;
+  // Notas libres sobre el jugador (estilo de juego, observaciones para el
+  // coach, lo que el admin quiera anotar). Opcional, visible para todos.
+  descripcion?: string | null;
 };
 
 export function nombreVisible(j: { nombre: string; apodo: string | null }): string {
