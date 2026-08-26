@@ -7,6 +7,7 @@ import { useTorneos } from "@/context/TorneosContext";
 import { supabase } from "@/lib/supabase";
 import { standingsConDesempates, type RondaTorneo, type EstadoTorneo } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
+import { LogoClub } from "@/components/LogoClub";
 
 const ETIQUETA_RESULTADO: Record<string, string> = {
   "1-0": "1 – 0",
@@ -15,24 +16,6 @@ const ETIQUETA_RESULTADO: Record<string, string> = {
 };
 
 const MEDALLA: Record<number, string> = { 0: "🥇", 1: "🥈", 2: "🥉" };
-
-const LOGO_CLUB_URL = "/imagenes/logo-club.png";
-
-function LogoClub() {
-  const [falloLogo, setFalloLogo] = useState(false);
-  if (falloLogo) {
-    return <span className="text-3xl">♞</span>;
-  }
-  return (
-    /* eslint-disable-next-line @next/next/no-img-element */
-    <img
-      src={LOGO_CLUB_URL}
-      alt=""
-      className="h-14 w-14 object-contain drop-shadow-[0_0_12px_rgba(96,165,250,0.5)]"
-      onError={() => setFalloLogo(true)}
-    />
-  );
-}
 
 function FotoJugador({
   fotoUrl,
@@ -167,7 +150,7 @@ export default function PantallaTorneoPage() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 lg:mb-8 lg:pb-7">
         <div className="flex min-w-0 items-center gap-3 sm:gap-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-900/20 ring-1 ring-white/10 sm:h-14 sm:w-14 lg:h-20 lg:w-20 lg:rounded-2xl">
-            <LogoClub />
+            <LogoClub claseTam="h-7 w-7 sm:h-10 sm:w-10 lg:h-14 lg:w-14" />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400 sm:text-base">
