@@ -8,6 +8,7 @@ import { useColegioTorneos } from "@/context/ColegioTorneosContext";
 import { useAuth } from "@/context/AuthContext";
 import { DESEMPATES_DISPONIBLES, FormatoTorneo } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 const estadoLabel: Record<string, string> = {
   armado: "Armado",
@@ -99,11 +100,11 @@ export default function ColegioTorneosPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="flex flex-col gap-3">
         <Link href="/colegio" className="text-sm text-blue-600 hover:underline">
           ← Volver a Colegio Pinares
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Torneos del colegio</h1>
+        <EncabezadoPagina titulo="Torneos del colegio" />
       </div>
 
       <form

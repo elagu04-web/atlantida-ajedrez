@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { MotorAjedrez, type AnalisisPosicion } from "@/lib/stockfish";
 import { TableroMini } from "@/components/TableroMini";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 import {
   obtenerPartidasLichess,
   obtenerPartidasChessCom,
@@ -405,13 +406,11 @@ function EntrenamientoContenido() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Entrenamiento</h1>
-        <p className="mt-1 text-zinc-600">
-          Traé las últimas partidas de un jugador en Lichess o Chess.com y analizalas con el motor
-          para encontrar sus errores más grandes — herramienta solo para vos, no la ven los alumnos.
-        </p>
-      </div>
+      <EncabezadoPagina
+        titulo="Entrenamiento"
+        subtitulo="Traé las últimas partidas de un jugador en Lichess o Chess.com y analizalas con el motor
+          para encontrar sus errores más grandes — herramienta solo para vos, no la ven los alumnos."
+      />
 
       <form onSubmit={handleBuscar} className="flex flex-wrap items-end gap-3 rounded-lg border border-zinc-200 bg-white p-4">
         <div className="flex flex-col gap-1">

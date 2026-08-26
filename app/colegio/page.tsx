@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useColegioJugadoresEnVivo } from "@/context/useColegioJugadoresEnVivo";
 import { useColegioTorneos } from "@/context/ColegioTorneosContext";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 export default function ColegioPage() {
   const { esAdmin } = useAuth();
@@ -20,12 +21,10 @@ export default function ColegioPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Colegio Pinares</h1>
-        <p className="mt-2 text-zinc-600">
-          Torneos y alumnos de la escuela — completamente separado del club Atlántida.
-        </p>
-      </div>
+      <EncabezadoPagina
+        titulo="Colegio Pinares"
+        subtitulo="Torneos y alumnos de la escuela — completamente separado del club Atlántida."
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link

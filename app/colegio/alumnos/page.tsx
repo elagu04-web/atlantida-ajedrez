@@ -7,6 +7,7 @@ import { useColegioJugadores } from "@/context/ColegioJugadoresContext";
 import { useColegioJugadoresEnVivo } from "@/context/useColegioJugadoresEnVivo";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO, type JugadorEnVivo } from "@/lib/elo";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 function LichessCelda({
   jugadorId,
@@ -79,11 +80,11 @@ export default function ColegioAlumnosPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="flex flex-col gap-3">
         <Link href="/colegio" className="text-sm text-blue-600 hover:underline">
           ← Volver a Colegio Pinares
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Alumnos</h1>
+        <EncabezadoPagina titulo="Alumnos" />
       </div>
 
       <form

@@ -7,6 +7,7 @@ import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { determinarCampeon, Torneo, ResultadoCampeon } from "@/lib/tournaments";
 import { agruparTorneosPorPeriodo, calcularTablaGeneral, etiquetaPeriodo } from "@/lib/tablaGeneral";
 import { nombreVisible } from "@/lib/players";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 export default function EstadisticasPage() {
   const { torneos, cargando } = useTorneos();
@@ -49,10 +50,10 @@ export default function EstadisticasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Estadísticas</h1>
-        <p className="mt-1 text-zinc-600">Tabla general por período y Copa de Campeones.</p>
-      </div>
+      <EncabezadoPagina
+        titulo="Estadísticas"
+        subtitulo="Tabla general por período y Copa de Campeones."
+      />
 
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

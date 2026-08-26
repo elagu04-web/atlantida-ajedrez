@@ -8,6 +8,7 @@ import { useEpicoTorneos } from "@/context/EpicoTorneosContext";
 import { useAuth } from "@/context/AuthContext";
 import { DESEMPATES_DISPONIBLES, FormatoTorneo } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 const estadoLabel: Record<string, string> = {
   armado: "Armado",
@@ -99,11 +100,11 @@ export default function EpicoTorneosPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="flex flex-col gap-3">
         <Link href="/epico" className="text-sm text-blue-600 hover:underline">
           ← Volver a Épico
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Torneos de Épico</h1>
+        <EncabezadoPagina titulo="Torneos de Épico" />
       </div>
 
       <form

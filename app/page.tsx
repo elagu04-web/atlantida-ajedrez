@@ -5,6 +5,7 @@ import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useJugadores } from "@/context/JugadoresContext";
 import { nombreVisible } from "@/lib/players";
 import { TextoBrillante } from "@/components/TextoBrillante";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 function manejarSpotlight(ev: React.MouseEvent<HTMLElement>) {
   const rect = ev.currentTarget.getBoundingClientRect();
@@ -19,18 +20,15 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="relative overflow-hidden rounded-lg bg-zinc-950 p-6">
-        <div className="fondo-aurora fondo-aurora-oscuro" />
-        <div className="relative z-10">
-          <h1 className="text-2xl font-semibold tracking-tight text-white">
+      <EncabezadoPagina
+        titulo={
+          <>
             Bienvenido al sistema de torneos de{" "}
             <TextoBrillante oscuro>Atlántida</TextoBrillante>
-          </h1>
-          <p className="mt-2 text-zinc-400">
-            Ranking, torneos y estadísticas del club de ajedrez Atlántida.
-          </p>
-        </div>
-      </div>
+          </>
+        }
+        subtitulo="Ranking, torneos y estadísticas del club de ajedrez Atlántida."
+      />
 
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <div className="mb-3 flex items-center justify-between">

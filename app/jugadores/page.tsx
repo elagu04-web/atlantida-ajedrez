@@ -7,6 +7,7 @@ import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO, jugoRecientemente, type JugadorEnVivo } from "@/lib/elo";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 type Orden = "elo" | "partidas";
 
@@ -157,22 +158,20 @@ export default function JugadoresPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Jugadores</h1>
-          <p className="mt-1 text-zinc-600">
-            Lista de jugadores del club con su Elo Atlántida y estadísticas.
-          </p>
-        </div>
-        {puedeEditar && (
-          <Link
-            href="/jugadores/compartir"
-            className="shrink-0 rounded-md border border-blue-300 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
-          >
-            🖼️ Imagen para compartir
-          </Link>
-        )}
-      </div>
+      <EncabezadoPagina
+        titulo="Jugadores"
+        subtitulo="Lista de jugadores del club con su Elo Atlántida y estadísticas."
+        accion={
+          puedeEditar && (
+            <Link
+              href="/jugadores/compartir"
+              className="rounded-md border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20"
+            >
+              🖼️ Imagen para compartir
+            </Link>
+          )
+        }
+      />
 
       {puedeEditar && (
       <form

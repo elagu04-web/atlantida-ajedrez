@@ -8,6 +8,7 @@ import { useTorneos } from "@/context/TorneosContext";
 import { useAuth } from "@/context/AuthContext";
 import { DESEMPATES_DISPONIBLES, FormatoTorneo, standingsConDesempates } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 const formatoLabel: Record<string, string> = {
   "round-robin": "Round robin",
@@ -112,12 +113,10 @@ export default function TorneosPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Torneos</h1>
-        <p className="mt-1 text-zinc-600">
-          Creá un torneo, elegí el formato, los jugadores y los desempates.
-        </p>
-      </div>
+      <EncabezadoPagina
+        titulo="Torneos"
+        subtitulo="Creá un torneo, elegí el formato, los jugadores y los desempates."
+      />
 
       {!puedeEditar && (
         <p className="text-sm text-zinc-500">

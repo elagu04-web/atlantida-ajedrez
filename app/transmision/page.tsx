@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { TableroMini } from "@/components/TableroMini";
 import { AnalisisMotor } from "@/components/AnalisisMotor";
 import { CAMARA_BUCKET, CAMARA_ARCHIVO_EN_VIVO } from "@/lib/camaraTablero";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 type EstadoTransmision = {
   activa: boolean;
@@ -107,10 +108,10 @@ export default function TransmisionPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Transmisión</h1>
-        <p className="mt-1 text-zinc-600">Partida en vivo desde el tablero del club.</p>
-      </div>
+      <EncabezadoPagina
+        titulo="Transmisión"
+        subtitulo="Partida en vivo desde el tablero del club."
+      />
 
       {cargando ? (
         <p className="text-sm text-zinc-500">Cargando...</p>

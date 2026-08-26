@@ -1,6 +1,7 @@
 "use client";
 
 import { useActividad } from "@/context/ActividadContext";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 const iconoPorTipo: Record<string, string> = {
   jugador: "👤",
@@ -24,12 +25,12 @@ export default function ActividadPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Actividad</h1>
-        <p className="mt-1 text-zinc-600">
-          Historial de qué se hizo y cuándo (los últimos {actividades.length > 0 ? "300" : ""} eventos).
-        </p>
-      </div>
+      <EncabezadoPagina
+        titulo="Actividad"
+        subtitulo={`Historial de qué se hizo y cuándo (los últimos ${
+          actividades.length > 0 ? "300" : ""
+        } eventos).`}
+      />
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
         {cargando ? (

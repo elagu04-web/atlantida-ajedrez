@@ -7,6 +7,7 @@ import { useEpicoJugadores } from "@/context/EpicoJugadoresContext";
 import { useEpicoJugadoresEnVivo } from "@/context/useEpicoJugadoresEnVivo";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO, type JugadorEnVivo } from "@/lib/elo";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 function LichessCelda({
   jugadorId,
@@ -79,11 +80,11 @@ export default function EpicoAlumnosPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="flex flex-col gap-3">
         <Link href="/epico" className="text-sm text-blue-600 hover:underline">
           ← Volver a Épico
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Alumnos</h1>
+        <EncabezadoPagina titulo="Alumnos" />
       </div>
 
       <form

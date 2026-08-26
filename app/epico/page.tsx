@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useEpicoJugadoresEnVivo } from "@/context/useEpicoJugadoresEnVivo";
 import { useEpicoTorneos } from "@/context/EpicoTorneosContext";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 export default function EpicoPage() {
   const { esAdmin } = useAuth();
@@ -20,12 +21,10 @@ export default function EpicoPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Épico</h1>
-        <p className="mt-2 text-zinc-600">
-          Torneos y alumnos propios — completamente separado del club Atlántida y de Colegio Pinares.
-        </p>
-      </div>
+      <EncabezadoPagina
+        titulo="Épico"
+        subtitulo="Torneos y alumnos propios — completamente separado del club Atlántida y de Colegio Pinares."
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link
