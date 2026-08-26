@@ -6,20 +6,22 @@ import { useRouter } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
 import { useAuth } from "@/context/AuthContext";
-import { DESEMPATES_DISPONIBLES, FormatoTorneo } from "@/lib/tournaments";
+import { DESEMPATES_DISPONIBLES, FormatoTorneo, standingsConDesempates } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
-
-const estadoLabel: Record<string, string> = {
-  armado: "Armado",
-  en_curso: "En curso",
-  finalizado: "Finalizado",
-};
 
 const formatoLabel: Record<string, string> = {
   "round-robin": "Round robin",
   suizo: "Sistema suizo",
   match: "Match",
 };
+
+const formatoIcono: Record<string, string> = {
+  "round-robin": "🔄",
+  suizo: "♟️",
+  match: "⚔️",
+};
+
+const MEDALLA: Record<number, string> = { 0: "🥇", 1: "🥈", 2: "🥉" };
 
 export default function TorneosPage() {
   const router = useRouter();
@@ -387,21 +389,67 @@ export default function TorneosPage() {
             {cargando ? "Cargando torneos..." : "Todavía no creaste ningún torneo."}
           </p>
         )}
-        {[...torneos].reverse().map((t) => (
-          <div
-            key={t.id}
-            className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm"
-          >
-            <Link href={`/torneos/${t.id}`} className="flex-1">
-              <div className="font-medium">{t.nombre}</div>
-              <div className="text-sm text-zinc-500">
-                {formatoLabel[t.formato]} · {t.jugadoresIds.length} jugadores
+        {[...torneos].reverse().map((t) => {
+          const podio = t.rondas.length > 0 ? standingsConDesempates(t).slice(0, 3) : [];
+          return (
+            <div
+              key={t.id}
+              className="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-blue-200 hover:shadow-sm"
+            >
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg ${
+                  t.estado === "en_curso"
+                    ? "bg-blue-50 ring-1 ring-blue-200"
+                    : t.estado === "finalizado"
+                    ? "bg-amber-50 ring-1 ring-amber-200"
+                    : "bg-zinc-100 ring-1 ring-zinc-200"
+                }`}
+              >
+                {formatoIcono[t.formato]}
               </div>
-            </Link>
-            <div className="flex items-center gap-3">
-              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
-                {estadoLabel[t.estado]}
-              </span>
+
+              <Link href={`/torneos/${t.id}`} className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-medium">{t.nombre}</span>
+                  {t.estado === "en_curso" && (
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-600 ring-1 ring-red-200">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+                      En vivo
+                    </span>
+                  )}
+                  {t.estado === "armado" && (
+                    <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+                      Armado
+                    </span>
+                  )}
+                  {t.estado === "finalizado" && (
+                    <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700">
+                      Finalizado
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm text-zinc-500">
+                  {formatoLabel[t.formato]} · {t.jugadoresIds.length} jugadores
+                </div>
+              </Link>
+
+              {podio.length > 0 && (
+                <div className="hidden shrink-0 items-center gap-3 sm:flex">
+                  {podio.map((s, i) => {
+                    const j = jugadoresConStats.find((x) => x.id === s.jugadorId);
+                    return (
+                      <span
+                        key={s.jugadorId}
+                        className="flex items-center gap-1 text-xs font-medium text-zinc-600"
+                      >
+                        <span>{MEDALLA[i]}</span>
+                        <span className="max-w-[6rem] truncate">{j ? nombreVisible(j) : "?"}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
               {puedeEditar && (
                 <button
                   onClick={() => {
@@ -409,14 +457,14 @@ export default function TorneosPage() {
                       eliminarTorneo(t.id);
                     }
                   }}
-                  className="text-xs text-red-600 hover:underline"
+                  className="shrink-0 text-xs text-red-600 hover:underline"
                 >
                   Eliminar
                 </button>
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
