@@ -143,7 +143,7 @@ export default function EpicoTorneosPage() {
                 checked={formato === "round-robin"}
                 onChange={() => setFormato("round-robin")}
               />
-              Round robin (todos contra todos, ida y vuelta)
+              Round robin (todos contra todos)
             </label>
           </div>
         </div>

@@ -45,6 +45,9 @@ export type Torneo = {
   // vinieron — anotarse y venir son cosas distintas, esto es solo para
   // organizarse (no afecta nada del torneo en sí).
   asistieronIds: string[];
+  // Solo para formato round-robin: si cada rival se enfrenta una vez o dos
+  // (con los dos colores). false/undefined = una sola vez.
+  idaYVuelta?: boolean;
 };
 
 export type FinalDesempate = {
@@ -82,12 +85,15 @@ function construirEmparejamiento(m: Match, numero: number): EmparejamientoTorneo
 }
 
 /**
- * Round robin a ida y vuelta: cada jugador se enfrenta una vez a cada rival
- * (la "ida", armada con la librería) y una segunda vez más con los colores
- * invertidos (la "vuelta"). La librería de emparejamientos no trae esto de
- * fábrica, así que la vuelta se arma a mano espejando la ida.
+ * Round robin: cada jugador se enfrenta una vez a cada rival (la "ida",
+ * armada con la librería). Si idaYVuelta es true, se agrega una segunda
+ * vuelta más con los colores invertidos. La librería de emparejamientos no
+ * trae la vuelta de fábrica, así que se arma a mano espejando la ida.
  */
-export function generarRoundRobin(jugadoresIds: string[]): RondaTorneo[] {
+export function generarRoundRobin(
+  jugadoresIds: string[],
+  idaYVuelta = false
+): RondaTorneo[] {
   const matches = RoundRobin(jugadoresIds, 1, false) as Match[];
   const porRonda = new Map<number, Match[]>();
   for (const m of matches) {
@@ -100,6 +106,8 @@ export function generarRoundRobin(jugadoresIds: string[]): RondaTorneo[] {
       numero,
       emparejamientos: ms.map((m, i) => construirEmparejamiento(m, i + 1)),
     }));
+
+  if (!idaYVuelta) return rondasIda;
 
   const cantidadRondasIda = rondasIda.length;
   const rondasVuelta: RondaTorneo[] = rondasIda.map((ronda) => ({

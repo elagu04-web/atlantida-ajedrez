@@ -56,6 +56,7 @@ export default function TorneoPage() {
     standingsDeTorneo,
     registrarFinalDesempate,
     cambiarFormato,
+    cambiarIdaYVuelta,
     cambiarDesempates,
     alternarAsistencia,
     cargando,
@@ -233,6 +234,7 @@ export default function TorneoPage() {
         </div>
         <p className="mt-1 text-sm text-zinc-500">
           {formatoLabel[torneo.formato]}
+          {torneo.formato === "round-robin" && (torneo.idaYVuelta ? " (ida y vuelta)" : " (ida sola)")}
           {torneo.rondasObjetivo && <> · {torneo.rondasObjetivo} rondas planificadas</>}
           {torneo.desempates.length > 0 && <> · Desempates: {torneo.desempates.join(", ")}</>}
         </p>
@@ -251,6 +253,16 @@ export default function TorneoPage() {
               </label>
             ))}
           </div>
+        )}
+        {puedeEditar && torneo.estado === "armado" && torneo.rondas.length === 0 && torneo.formato === "round-robin" && (
+          <label className="mt-2 flex items-center gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={torneo.idaYVuelta === true}
+              onChange={(e) => cambiarIdaYVuelta(torneo.id, e.target.checked)}
+            />
+            Ida y vuelta (cada rival se enfrenta dos veces, con los colores invertidos)
+          </label>
         )}
         {puedeEditar && (
           <div className="mt-3 flex flex-col gap-1">

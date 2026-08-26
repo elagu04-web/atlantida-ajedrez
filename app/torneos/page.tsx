@@ -43,6 +43,7 @@ export default function TorneosPage() {
 
   const [nombre, setNombre] = useState("");
   const [formato, setFormato] = useState<FormatoTorneo>("suizo");
+  const [idaYVuelta, setIdaYVuelta] = useState(false);
   const [rondasObjetivo, setRondasObjetivo] = useState("");
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [desempates, setDesempates] = useState<string[]>([]);
@@ -91,9 +92,9 @@ export default function TorneosPage() {
     if (!nombreLimpio || seleccionados.size < 2 || formatoInvalido) return;
     const rondas = (formato === "suizo" || formato === "match") && rondasObjetivo ? Number(rondasObjetivo) : null;
     const confirmado = window.confirm(
-      `¿Crear el torneo "${nombreLimpio}"?\n\nFormato: ${formatoLabel[formato]}\nJugadores: ${seleccionados.size}${
-        rondas ? `\nRondas planificadas: ${rondas}` : ""
-      }`
+      `¿Crear el torneo "${nombreLimpio}"?\n\nFormato: ${formatoLabel[formato]}${
+        formato === "round-robin" ? (idaYVuelta ? " (ida y vuelta)" : " (ida sola)") : ""
+      }\nJugadores: ${seleccionados.size}${rondas ? `\nRondas planificadas: ${rondas}` : ""}`
     );
     if (!confirmado) return;
     const id = await crearTorneo(
@@ -101,7 +102,8 @@ export default function TorneosPage() {
       formato,
       [...seleccionados],
       [...desempates],
-      rondas && rondas > 0 ? rondas : null
+      rondas && rondas > 0 ? rondas : null,
+      formato === "round-robin" ? idaYVuelta : false
     );
     if (id) router.push(`/torneos/${id}`);
   }
@@ -194,7 +196,7 @@ export default function TorneosPage() {
                 checked={formato === "round-robin"}
                 onChange={() => setFormato("round-robin")}
               />
-              Round robin (todos contra todos, ida y vuelta)
+              Round robin (todos contra todos)
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -206,6 +208,16 @@ export default function TorneosPage() {
               Match (2 jugadores)
             </label>
           </div>
+          {formato === "round-robin" && (
+            <label className="mt-1 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={idaYVuelta}
+                onChange={(e) => setIdaYVuelta(e.target.checked)}
+              />
+              Ida y vuelta (cada rival se enfrenta dos veces, con los colores invertidos)
+            </label>
+          )}
           {formato === "match" && (
             <span className="text-xs text-zinc-500">
               Para cuando vienen solo dos personas: se enfrentan varias partidas seguidas,

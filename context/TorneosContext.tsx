@@ -41,6 +41,7 @@ type FilaTorneo = {
   final_desempate: FinalDesempate | null;
   inscriptos_ids: string[] | null;
   asistieron_ids: string[] | null;
+  ida_y_vuelta: boolean | null;
 };
 
 type TorneosContextType = {
@@ -51,10 +52,12 @@ type TorneosContextType = {
     formato: FormatoTorneo,
     jugadoresIds: string[],
     desempates: string[],
-    rondasObjetivo: number | null
+    rondasObjetivo: number | null,
+    idaYVuelta?: boolean
   ) => Promise<string>;
   crearTorneoRapido: (nombre: string) => Promise<string>;
   cambiarFormato: (torneoId: string, formato: FormatoTorneo) => Promise<void>;
+  cambiarIdaYVuelta: (torneoId: string, idaYVuelta: boolean) => Promise<void>;
   cambiarDesempates: (torneoId: string, desempates: string[]) => Promise<void>;
   alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
   alternarAsistencia: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -108,6 +111,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     finalDesempate: fila.final_desempate ?? null,
     inscriptosIds: fila.inscriptos_ids ?? [],
     asistieronIds: fila.asistieron_ids ?? [],
+    idaYVuelta: fila.ida_y_vuelta === true,
   };
 }
 
@@ -139,7 +143,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     formato: FormatoTorneo,
     jugadoresIds: string[],
     desempates: string[],
-    rondasObjetivo: number | null
+    rondasObjetivo: number | null,
+    idaYVuelta = false
   ) {
     const { data, error } = await supabase
       .from("torneos")
@@ -151,6 +156,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         rondas: [],
         estado: "armado",
         rondas_objetivo: rondasObjetivo,
+        ida_y_vuelta: idaYVuelta,
       })
       .select()
       .single();
@@ -199,6 +205,14 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (!torneo || torneo.estado !== "armado" || torneo.rondas.length > 0) return;
     setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, formato } : t)));
     await supabase.from("torneos").update({ formato }).eq("id", torneoId);
+  }
+
+  /** Solo tiene sentido mientras el torneo sigue armado, sin rondas generadas. */
+  async function cambiarIdaYVuelta(torneoId: string, idaYVuelta: boolean) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo || torneo.estado !== "armado" || torneo.rondas.length > 0) return;
+    setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, idaYVuelta } : t)));
+    await supabase.from("torneos").update({ ida_y_vuelta: idaYVuelta }).eq("id", torneoId);
   }
 
   /**
@@ -288,7 +302,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
 
     if (torneo.formato === "round-robin") {
       if (torneo.rondas.length > 0) return;
-      nuevasRondas = generarRoundRobin(torneo.jugadoresIds);
+      nuevasRondas = generarRoundRobin(torneo.jugadoresIds, torneo.idaYVuelta === true);
     } else if (torneo.formato === "match") {
       if (torneo.rondas.length > 0) return;
       if (torneo.jugadoresIds.length !== 2) return;
@@ -479,6 +493,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         crearTorneo,
         crearTorneoRapido,
         cambiarFormato,
+        cambiarIdaYVuelta,
         cambiarDesempates,
         alternarInscripcion,
         alternarAsistencia,
