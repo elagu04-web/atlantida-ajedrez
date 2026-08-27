@@ -84,19 +84,32 @@ export default function PantallaTorneoPage() {
   const jugadores = useJugadoresEnVivo();
   const torneoBase = obtenerTorneo(id);
 
-  const [enVivo, setEnVivo] = useState<{ rondas: RondaTorneo[]; estado: EstadoTorneo } | null>(null);
+  const [enVivo, setEnVivo] = useState<{
+    rondas: RondaTorneo[];
+    estado: EstadoTorneo;
+    inscriptosIds: string[];
+  } | null>(null);
   const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
   // null = seguir siempre la última ronda jugada (modo en vivo). Un número
   // fijo = quedarse mirando esa ronda pasada hasta que alguien navegue de
-  // nuevo.
+  // nuevo — pero si arranca una ronda nueva de verdad, se vuelve a enganchar
+  // sola (pensado para una pantalla en otra sala que nadie toca).
   const [rondaSeleccionada, setRondaSeleccionada] = useState<number | null>(null);
 
   useEffect(() => {
     let activo = true;
     async function refrescar() {
-      const { data } = await supabase.from("torneos").select("rondas, estado").eq("id", id).single();
+      const { data } = await supabase
+        .from("torneos")
+        .select("rondas, estado, inscriptos_ids")
+        .eq("id", id)
+        .single();
       if (activo && data) {
-        setEnVivo({ rondas: data.rondas ?? [], estado: data.estado });
+        setEnVivo({
+          rondas: data.rondas ?? [],
+          estado: data.estado,
+          inscriptosIds: data.inscriptos_ids ?? [],
+        });
         setUltimaActualizacion(new Date());
       }
     }
@@ -107,6 +120,17 @@ export default function PantallaTorneoPage() {
       clearInterval(intervalo);
     };
   }, [id]);
+
+  // Si arranca una ronda nueva de verdad, se re-engancha sola al vivo aunque
+  // alguien haya dejado pinneada una ronda pasada (ajustar estado durante el
+  // render en vez de un useEffect, siguiendo el patrón recomendado por React
+  // para "resetear estado cuando cambia un valor").
+  const [ultimaRondaVista, setUltimaRondaVista] = useState<number | null>(null);
+  const ultimaRondaNumero = enVivo?.rondas[enVivo.rondas.length - 1]?.numero ?? null;
+  if (ultimaRondaNumero !== ultimaRondaVista) {
+    setUltimaRondaVista(ultimaRondaNumero);
+    setRondaSeleccionada(null);
+  }
 
   function nombreDe(jugadorId: string) {
     const j = jugadores.find((x) => x.id === jugadorId);
@@ -125,7 +149,9 @@ export default function PantallaTorneoPage() {
     );
   }
 
-  const torneo = enVivo ? { ...torneoBase, rondas: enVivo.rondas, estado: enVivo.estado } : torneoBase;
+  const torneo = enVivo
+    ? { ...torneoBase, rondas: enVivo.rondas, estado: enVivo.estado, inscriptosIds: enVivo.inscriptosIds }
+    : torneoBase;
   const rondaActual = torneo.rondas[torneo.rondas.length - 1] ?? null;
   const numeroAMostrar = rondaSeleccionada ?? rondaActual?.numero ?? null;
   const rondaAMostrar = torneo.rondas.find((r) => r.numero === numeroAMostrar) ?? rondaActual;
@@ -133,6 +159,10 @@ export default function PantallaTorneoPage() {
   const standings = standingsConDesempates(torneo);
   const podio = standings.slice(0, 3);
   const resto = standings.slice(3);
+  const inscriptosPorElo = [...torneo.inscriptosIds]
+    .map((jugadorId) => jugadores.find((x) => x.id === jugadorId))
+    .filter((j): j is NonNullable<typeof j> => Boolean(j))
+    .sort((a, b) => b.eloAtlantida - a.eloAtlantida);
 
   function seleccionarRonda(numero: number) {
     setRondaSeleccionada(numero === rondaActual?.numero ? null : numero);
@@ -203,10 +233,34 @@ export default function PantallaTorneoPage() {
       <div className="grid grid-cols-1 gap-6 lg:gap-10 xl:grid-cols-[1.6fr_1fr]">
         <div>
           <h2 className="mb-3 text-xl font-bold text-zinc-300 sm:text-2xl lg:mb-5 lg:text-3xl">
-            Partidos {enVivoMostrando ? "de esta ronda" : `— Ronda ${rondaAMostrar?.numero}`}
+            {!rondaAMostrar
+              ? `Inscriptos (${inscriptosPorElo.length})`
+              : `Partidos ${enVivoMostrando ? "de esta ronda" : `— Ronda ${rondaAMostrar?.numero}`}`}
           </h2>
           {!rondaAMostrar ? (
-            <p className="text-base text-zinc-500 sm:text-xl">El torneo todavía no arrancó.</p>
+            inscriptosPorElo.length === 0 ? (
+              <p className="text-base text-zinc-500 sm:text-xl">El torneo todavía no arrancó.</p>
+            ) : (
+              <div className="flex flex-col gap-2 sm:gap-3 lg:gap-4">
+                {inscriptosPorElo.map((j, i) => (
+                  <div
+                    key={j.id}
+                    className="flex items-center gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2.5 ring-1 ring-white/10 sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-3.5 lg:gap-5 lg:px-7 lg:py-5"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-zinc-300 sm:h-8 sm:w-8 sm:text-base lg:h-10 lg:w-10 lg:text-lg">
+                      {i + 1}
+                    </span>
+                    <FotoJugador fotoUrl={j.fotoUrl} nombre={nombreVisible(j)} claseTam={TAM_FOTO_PARTIDO} />
+                    <span className="min-w-0 flex-1 truncate text-sm font-bold text-white sm:text-xl lg:text-3xl">
+                      {nombreVisible(j)}
+                    </span>
+                    <span className="shrink-0 font-mono text-xs font-semibold text-blue-400 sm:text-base lg:text-xl">
+                      {j.eloAtlantida}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )
           ) : (
             <div className="flex flex-col gap-2 sm:gap-3 lg:gap-4">
               {rondaAMostrar.emparejamientos.map((e) => {
