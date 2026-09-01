@@ -8,6 +8,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { nombreVisible } from "@/lib/players";
+import { ELO_MINIMO } from "@/lib/elo";
 import { GraficoElo } from "@/components/GraficoElo";
 
 const FOTOS_BUCKET = "fotos-jugadores";
@@ -28,7 +29,8 @@ export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
-  const { actualizarFoto, actualizarDescripcion, cargando } = useJugadores();
+  const { actualizarFoto, actualizarDescripcion, actualizarJugador, actualizarFideId, cargando } =
+    useJugadores();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
   const inputFotoRef = useRef<HTMLInputElement>(null);
@@ -37,6 +39,10 @@ export default function JugadorPage() {
   const [verTodasLasPartidas, setVerTodasLasPartidas] = useState(false);
   const [editandoDescripcion, setEditandoDescripcion] = useState(false);
   const [descripcionValor, setDescripcionValor] = useState("");
+  const [editandoElo, setEditandoElo] = useState(false);
+  const [eloValor, setEloValor] = useState("");
+  const [editandoFideId, setEditandoFideId] = useState(false);
+  const [fideIdValor, setFideIdValor] = useState("");
 
   function empezarEdicionDescripcion() {
     setDescripcionValor(jugador?.descripcion ?? "");
@@ -46,6 +52,29 @@ export default function JugadorPage() {
   async function guardarDescripcion() {
     if (jugador) await actualizarDescripcion(jugador.id, descripcionValor);
     setEditandoDescripcion(false);
+  }
+
+  function empezarEdicionElo() {
+    setEloValor(String(jugador?.eloAtlantida ?? ""));
+    setEditandoElo(true);
+  }
+
+  async function guardarElo() {
+    if (!jugador) return;
+    const eloNumero = Number(eloValor);
+    const eloValido = Number.isFinite(eloNumero) ? eloNumero : jugador.eloAtlantida;
+    await actualizarJugador(jugador.id, jugador.nombre, Math.max(ELO_MINIMO, eloValido));
+    setEditandoElo(false);
+  }
+
+  function empezarEdicionFideId() {
+    setFideIdValor(jugador?.fideId ?? "");
+    setEditandoFideId(true);
+  }
+
+  async function guardarFideId() {
+    if (jugador) await actualizarFideId(jugador.id, fideIdValor);
+    setEditandoFideId(false);
   }
 
   async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -196,6 +225,45 @@ export default function JugadorPage() {
               {nombreVisible(jugador)}
             </h1>
             {jugador.apodo && <p className="text-sm text-zinc-400">{jugador.nombre}</p>}
+            <div className="mt-1 text-sm text-zinc-400">
+              {editandoFideId ? (
+                <span className="inline-flex items-center gap-2">
+                  ID FIDE:
+                  <input
+                    autoFocus
+                    type="text"
+                    value={fideIdValor}
+                    onChange={(e) => setFideIdValor(e.target.value)}
+                    onBlur={guardarFideId}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") e.currentTarget.blur();
+                      if (e.key === "Escape") setEditandoFideId(false);
+                    }}
+                    placeholder="Sin ID FIDE"
+                    className="w-28 rounded border border-white/20 bg-transparent px-1.5 py-0.5 text-xs"
+                  />
+                </span>
+              ) : jugador.fideId ? (
+                <span>
+                  ID FIDE: {jugador.fideId}
+                  {puedeEditar && (
+                    <button
+                      onClick={empezarEdicionFideId}
+                      className="ml-2 text-xs text-blue-400 hover:underline"
+                    >
+                      Editar
+                    </button>
+                  )}
+                </span>
+              ) : puedeEditar ? (
+                <button
+                  onClick={empezarEdicionFideId}
+                  className="text-xs text-zinc-400 hover:text-blue-400 hover:underline"
+                >
+                  + agregar ID FIDE
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
@@ -252,8 +320,49 @@ export default function JugadorPage() {
       )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+          <div className="text-xs text-zinc-400">Elo Atlántida</div>
+          {editandoElo ? (
+            <div className="mt-1 flex flex-col gap-1">
+              <input
+                autoFocus
+                type="number"
+                value={eloValor}
+                onChange={(e) => setEloValor(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") guardarElo();
+                  if (e.key === "Escape") setEditandoElo(false);
+                }}
+                className="w-24 rounded border border-white/20 bg-transparent px-2 py-1 text-lg font-mono font-semibold"
+              />
+              <div className="flex gap-3 text-[11px]">
+                <button onClick={guardarElo} className="font-medium text-blue-400 hover:underline">
+                  Guardar
+                </button>
+                <button
+                  onClick={() => setEditandoElo(false)}
+                  className="text-zinc-400 hover:underline"
+                >
+                  Cancelar
+                </button>
+              </div>
+              <span className="text-[11px] text-zinc-500">Elo inicial — recalcula todo el historial.</span>
+            </div>
+          ) : (
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-xl font-semibold font-mono">{jugador.eloAtlantida}</span>
+              {puedeEditar && (
+                <button
+                  onClick={empezarEdicionElo}
+                  className="text-xs text-blue-400 hover:underline"
+                >
+                  Editar
+                </button>
+              )}
+            </div>
+          )}
+        </div>
         {[
-          { label: "Elo Atlántida", value: jugador.eloAtlantida },
           { label: "Partidas", value: jugador.jugadas },
           { label: "Victorias", value: jugador.victorias },
           { label: "Derrotas", value: jugador.derrotas },
