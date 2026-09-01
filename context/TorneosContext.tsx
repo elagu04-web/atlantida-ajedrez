@@ -57,6 +57,7 @@ type TorneosContextType = {
   ) => Promise<string>;
   crearTorneoRapido: (nombre: string) => Promise<string>;
   cambiarFormato: (torneoId: string, formato: FormatoTorneo) => Promise<void>;
+  convertirASuizo: (torneoId: string) => Promise<void>;
   cambiarIdaYVuelta: (torneoId: string, idaYVuelta: boolean) => Promise<void>;
   cambiarDesempates: (torneoId: string, desempates: string[]) => Promise<void>;
   alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -205,6 +206,34 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (!torneo || torneo.estado !== "armado" || torneo.rondas.length > 0) return;
     setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, formato } : t)));
     await supabase.from("torneos").update({ formato }).eq("id", torneoId);
+  }
+
+  /**
+   * Pasa un torneo de round robin a sistema suizo en pleno torneo — pensado
+   * para cuando aparece un jugador nuevo a mitad de camino. El round robin
+   * arma todo el calendario de una sola vez, así que las rondas futuras que
+   * todavía nadie jugó (ningún resultado cargado) se descartan: de ahí en
+   * más las rondas se generan de a una con el algoritmo suizo, que sí deja
+   * sumar jugadores sobre la marcha.
+   */
+  async function convertirASuizo(torneoId: string) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo || torneo.formato !== "round-robin" || torneo.estado === "finalizado") return;
+    let ultimoIndiceConResultado = -1;
+    torneo.rondas.forEach((r, i) => {
+      if (r.emparejamientos.some((e) => e.resultado !== null)) ultimoIndiceConResultado = i;
+    });
+    const nuevasRondas = torneo.rondas.slice(0, ultimoIndiceConResultado + 1);
+    setTorneos((actuales) =>
+      actuales.map((t) => (t.id === torneoId ? { ...t, formato: "suizo", rondas: nuevasRondas } : t))
+    );
+    await supabase.from("torneos").update({ formato: "suizo", rondas: nuevasRondas }).eq("id", torneoId);
+    registrar(
+      "torneo",
+      `Se cambió el torneo "${torneo.nombre}" de round robin a sistema suizo en pleno torneo (se descartaron ${
+        torneo.rondas.length - nuevasRondas.length
+      } ronda(s) futuras sin jugar).`
+    );
   }
 
   /** Solo tiene sentido mientras el torneo sigue armado, sin rondas generadas. */
@@ -493,6 +522,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         crearTorneo,
         crearTorneoRapido,
         cambiarFormato,
+        convertirASuizo,
         cambiarIdaYVuelta,
         cambiarDesempates,
         alternarInscripcion,

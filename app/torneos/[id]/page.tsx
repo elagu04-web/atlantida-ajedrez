@@ -56,6 +56,7 @@ export default function TorneoPage() {
     standingsDeTorneo,
     registrarFinalDesempate,
     cambiarFormato,
+    convertirASuizo,
     cambiarIdaYVuelta,
     cambiarDesempates,
     alternarAsistencia,
@@ -264,6 +265,33 @@ export default function TorneoPage() {
             Ida y vuelta (cada rival se enfrenta dos veces, con los colores invertidos)
           </label>
         )}
+        {puedeEditar &&
+          torneo.formato === "round-robin" &&
+          torneo.rondas.length > 0 &&
+          torneo.estado !== "finalizado" && (
+            <div className="mt-2">
+              <button
+                onClick={() => {
+                  const rondasFuturasVacias = torneo.rondas.filter((r) =>
+                    r.emparejamientos.every((e) => e.resultado === null)
+                  ).length;
+                  const confirmado = window.confirm(
+                    `¿Cambiar este torneo a sistema suizo?\n\nDe acá en más las rondas se generan de a una y vas a poder sumar jugadores nuevos aunque el torneo ya haya empezado.${
+                      rondasFuturasVacias > 0
+                        ? `\n\nSe van a descartar ${rondasFuturasVacias} ronda${
+                            rondasFuturasVacias === 1 ? "" : "s"
+                          } futuras del calendario de round robin que todavía nadie jugó.`
+                        : ""
+                    }`
+                  );
+                  if (confirmado) convertirASuizo(torneo.id);
+                }}
+                className="text-xs font-medium text-amber-400 hover:underline"
+              >
+                ⚠ Cambiar a sistema suizo (por si aparece un jugador nuevo)
+              </button>
+            </div>
+          )}
         {puedeEditar && (
           <div className="mt-3 flex flex-col gap-1">
             <span className="text-xs font-medium text-zinc-400">Desempates a usar:</span>
