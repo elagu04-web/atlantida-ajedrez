@@ -66,6 +66,8 @@ export default function TorneoPage() {
   const puedeEditar = esAdmin;
 
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
+  const [busquedaAgregar, setBusquedaAgregar] = useState("");
+  const [mostrarListaAgregar, setMostrarListaAgregar] = useState(false);
   const [nombreNuevo, setNombreNuevo] = useState("");
   const [eloNuevo, setEloNuevo] = useState("1500");
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -182,6 +184,9 @@ export default function TorneoPage() {
 
   const inscriptos = torneo.jugadoresIds.map((jid) => jugadores.find((j) => j.id === jid)).filter((j) => j !== undefined);
   const disponiblesParaAgregar = jugadores.filter((j) => !torneo.jugadoresIds.includes(j.id));
+  const disponiblesFiltrados = disponiblesParaAgregar.filter((j) =>
+    `${j.nombre} ${j.apodo ?? ""}`.toLowerCase().includes(busquedaAgregar.trim().toLowerCase())
+  );
   const standings = standingsDeTorneo(torneo.id);
   const resultadoCampeon = determinarCampeon(torneo);
 
@@ -418,25 +423,53 @@ export default function TorneoPage() {
           <div className="mt-4 flex flex-col gap-3 border-t border-white/5 pt-4">
             {disponiblesParaAgregar.length > 0 && (
               <div className="flex items-center gap-2">
-                <select
-                  value={jugadorAAgregar}
-                  onChange={(e) => setJugadorAAgregar(e.target.value)}
-                  className="rounded-md border border-white/20 px-2 py-1.5 text-sm"
-                >
-                  <option value="">Elegir jugador...</option>
-                  {disponiblesParaAgregar.map((j) => (
-                    <option key={j.id} value={j.id}>
-                      {nombreVisible(j)}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={busquedaAgregar}
+                    onChange={(e) => {
+                      setBusquedaAgregar(e.target.value);
+                      setJugadorAAgregar("");
+                      setMostrarListaAgregar(true);
+                    }}
+                    onFocus={() => setMostrarListaAgregar(true)}
+                    onBlur={() => setTimeout(() => setMostrarListaAgregar(false), 150)}
+                    placeholder="Buscar jugador..."
+                    className="w-56 rounded-md border border-white/20 px-2 py-1.5 text-sm"
+                  />
+                  {mostrarListaAgregar && (
+                    <div className="absolute z-10 mt-1 max-h-56 w-56 overflow-y-auto rounded-md border border-white/20 bg-zinc-900 shadow-lg">
+                      {disponiblesFiltrados.length === 0 ? (
+                        <p className="px-3 py-2 text-xs text-zinc-400">Ningún jugador coincide.</p>
+                      ) : (
+                        disponiblesFiltrados.map((j) => (
+                          <button
+                            key={j.id}
+                            type="button"
+                            onClick={() => {
+                              setJugadorAAgregar(j.id);
+                              setBusquedaAgregar(nombreVisible(j));
+                              setMostrarListaAgregar(false);
+                            }}
+                            className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-white/10"
+                          >
+                            <span>{nombreVisible(j)}</span>
+                            <span className="font-mono text-xs text-zinc-400">{j.eloAtlantida}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => {
                     if (!jugadorAAgregar) return;
                     agregarJugadorATorneo(torneo.id, jugadorAAgregar);
                     setJugadorAAgregar("");
+                    setBusquedaAgregar("");
                   }}
-                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                  disabled={!jugadorAAgregar}
+                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Agregar
                 </button>
