@@ -65,7 +65,7 @@ type TorneosContextType = {
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
   quitarJugadorDeTorneo: (torneoId: string, jugadorId: string) => Promise<void>;
-  generarRondas: (torneoId: string) => Promise<void>;
+  generarRondas: (torneoId: string, jugadorByeElegido?: string) => Promise<void>;
   registrarResultado: (
     torneoId: string,
     rondaNumero: number,
@@ -322,7 +322,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     registrar("torneo", `Se quitó a ${nombreDe(jugadorId)} del torneo "${torneo.nombre}".`);
   }
 
-  async function generarRondas(torneoId: string) {
+  async function generarRondas(torneoId: string, jugadorByeElegido?: string) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo || torneo.jugadoresIds.length < 2) return;
 
@@ -331,7 +331,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
 
     if (torneo.formato === "round-robin") {
       if (torneo.rondas.length > 0) return;
-      nuevasRondas = generarRoundRobin(torneo.jugadoresIds, torneo.idaYVuelta === true);
+      nuevasRondas = generarRoundRobin(torneo.jugadoresIds, torneo.idaYVuelta === true, jugadorByeElegido);
     } else if (torneo.formato === "match") {
       if (torneo.rondas.length > 0) return;
       if (torneo.jugadoresIds.length !== 2) return;
@@ -349,7 +349,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       const siguienteNumero = torneo.rondas.length + 1;
       const nuevaRonda =
         siguienteNumero === 1
-          ? generarRondaUnoDutch(torneo.jugadoresIds, elos)
+          ? generarRondaUnoDutch(torneo.jugadoresIds, elos, jugadorByeElegido)
           : generarRondaSuiza(torneo, siguienteNumero, elos);
       nuevasRondas = [...torneo.rondas, nuevaRonda];
     }

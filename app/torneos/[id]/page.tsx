@@ -65,6 +65,7 @@ export default function TorneoPage() {
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
 
+  const [byeElegido, setByeElegido] = useState("");
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
   const [busquedaAgregar, setBusquedaAgregar] = useState("");
   const [mostrarListaAgregar, setMostrarListaAgregar] = useState(false);
@@ -514,10 +515,32 @@ export default function TorneoPage() {
         </p>
       )}
 
+      {puedeGenerarRondas &&
+        puedeEditar &&
+        torneo.rondas.length === 0 &&
+        torneo.formato !== "match" &&
+        torneo.jugadoresIds.length % 2 !== 0 && (
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-medium text-zinc-400">¿Quién descansa en la ronda 1?</span>
+            <select
+              value={byeElegido}
+              onChange={(e) => setByeElegido(e.target.value)}
+              className="rounded-md border border-white/20 bg-white/5 px-2 py-1 text-xs"
+            >
+              <option value="">Automático (menor Elo)</option>
+              {inscriptos.map((j) => (
+                <option key={j!.id} value={j!.id}>
+                  {nombreVisible(j!)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
       <div className="flex flex-wrap items-center gap-3">
         {puedeGenerarRondas && puedeEditar && (
           <button
-            onClick={() => generarRondas(torneo.id)}
+            onClick={() => generarRondas(torneo.id, byeElegido || undefined)}
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
             {textoBotonRondas}

@@ -85,14 +85,42 @@ function construirEmparejamiento(m: Match, numero: number): EmparejamientoTorneo
 }
 
 /**
+ * Intercambia dos jugadores entre sí en TODAS las rondas de un calendario ya
+ * armado (aparecen donde aparezcan, con el color que tengan). Al ser un
+ * intercambio total y no parcial, el calendario sigue siendo un round robin
+ * válido — es solo un cambio de etiqueta entre esos dos jugadores.
+ */
+function intercambiarJugadorEnRondas(rondas: RondaTorneo[], a: string, b: string): RondaTorneo[] {
+  function swap(jugadorId: string) {
+    if (jugadorId === a) return b;
+    if (jugadorId === b) return a;
+    return jugadorId;
+  }
+  return rondas.map((ronda) => ({
+    ...ronda,
+    emparejamientos: ronda.emparejamientos.map((e) => ({
+      ...e,
+      blancasId: swap(e.blancasId),
+      negrasId: e.negrasId ? swap(e.negrasId) : e.negrasId,
+    })),
+  }));
+}
+
+/**
  * Round robin: cada jugador se enfrenta una vez a cada rival (la "ida",
  * armada con la librería). Si idaYVuelta es true, se agrega una segunda
  * vuelta más con los colores invertidos. La librería de emparejamientos no
  * trae la vuelta de fábrica, así que se arma a mano espejando la ida.
+ *
+ * jugadorByeElegido: si hay número impar de jugadores y se elige quién
+ * descansa en la ronda 1 (en vez del que le tocó al azar), se intercambia
+ * ese jugador con el que la librería eligió — en todas las rondas, para que
+ * el calendario siga siendo válido.
  */
 export function generarRoundRobin(
   jugadoresIds: string[],
-  idaYVuelta = false
+  idaYVuelta = false,
+  jugadorByeElegido?: string
 ): RondaTorneo[] {
   const matches = RoundRobin(jugadoresIds, 1, false) as Match[];
   const porRonda = new Map<number, Match[]>();
@@ -100,12 +128,19 @@ export function generarRoundRobin(
     if (!porRonda.has(m.round)) porRonda.set(m.round, []);
     porRonda.get(m.round)!.push(m);
   }
-  const rondasIda: RondaTorneo[] = [...porRonda.entries()]
+  let rondasIda: RondaTorneo[] = [...porRonda.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([numero, ms]) => ({
       numero,
       emparejamientos: ms.map((m, i) => construirEmparejamiento(m, i + 1)),
     }));
+
+  if (jugadorByeElegido) {
+    const byeActual = rondasIda[0]?.emparejamientos.find((e) => !e.negrasId)?.blancasId;
+    if (byeActual && byeActual !== jugadorByeElegido) {
+      rondasIda = intercambiarJugadorEnRondas(rondasIda, byeActual, jugadorByeElegido);
+    }
+  }
 
   if (!idaYVuelta) return rondasIda;
 
@@ -315,18 +350,27 @@ export function standingsConDesempates(torneo: Torneo): StandingConDesempates[] 
  * débiles. Las siguientes rondas ya no usan esto: dependen de resultados y
  * usan el algoritmo suizo completo (evita repetir rivales, balancea
  * colores).
+ *
+ * jugadorByeElegido: si se elige a mano quién descansa (en vez del de menor
+ * Elo por defecto), se lo saca del orden antes de armar las mitades.
  */
 export function generarRondaUnoDutch(
   jugadoresIds: string[],
-  elos: Map<string, number>
+  elos: Map<string, number>,
+  jugadorByeElegido?: string
 ): RondaTorneo {
-  const ordenados = [...jugadoresIds].sort(
+  let ordenados = [...jugadoresIds].sort(
     (a, b) => (elos.get(b) ?? 0) - (elos.get(a) ?? 0)
   );
 
   let conBye: string | null = null;
   if (ordenados.length % 2 !== 0) {
-    conBye = ordenados.pop()!; // menor Elo de todos, al final del orden descendente
+    if (jugadorByeElegido && ordenados.includes(jugadorByeElegido)) {
+      conBye = jugadorByeElegido;
+      ordenados = ordenados.filter((id) => id !== jugadorByeElegido);
+    } else {
+      conBye = ordenados.pop()!; // menor Elo de todos, al final del orden descendente
+    }
   }
 
   const mitad = ordenados.length / 2;
