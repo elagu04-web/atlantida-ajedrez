@@ -45,6 +45,9 @@ export type Torneo = {
   // vinieron — anotarse y venir son cosas distintas, esto es solo para
   // organizarse (no afecta nada del torneo en sí).
   asistieronIds: string[];
+  // De los inscriptos, cuáles ya pagaron este torneo — organizativo, como
+  // asistieronIds, no afecta nada del torneo en sí.
+  pagaronIds: string[];
   // Solo para formato round-robin: si cada rival se enfrenta una vez o dos
   // (con los dos colores). false/undefined = una sola vez.
   idaYVuelta?: boolean;

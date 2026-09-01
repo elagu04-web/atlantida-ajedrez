@@ -41,6 +41,7 @@ type FilaTorneo = {
   final_desempate: FinalDesempate | null;
   inscriptos_ids: string[] | null;
   asistieron_ids: string[] | null;
+  pagaron_ids: string[] | null;
   ida_y_vuelta: boolean | null;
 };
 
@@ -62,6 +63,7 @@ type TorneosContextType = {
   cambiarDesempates: (torneoId: string, desempates: string[]) => Promise<void>;
   alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
   alternarAsistencia: (torneoId: string, jugadorId: string) => Promise<void>;
+  alternarPago: (torneoId: string, jugadorId: string) => Promise<void>;
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
   quitarJugadorDeTorneo: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -112,6 +114,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     finalDesempate: fila.final_desempate ?? null,
     inscriptosIds: fila.inscriptos_ids ?? [],
     asistieronIds: fila.asistieron_ids ?? [],
+    pagaronIds: fila.pagaron_ids ?? [],
     idaYVuelta: fila.ida_y_vuelta === true,
   };
 }
@@ -292,6 +295,23 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       actuales.map((t) => (t.id === torneoId ? { ...t, asistieronIds: nuevosIds } : t))
     );
     await supabase.from("torneos").update({ asistieron_ids: nuevosIds }).eq("id", torneoId);
+  }
+
+  /**
+   * Marca (o desmarca) que un inscripto ya pagó este torneo — igual que
+   * alternarAsistencia, solo para organizarse, no afecta nada del torneo.
+   */
+  async function alternarPago(torneoId: string, jugadorId: string) {
+    const torneo = obtenerTorneo(torneoId);
+    if (!torneo) return;
+    const yaPago = torneo.pagaronIds.includes(jugadorId);
+    const nuevosIds = yaPago
+      ? torneo.pagaronIds.filter((id) => id !== jugadorId)
+      : [...torneo.pagaronIds, jugadorId];
+    setTorneos((actuales) =>
+      actuales.map((t) => (t.id === torneoId ? { ...t, pagaronIds: nuevosIds } : t))
+    );
+    await supabase.from("torneos").update({ pagaron_ids: nuevosIds }).eq("id", torneoId);
   }
 
   function obtenerTorneo(id: string) {
@@ -527,6 +547,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         cambiarDesempates,
         alternarInscripcion,
         alternarAsistencia,
+        alternarPago,
         obtenerTorneo,
         agregarJugadorATorneo,
         quitarJugadorDeTorneo,

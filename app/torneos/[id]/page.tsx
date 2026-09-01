@@ -60,6 +60,7 @@ export default function TorneoPage() {
     cambiarIdaYVuelta,
     cambiarDesempates,
     alternarAsistencia,
+    alternarPago,
     cargando,
   } = useTorneos();
   const { esAdmin } = useAuth();
@@ -366,20 +367,32 @@ export default function TorneoPage() {
                 const j = jugadores.find((x) => x.id === jid);
                 const yaEnLista = torneo.jugadoresIds.includes(jid);
                 const vino = torneo.asistieronIds.includes(jid);
+                const pago = torneo.pagaronIds.includes(jid);
                 return (
                   <li key={jid} className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={vino}
-                        onChange={() => alternarAsistencia(torneo.id, jid)}
-                        disabled={!puedeEditar}
-                        title="Marcar si vino de verdad"
-                      />
-                      <span className={vino ? "font-medium text-emerald-300" : ""}>
-                        {j ? nombreVisible(j) : "?"}
-                      </span>
-                    </label>
+                    <span className="flex items-center gap-3">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={vino}
+                          onChange={() => alternarAsistencia(torneo.id, jid)}
+                          disabled={!puedeEditar}
+                          title="Marcar si vino de verdad"
+                        />
+                        <span className={vino ? "font-medium text-emerald-300" : ""}>
+                          {j ? nombreVisible(j) : "?"}
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-1 text-xs text-amber-300" title="Marcar si pagó">
+                        <input
+                          type="checkbox"
+                          checked={pago}
+                          onChange={() => alternarPago(torneo.id, jid)}
+                          disabled={!puedeEditar}
+                        />
+                        💰 pagó
+                      </label>
+                    </span>
                     {puedeEditar &&
                       (yaEnLista ? (
                         <span className="text-xs text-emerald-400">✓ ya está en el torneo</span>

@@ -73,6 +73,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     excluirDeElo: fila.excluir_elo === true,
     inscriptosIds: [],
     asistieronIds: [],
+    pagaronIds: [],
   };
 }
 
