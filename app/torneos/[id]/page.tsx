@@ -367,32 +367,20 @@ export default function TorneoPage() {
                 const j = jugadores.find((x) => x.id === jid);
                 const yaEnLista = torneo.jugadoresIds.includes(jid);
                 const vino = torneo.asistieronIds.includes(jid);
-                const pago = torneo.pagaronIds.includes(jid);
                 return (
                   <li key={jid} className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-3">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={vino}
-                          onChange={() => alternarAsistencia(torneo.id, jid)}
-                          disabled={!puedeEditar}
-                          title="Marcar si vino de verdad"
-                        />
-                        <span className={vino ? "font-medium text-emerald-300" : ""}>
-                          {j ? nombreVisible(j) : "?"}
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-1 text-xs text-amber-300" title="Marcar si pagó">
-                        <input
-                          type="checkbox"
-                          checked={pago}
-                          onChange={() => alternarPago(torneo.id, jid)}
-                          disabled={!puedeEditar}
-                        />
-                        💰 pagó
-                      </label>
-                    </span>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={vino}
+                        onChange={() => alternarAsistencia(torneo.id, jid)}
+                        disabled={!puedeEditar}
+                        title="Marcar si vino de verdad"
+                      />
+                      <span className={vino ? "font-medium text-emerald-300" : ""}>
+                        {j ? nombreVisible(j) : "?"}
+                      </span>
+                    </label>
                     {puedeEditar &&
                       (yaEnLista ? (
                         <span className="text-xs text-emerald-400">✓ ya está en el torneo</span>
@@ -415,22 +403,40 @@ export default function TorneoPage() {
       <div className="rounded-lg border border-white/10 bg-white/5 p-5">
         <h2 className="mb-3 font-semibold">Jugadores inscriptos ({inscriptos.length})</h2>
         <ul className="flex flex-col gap-1">
-          {inscriptos.map((j) => (
-            <li key={j!.id} className="flex items-center justify-between text-sm">
-              <span>
-                {nombreVisible(j!)}{" "}
-                <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
-              </span>
-              {puedeEditarJugadores(torneo) && puedeEditar && (
-                <button
-                  onClick={() => quitarJugadorDeTorneo(torneo.id, j!.id)}
-                  className="text-xs text-red-400 hover:underline"
-                >
-                  Quitar
-                </button>
-              )}
-            </li>
-          ))}
+          {inscriptos.map((j) => {
+            const pago = torneo.pagaronIds.includes(j!.id);
+            return (
+              <li key={j!.id} className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-3">
+                  <span>
+                    {nombreVisible(j!)}{" "}
+                    <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
+                  </span>
+                  {puedeEditar && (
+                    <label
+                      className={`flex items-center gap-1 text-xs ${pago ? "text-amber-300" : "text-zinc-500"}`}
+                      title="Marcar si pagó"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={pago}
+                        onChange={() => alternarPago(torneo.id, j!.id)}
+                      />
+                      💰 pagó
+                    </label>
+                  )}
+                </span>
+                {puedeEditarJugadores(torneo) && puedeEditar && (
+                  <button
+                    onClick={() => quitarJugadorDeTorneo(torneo.id, j!.id)}
+                    className="text-xs text-red-400 hover:underline"
+                  >
+                    Quitar
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
 
         {puedeEditarJugadores(torneo) && puedeEditar && (
