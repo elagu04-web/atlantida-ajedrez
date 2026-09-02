@@ -29,6 +29,12 @@ export type Torneo = {
   estado: EstadoTorneo;
   rondasObjetivo: number | null;
   creadoEn: string;
+  // Cuándo se generó la primera ronda (arrancó de verdad el torneo). Con la
+  // creación rápida el torneo puede quedar "armado" días antes de jugarse,
+  // así que creadoEn ya no sirve para saber en qué mes/período jugar cuenta
+  // para la tabla general — se usa este campo si existe, si no se cae a
+  // creadoEn (torneos de antes de que existiera este campo).
+  iniciadoEn?: string | null;
   // true en torneos históricos importados cuyos resultados no deben
   // recalcular el Elo actual (para no duplicar un efecto ya reflejado en el
   // Elo inicial), pero sí deben contar para historial de partidas,

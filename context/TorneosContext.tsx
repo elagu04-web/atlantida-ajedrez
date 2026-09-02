@@ -37,6 +37,7 @@ type FilaTorneo = {
   estado: EstadoTorneo;
   rondas_objetivo: number | null;
   created_at: string;
+  iniciado_en: string | null;
   excluir_elo: boolean | null;
   final_desempate: FinalDesempate | null;
   inscriptos_ids: string[] | null;
@@ -110,6 +111,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
     estado: fila.estado,
     rondasObjetivo: fila.rondas_objetivo ?? null,
     creadoEn: fila.created_at,
+    iniciadoEn: fila.iniciado_en,
     excluirDeElo: fila.excluir_elo === true,
     finalDesempate: fila.final_desempate ?? null,
     inscriptosIds: fila.inscriptos_ids ?? [],
@@ -374,14 +376,18 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       nuevasRondas = [...torneo.rondas, nuevaRonda];
     }
 
+    // La primera ronda que se genera marca "cuándo arrancó de verdad" el
+    // torneo — con la creación rápida puede haber quedado armado días antes.
+    const iniciadoEn = torneo.iniciadoEn ?? new Date().toISOString();
+
     setTorneos((actuales) =>
       actuales.map((t) =>
-        t.id === torneoId ? { ...t, rondas: nuevasRondas, estado: nuevoEstado } : t
+        t.id === torneoId ? { ...t, rondas: nuevasRondas, estado: nuevoEstado, iniciadoEn } : t
       )
     );
     await supabase
       .from("torneos")
-      .update({ rondas: nuevasRondas, estado: nuevoEstado })
+      .update({ rondas: nuevasRondas, estado: nuevoEstado, iniciado_en: iniciadoEn })
       .eq("id", torneoId);
     registrar(
       "torneo",

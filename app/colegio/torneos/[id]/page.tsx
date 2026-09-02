@@ -169,7 +169,7 @@ export default function ColegioTorneoPage() {
                 <select
                   value={jugadorAAgregar}
                   onChange={(e) => setJugadorAAgregar(e.target.value)}
-                  className="rounded-md border border-white/20 px-2 py-1.5 text-sm"
+                  className="rounded-md border border-white/20 bg-white/5 px-2 py-1.5 text-sm"
                 >
                   <option value="">Elegir alumno...</option>
                   {disponiblesParaAgregar.map((j) => (

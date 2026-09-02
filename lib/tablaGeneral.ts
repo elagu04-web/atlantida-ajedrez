@@ -15,8 +15,11 @@ export type TablaGeneral = {
 
 /**
  * Agrupa torneos por "clave de período": "AAAA-MM" para vista mensual,
- * "AAAA" para vista anual. Los torneos vienen ya en orden cronológico
- * (orden de creación) desde el context.
+ * "AAAA" para vista anual. Usa iniciadoEn (cuándo arrancó de verdad, se
+ * generó la ronda 1) cuando existe — con la creación rápida un torneo
+ * puede quedar armado días antes de jugarse, así que creadoEn ya no
+ * refleja en qué mes se jugó. Se cae a creadoEn para torneos de antes de
+ * que existiera ese campo.
  */
 export function agruparTorneosPorPeriodo(
   torneos: Torneo[],
@@ -24,7 +27,8 @@ export function agruparTorneosPorPeriodo(
 ): Map<string, Torneo[]> {
   const grupos = new Map<string, Torneo[]>();
   for (const t of torneos) {
-    const clave = modo === "mes" ? t.creadoEn.slice(0, 7) : t.creadoEn.slice(0, 4);
+    const fecha = t.iniciadoEn ?? t.creadoEn;
+    const clave = modo === "mes" ? fecha.slice(0, 7) : fecha.slice(0, 4);
     if (!grupos.has(clave)) grupos.set(clave, []);
     grupos.get(clave)!.push(t);
   }

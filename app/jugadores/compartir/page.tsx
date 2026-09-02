@@ -87,7 +87,7 @@ export default function CompartirElosPage() {
     ctx.fillStyle = "#d4d4d8";
     ctx.font = "14px system-ui, sans-serif";
     const lineaTorneo = ultimoTorneo
-      ? `Después de: ${ultimoTorneo.nombre} · ${ultimoTorneo.creadoEn.slice(0, 10)}`
+      ? `Después de: ${ultimoTorneo.nombre} · ${(ultimoTorneo.iniciadoEn ?? ultimoTorneo.creadoEn).slice(0, 10)}`
       : "";
     if (lineaTorneo) ctx.fillText(lineaTorneo, 28, 102);
     ctx.fillStyle = "#a1a1aa";

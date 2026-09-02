@@ -61,7 +61,7 @@ export function calcularEloYHistorialEnVivo(
           orden: torneoIndex * 1_000_000 + ronda.numero * 1_000 + i,
           torneoIndex,
           torneoNombre: t.nombre,
-          torneoFecha: t.creadoEn.slice(0, 10),
+          torneoFecha: (t.iniciadoEn ?? t.creadoEn).slice(0, 10),
           blancasId: e.blancasId,
           negrasId: e.negrasId,
           resultado: e.resultado,

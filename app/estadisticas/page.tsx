@@ -31,7 +31,7 @@ export default function EstadisticasPage() {
   const campeones = useMemo(() => {
     const resultado: { torneo: Torneo; resultado: ResultadoCampeon }[] = [];
     for (const t of torneos) {
-      if (new Date(t.creadoEn).getFullYear() !== anioActual) continue;
+      if (new Date(t.iniciadoEn ?? t.creadoEn).getFullYear() !== anioActual) continue;
       const r = determinarCampeon(t);
       if (r) resultado.push({ torneo: t, resultado: r });
     }
@@ -85,7 +85,7 @@ export default function EstadisticasPage() {
               <select
                 value={periodoActivo}
                 onChange={(e) => setPeriodo(e.target.value)}
-                className="rounded-md border border-white/20 px-2 py-1.5 text-xs"
+                className="rounded-md border border-white/20 bg-white/5 px-2 py-1.5 text-xs"
               >
                 {periodosDisponibles.map((p) => (
                   <option key={p} value={p}>
