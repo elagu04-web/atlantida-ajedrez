@@ -1,4 +1,6 @@
 import { Torneo, calcularStandings } from "./tournaments";
+import type { JugadorEnVivo } from "./elo";
+import { nombreVisible } from "./players";
 
 export type FilaTablaGeneral = {
   jugadorId: string;
@@ -59,6 +61,39 @@ export function calcularTablaGeneral(torneos: Torneo[]): TablaGeneral {
     columnas: torneos.map((t) => ({ id: t.id, nombre: t.nombre })),
     filas,
   };
+}
+
+export type SerieEloPeriodo = {
+  jugadorId: string;
+  nombre: string;
+  valores: (number | null)[]; // null = todavía no había jugado ninguna partida
+};
+
+/**
+ * Elo de cada jugador al cierre de cada período (mes/año), para comparar la
+ * evolución de varios a la vez — a diferencia de GraficoElo (una sola línea,
+ * partida a partida), esto agrupa por período y usa el último eloDespues
+ * cargado dentro de cada uno. Si un jugador no jugó en un período, se
+ * repite su último Elo conocido (no cambió, no es un hueco); antes de su
+ * primera partida el valor es null (todavía no existía ese Elo "en vivo").
+ */
+export function evolucionEloPorPeriodo(
+  jugadores: JugadorEnVivo[],
+  claves: string[] // ya ordenadas cronológicamente ascendente
+): SerieEloPeriodo[] {
+  return jugadores.map((j) => {
+    let ultimoElo: number | null = null;
+    const valores = claves.map((clave) => {
+      const partidasDelPeriodo = j.partidas.filter(
+        (p) => p.fecha.slice(0, clave.length) === clave && p.eloDespues !== undefined
+      );
+      if (partidasDelPeriodo.length > 0) {
+        ultimoElo = partidasDelPeriodo[partidasDelPeriodo.length - 1].eloDespues!;
+      }
+      return ultimoElo;
+    });
+    return { jugadorId: j.id, nombre: nombreVisible(j), valores };
+  });
 }
 
 const MESES = [

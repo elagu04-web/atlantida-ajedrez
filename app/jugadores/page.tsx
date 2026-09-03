@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO, jugoRecientemente, type JugadorEnVivo } from "@/lib/elo";
 import { EncabezadoPagina } from "@/components/EncabezadoPagina";
+import { GraficoBarras } from "@/components/GraficoBarras";
 
 type Orden = "elo" | "partidas";
 
@@ -104,6 +105,17 @@ export default function JugadoresPage() {
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
 
+  const distribucionElo = useMemo(() => {
+    const porFranja = new Map<number, number>();
+    for (const j of jugadoresConStats) {
+      const franja = Math.floor(j.eloAtlantida / 100) * 100;
+      porFranja.set(franja, (porFranja.get(franja) ?? 0) + 1);
+    }
+    return [...porFranja.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([franja, cantidad]) => ({ etiqueta: `${franja}–${franja + 99}`, valor: cantidad }));
+  }, [jugadoresConStats]);
+
   const [nombre, setNombre] = useState("");
   const [apodo, setApodo] = useState("");
   const [elo, setElo] = useState("1500");
@@ -172,6 +184,13 @@ export default function JugadoresPage() {
           )
         }
       />
+
+      {distribucionElo.length > 0 && (
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <h2 className="mb-3 font-semibold">Distribución de Elo del plantel</h2>
+          <GraficoBarras datos={distribucionElo} />
+        </div>
+      )}
 
       {puedeEditar && (
       <form

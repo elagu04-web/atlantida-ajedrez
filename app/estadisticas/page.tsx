@@ -5,9 +5,16 @@ import Link from "next/link";
 import { useTorneos } from "@/context/TorneosContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { determinarCampeon, Torneo, ResultadoCampeon } from "@/lib/tournaments";
-import { agruparTorneosPorPeriodo, calcularTablaGeneral, etiquetaPeriodo } from "@/lib/tablaGeneral";
+import {
+  agruparTorneosPorPeriodo,
+  calcularTablaGeneral,
+  etiquetaPeriodo,
+  evolucionEloPorPeriodo,
+} from "@/lib/tablaGeneral";
 import { nombreVisible } from "@/lib/players";
 import { EncabezadoPagina } from "@/components/EncabezadoPagina";
+import { GraficoMultiLinea, colorDeSerie, type SerieLinea } from "@/components/GraficoMultiLinea";
+import { GraficoBarras } from "@/components/GraficoBarras";
 
 export default function EstadisticasPage() {
   const { torneos, cargando } = useTorneos();
@@ -48,12 +55,63 @@ export default function EstadisticasPage() {
     return [...conteo.entries()].sort((a, b) => b[1] - a[1]);
   }, [campeones]);
 
+  // Meses de verdad (siempre mensual, todos los torneos) para comparar la
+  // evolución de Elo y la actividad del club — independiente del selector
+  // mensual/anual de la tabla general de arriba.
+  const gruposMensuales = useMemo(() => agruparTorneosPorPeriodo(torneos, "mes"), [torneos]);
+  const mesesAscendentes = useMemo(() => [...gruposMensuales.keys()].sort(), [gruposMensuales]);
+
+  const top5PorElo = useMemo(() => jugadores.slice(0, 5), [jugadores]);
+  const seriesElo = useMemo(
+    () => evolucionEloPorPeriodo(top5PorElo, mesesAscendentes),
+    [top5PorElo, mesesAscendentes]
+  );
+
+  const rendimientoOrdenado = useMemo(
+    () =>
+      [...tabla.filas]
+        .sort((a, b) => b.rendimiento - a.rendimiento)
+        .slice(0, 10)
+        .map((f) => {
+          const j = jugadores.find((x) => x.id === f.jugadorId);
+          return { etiqueta: j ? nombreVisible(j) : "?", valor: f.rendimiento };
+        }),
+    [tabla, jugadores]
+  );
+
+  const actividadPorMes = useMemo(
+    () =>
+      [...mesesAscendentes]
+        .reverse()
+        .slice(0, 12)
+        .map((clave) => ({
+          etiqueta: etiquetaPeriodo(clave),
+          valor: gruposMensuales.get(clave)?.length ?? 0,
+        })),
+    [mesesAscendentes, gruposMensuales]
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <EncabezadoPagina
         titulo="Estadísticas"
         subtitulo="Tabla general por período y Copa de Campeones."
       />
+
+      {seriesElo.length > 0 && (
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <h2 className="mb-3 font-semibold">Evolución de Elo — top jugadores</h2>
+          <GraficoMultiLinea
+            categorias={mesesAscendentes.map(etiquetaPeriodo)}
+            series={top5PorElo.map((j, i): SerieLinea => ({
+              id: j.id,
+              nombre: nombreVisible(j),
+              color: colorDeSerie(i),
+              valores: seriesElo[i]?.valores ?? [],
+            }))}
+          />
+        </div>
+      )}
 
       <div className="rounded-lg border border-white/10 bg-white/5 p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -144,6 +202,13 @@ export default function EstadisticasPage() {
         )}
       </div>
 
+      {rendimientoOrdenado.length > 0 && periodoActivo && (
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <h2 className="mb-3 font-semibold">Rendimiento — {etiquetaPeriodo(periodoActivo)}</h2>
+          <GraficoBarras datos={rendimientoOrdenado} formatoValor={(v) => `${v.toFixed(0)}%`} />
+        </div>
+      )}
+
       <div className="rounded-lg border border-white/10 bg-white/5 p-5">
         <h2 className="mb-4 font-semibold">🏆 Copa de Campeones {anioActual}</h2>
         {campeones.length === 0 ? (
@@ -185,6 +250,13 @@ export default function EstadisticasPage() {
           </div>
         )}
       </div>
+
+      {actividadPorMes.length > 0 && (
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <h2 className="mb-3 font-semibold">Actividad del club — torneos por mes</h2>
+          <GraficoBarras datos={actividadPorMes} />
+        </div>
+      )}
     </div>
   );
 }

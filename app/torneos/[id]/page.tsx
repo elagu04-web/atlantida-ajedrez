@@ -13,11 +13,13 @@ import {
   puedeEditarJugadores,
   puedeEditarEmparejamientos,
   determinarCampeon,
+  puntosAcumuladosPorRonda,
   SlotEmparejamiento,
   DESEMPATES_DISPONIBLES,
   type FormatoTorneo,
 } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
+import { GraficoMultiLinea, colorDeSerie, type SerieLinea } from "@/components/GraficoMultiLinea";
 
 const estadoLabel: Record<string, string> = {
   armado: "Armado",
@@ -191,6 +193,7 @@ export default function TorneoPage() {
   );
   const standings = standingsDeTorneo(torneo.id);
   const resultadoCampeon = determinarCampeon(torneo);
+  const carrera = torneo.rondas.length >= 2 ? puntosAcumuladosPorRonda(torneo) : [];
 
   async function handleRegistrarFinal(jugadorIds: string[], ganadorId: string) {
     await registrarFinalDesempate(torneo!.id, jugadorIds, ganadorId);
@@ -672,6 +675,54 @@ export default function TorneoPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {torneo.rondas.length >= 2 && (
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <h2 className="mb-3 font-semibold">Carrera del torneo</h2>
+          <GraficoMultiLinea
+            categorias={carrera.map((r) => `R${r.numero}`)}
+            series={torneo.jugadoresIds.map((jid, i): SerieLinea => ({
+              id: jid,
+              nombre: nombreDe(jid),
+              color: colorDeSerie(i),
+              valores: carrera.map((r) => r.puntos[jid] ?? 0),
+            }))}
+          />
+        </div>
+      )}
+
+      {standings.length > 0 && torneo.rondas.length > 0 && (
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <h2 className="mb-3 font-semibold">Balance de colores</h2>
+          <div className="flex flex-col gap-2">
+            {standings.map((s) => {
+              const blancas = s.seating.filter((c) => c === 1).length;
+              const negras = s.seating.filter((c) => c === -1).length;
+              const total = Math.max(1, blancas + negras);
+              return (
+                <div key={s.jugadorId} className="flex items-center gap-3 text-sm">
+                  <span className="w-32 shrink-0 truncate text-zinc-300">{nombreDe(s.jugadorId)}</span>
+                  <div className="flex h-4 flex-1 overflow-hidden rounded bg-white/5">
+                    <div
+                      className="h-full bg-zinc-200"
+                      style={{ width: `${(blancas / total) * 100}%` }}
+                      title={`${blancas} con blancas`}
+                    />
+                    <div
+                      className="h-full bg-zinc-600"
+                      style={{ width: `${(negras / total) * 100}%` }}
+                      title={`${negras} con negras`}
+                    />
+                  </div>
+                  <span className="w-20 shrink-0 text-right font-mono text-xs text-zinc-400">
+                    {blancas}—{negras}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

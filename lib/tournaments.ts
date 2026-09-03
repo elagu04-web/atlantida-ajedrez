@@ -233,6 +233,23 @@ export function calcularStandings(torneo: Torneo): Map<string, Standing> {
   return standings;
 }
 
+/**
+ * Puntos acumulados de cada jugador después de cada ronda — la "carrera"
+ * del torneo. Reutiliza calcularStandings sobre calendarios parciales (las
+ * primeras N rondas) en vez de reimplementar la acumulación a mano.
+ */
+export function puntosAcumuladosPorRonda(
+  torneo: Torneo
+): { numero: number; puntos: Record<string, number> }[] {
+  return torneo.rondas.map((ronda, i) => {
+    const parcial: Torneo = { ...torneo, rondas: torneo.rondas.slice(0, i + 1) };
+    const standings = calcularStandings(parcial);
+    const puntos: Record<string, number> = {};
+    for (const [id, s] of standings) puntos[id] = s.puntos;
+    return { numero: ronda.numero, puntos };
+  });
+}
+
 type JugadaTorneo = { rivalId: string; resultadoPropio: number };
 
 function historialDeJugador(torneo: Torneo, jugadorId: string): JugadaTorneo[] {
