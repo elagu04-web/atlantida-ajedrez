@@ -422,13 +422,39 @@ export function generarRondaUnoDutch(
   return { numero: 1, emparejamientos };
 }
 
+/**
+ * La librería de emparejamientos evita repetir el bye en alguien que ya lo
+ * tuvo, pero no elige a propósito al de menos puntos — puede dejarle el
+ * descanso a cualquiera según cómo cierre el resto del emparejamiento. Acá
+ * se elige el bye a mano (al de menos puntos entre los que todavía no lo
+ * tuvieron, salvo que se elija otro a propósito) y se lo saca del pool
+ * antes de pedirle el resto del emparejamiento a la librería — así el
+ * bye sigue la regla de FIDE en vez de quedar librado al azar.
+ */
 export function generarRondaSuiza(
   torneo: Torneo,
   numeroRonda: number,
-  elos: Map<string, number>
+  elos: Map<string, number>,
+  jugadorByeElegido?: string
 ): RondaTorneo {
   const standings = calcularStandings(torneo);
-  const players = torneo.jugadoresIds.map((id) => {
+  let jugadoresIds = torneo.jugadoresIds;
+  let byeForzado: string | null = null;
+
+  if (jugadoresIds.length % 2 !== 0) {
+    if (jugadorByeElegido && jugadoresIds.includes(jugadorByeElegido)) {
+      byeForzado = jugadorByeElegido;
+    } else {
+      const elegibles = jugadoresIds.filter((id) => !standings.get(id)?.receivedBye);
+      const pool = elegibles.length > 0 ? elegibles : jugadoresIds;
+      byeForzado = pool.reduce((peor, id) =>
+        (standings.get(id)?.puntos ?? 0) < (standings.get(peor)?.puntos ?? 0) ? id : peor
+      );
+    }
+    jugadoresIds = jugadoresIds.filter((id) => id !== byeForzado);
+  }
+
+  const players = jugadoresIds.map((id) => {
     const s = standings.get(id)!;
     return {
       id,
@@ -440,10 +466,16 @@ export function generarRondaSuiza(
     };
   });
   const matches = Swiss(players, numeroRonda, true, true) as Match[];
-  return {
-    numero: numeroRonda,
-    emparejamientos: matches.map((m, i) => construirEmparejamiento(m, i + 1)),
-  };
+  const emparejamientos = matches.map((m, i) => construirEmparejamiento(m, i + 1));
+  if (byeForzado) {
+    emparejamientos.push({
+      numero: emparejamientos.length + 1,
+      blancasId: byeForzado,
+      negrasId: null,
+      resultado: "1-0",
+    });
+  }
+  return { numero: numeroRonda, emparejamientos };
 }
 
 export function rondaCompleta(ronda: RondaTorneo): boolean {

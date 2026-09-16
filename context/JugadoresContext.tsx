@@ -28,6 +28,7 @@ type JugadoresContextType = {
   actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<void>;
   obtenerJugador: (id: string) => Jugador | undefined;
   reclamarJugador: (id: string, email: string) => Promise<{ ok: boolean; error: string | null }>;
+  liberarJugador: (id: string, email: string) => Promise<{ ok: boolean; error: string | null }>;
 };
 
 const JugadoresContext = createContext<JugadoresContextType | null>(null);
@@ -161,6 +162,26 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
     return { ok: true, error: null };
   }
 
+  /**
+   * Si alguien reclamó el jugador equivocado por error, puede soltarlo
+   * (vuelve a quedar email null) para elegir de nuevo — solo puede soltar
+   * el que tiene su propio email puesto, eso lo garantiza la política de
+   * Supabase, no solo este chequeo del lado del cliente.
+   */
+  async function liberarJugador(id: string, email: string) {
+    const { data, error } = await supabase
+      .from("jugadores")
+      .update({ email: null })
+      .eq("id", id)
+      .eq("email", email)
+      .select()
+      .single();
+    if (error) return { ok: false, error: error.message };
+    if (!data) return { ok: false, error: null };
+    setJugadores((actuales) => actuales.map((j) => (j.id === id ? { ...j, email: null } : j)));
+    return { ok: true, error: null };
+  }
+
   return (
     <JugadoresContext.Provider
       value={{
@@ -175,6 +196,7 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
         actualizarJugador,
         obtenerJugador,
         reclamarJugador,
+        liberarJugador,
       }}
     >
       {children}

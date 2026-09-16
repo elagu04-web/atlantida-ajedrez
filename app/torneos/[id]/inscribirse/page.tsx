@@ -12,7 +12,7 @@ import { nombreVisible } from "@/lib/players";
 export default function InscribirseTorneoPage() {
   const { id } = useParams<{ id: string }>();
   const { obtenerTorneo, alternarInscripcion, cargando } = useTorneos();
-  const { reclamarJugador } = useJugadores();
+  const { reclamarJugador, liberarJugador } = useJugadores();
   const jugadores = useJugadoresEnVivo();
   const { session, cargando: cargandoAuth, iniciarSesionConGoogle, cerrarSesion } = useAuth();
   const torneo = obtenerTorneo(id);
@@ -20,6 +20,7 @@ export default function InscribirseTorneoPage() {
   const [busqueda, setBusqueda] = useState("");
   const [enVuelo, setEnVuelo] = useState<string | null>(null);
   const [errorReclamo, setErrorReclamo] = useState<string | null>(null);
+  const [liberando, setLiberando] = useState(false);
 
   const elegibles = useMemo(() => {
     const filtrados = busqueda.trim()
@@ -57,6 +58,13 @@ export default function InscribirseTorneoPage() {
     setEnVuelo(jugadorId);
     await alternarInscripcion(torneo!.id, jugadorId);
     setEnVuelo(null);
+  }
+
+  async function liberar() {
+    if (!session || !miJugador) return;
+    setLiberando(true);
+    await liberarJugador(miJugador.id, session.user.email!);
+    setLiberando(false);
   }
 
   async function reclamar(jugadorId: string) {
@@ -152,9 +160,18 @@ export default function InscribirseTorneoPage() {
               Sos <strong>{nombreVisible(miJugador)}</strong>. Tocá tu nombre abajo para
               anotarte o sacarte.
             </span>
-            <button onClick={() => cerrarSesion()} className="shrink-0 text-xs text-emerald-400 hover:underline">
-              Cerrar sesión
-            </button>
+            <div className="flex shrink-0 items-center gap-3 text-xs">
+              <button
+                onClick={liberar}
+                disabled={liberando}
+                className="text-emerald-400 hover:underline disabled:opacity-50"
+              >
+                {liberando ? "..." : "¿Te equivocaste? Volver a elegir"}
+              </button>
+              <button onClick={() => cerrarSesion()} className="text-emerald-400 hover:underline">
+                Cerrar sesión
+              </button>
+            </div>
           </div>
 
           <input

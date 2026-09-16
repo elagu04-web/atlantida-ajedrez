@@ -372,7 +372,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       const nuevaRonda =
         siguienteNumero === 1
           ? generarRondaUnoDutch(torneo.jugadoresIds, elos, jugadorByeElegido)
-          : generarRondaSuiza(torneo, siguienteNumero, elos);
+          : generarRondaSuiza(torneo, siguienteNumero, elos, jugadorByeElegido);
       nuevasRondas = [...torneo.rondas, nuevaRonda];
     }
 
