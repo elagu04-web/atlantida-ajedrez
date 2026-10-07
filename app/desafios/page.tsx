@@ -1,0 +1,9 @@
+import type { Metadata } from "next";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
+import { DesafioAjedrez } from "@/components/DesafioAjedrez";
+import { TablaRachas } from "@/components/TablaRachas";
+
+export const metadata:Metadata={title:"Desafío diario y rachas · Atlántida Ajedrez",description:"Un problema táctico nuevo cada día, cerca de 1800 de dificultad. Resolvelo y mantené tu racha."};
+export default function DesafiosPage() {
+  return <div className="flex flex-col gap-8"><EncabezadoPagina titulo="Una buena jugada, cada día" subtitulo="Entrená tu táctica con un problema de aproximadamente 1800 de dificultad y competí por la racha más larga."/><div className="grid items-start gap-6 lg:grid-cols-[minmax(0,440px)_1fr]"><DesafioAjedrez/><div className="panel p-6 sm:p-8"><p className="eyebrow text-amber-200">El desafío del club</p><h2 className="mt-3 text-2xl font-semibold">La constancia también gana partidas.</h2><ol className="mt-6 space-y-5 text-sm leading-relaxed text-zinc-400"><li><span className="block font-medium text-zinc-200">1. Encontrá la idea</span>Jugá la mejor continuación. El tablero responde por el rival y te pide seguir la secuencia.</li><li><span className="block font-medium text-zinc-200">2. Guardá tu resolución</span>Con tu sesión iniciada, completá el problema y sumalo a tu racha. Solo cuenta una vez por día.</li><li><span className="block font-medium text-zinc-200">3. Volvé mañana</span>Un nuevo problema, el mismo objetivo. Tu récord se conserva aunque se corte la racha.</li></ol><p className="mt-6 border-t border-white/10 pt-4 text-xs text-zinc-500">Fuente: problemas públicos de Lichess. Su dificultad es un rating de táctica y no equivale al Elo FIDE ni al Elo Atlántida.</p><a href="#rachas" className="text-link mt-5">Ver las rachas del club →</a></div></div><TablaRachas/></div>;
+}

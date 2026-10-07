@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { LogoClub } from "./LogoClub";
 import { BusquedaRapida } from "./BusquedaRapida";
 import { Icono } from "./Icono";
-const navLinks = [{href:"/",label:"Inicio"},{href:"/torneos",label:"Torneos"},{href:"/jugadores",label:"Jugadores"},{href:"/estadisticas",label:"Estadísticas"},{href:"/transmision",label:"En directo"},{href:"/actividad",label:"Actividad"}];
+const navLinks = [{href:"/",label:"Inicio"},{href:"/torneos",label:"Torneos"},{href:"/jugadores",label:"Ranking"},{href:"/estadisticas",label:"Estadísticas"},{href:"/desafios",label:"Desafíos"},{href:"/transmision",label:"En directo"},{href:"/actividad",label:"Actividad"}];
 const gestion = [{href:"/colegio",label:"Colegio Pinares"},{href:"/epico",label:"Épico"},{href:"/entrenamiento",label:"Entrenamiento"}];
 export function HeaderNav() {
   const [abierto,setAbierto]=useState(false);const pathname=usePathname();const {esAdmin}=useAuth();

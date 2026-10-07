@@ -1,0 +1,17 @@
+{
+  "id": "2O86S",
+  "rating": 1786,
+  "fen": "2R1r1k1/3nBppp/pq2p3/8/1P1N4/P3nP2/N5PP/3Q1R1K b - - 0 20",
+  "solution": [
+    "e8c8",
+    "d1a4",
+    "b6d4"
+  ],
+  "temas": [
+    "advantage",
+    "short",
+    "middlegame"
+  ],
+  "fecha": "2026-10-07",
+  "reserva": false
+}

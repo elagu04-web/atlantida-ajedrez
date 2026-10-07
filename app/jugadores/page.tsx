@@ -10,8 +10,16 @@ import { ELO_MINIMO, jugoRecientemente, type JugadorEnVivo } from "@/lib/elo";
 import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 import { Icono } from "@/components/Icono";
 import { GraficoBarras } from "@/components/GraficoBarras";
+import { useTorneos } from "@/context/TorneosContext";
+import { ultimoTorneoConResultados } from "@/lib/tournaments";
+import { normalizarBusqueda, posicionesElo, formaReciente, resumirPartidas } from "@/lib/rendimiento";
 
-type Orden = "elo" | "partidas";
+type Orden = "elo" | "partidas" | "progreso";
+
+function Forma({ jugador }: { jugador: JugadorEnVivo }) {
+  const partidas=formaReciente(jugador);
+  return <span className="recent-form" aria-label="Últimas cinco partidas, de la más antigua a la más reciente">{partidas.length?partidas.map((p,i)=><span key={i} className={`form-${p.resultado}`} title={`${p.fecha} · ${p.rival}: ${p.resultado}`}>{p.resultado==="victoria"?"V":p.resultado==="empate"?"T":"D"}</span>):<span className="text-xs text-zinc-500">Sin partidas</span>}</span>;
+}
 
 function ApodoCelda({
   jugadorId,
@@ -104,6 +112,11 @@ export default function JugadoresPage() {
     useJugadores();
   const { obtenerJugador, errorCarga } = useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
+  const {torneos,cargando:cargandoTorneos,errorCarga:errorTorneos}=useTorneos();
+  const ultimoTorneo=ultimoTorneoConResultados(torneos);
+  const posiciones=posicionesElo(jugadoresConStats.filter(j=>j.jugadas>0));
+  const activos=jugadoresConStats.filter(jugoRecientemente);
+  const media=activos.length?Math.round(activos.reduce((s,j)=>s+j.eloAtlantida,0)/activos.length):null;
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
 
@@ -141,12 +154,12 @@ export default function JugadoresPage() {
     if (await actualizarJugador(editandoId, editNombre, Math.max(ELO_MINIMO, eloValido))) setEditandoId(null);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const nombreLimpio = nombre.trim();
     if (!nombreLimpio) return;
     const eloNumero = Math.max(ELO_MINIMO, Number(elo) || 1500);
-    agregarJugador(nombreLimpio, eloNumero, apodo);
+    if (!await agregarJugador(nombreLimpio, eloNumero, apodo)) return;
     setNombre("");
     setApodo("");
     setElo("1500");
@@ -158,22 +171,22 @@ export default function JugadoresPage() {
   );
 
   const lista = useMemo(() => {
-    const activos = mostrarTodos || busqueda.trim() ? jugadoresConStats : jugadoresConStats.filter(jugoRecientemente);
+    const visibles = mostrarTodos || busqueda.trim() ? jugadoresConStats : jugadoresConStats.filter(jugoRecientemente);
     const filtrados = busqueda.trim()
-      ? activos.filter((j: JugadorEnVivo) =>
-          `${j.nombre} ${j.apodo ?? ""}`.toLowerCase().includes(busqueda.trim().toLowerCase())
+      ? visibles.filter((j: JugadorEnVivo) =>
+          normalizarBusqueda(`${j.nombre} ${j.apodo ?? ""}`).includes(normalizarBusqueda(busqueda))
         )
-      : activos;
+      : visibles;
     return [...filtrados].sort((a, b) =>
-      orden === "elo" ? b.eloAtlantida - a.eloAtlantida : b.jugadas - a.jugadas
+      (orden === "elo" ? b.eloAtlantida - a.eloAtlantida : orden === "progreso" ? (b.eloAtlantida-b.eloAntesUltimoTorneo)-(a.eloAtlantida-a.eloAntesUltimoTorneo) : b.jugadas - a.jugadas) || a.nombre.localeCompare(b.nombre,"es")
     );
   }, [jugadoresConStats, busqueda, orden, mostrarTodos]);
 
   return (
     <div className="flex flex-col gap-6">
       <EncabezadoPagina
-        titulo="Jugadores"
-        subtitulo="Los protagonistas del club. Explorá el ranking y la historia detrás de cada jugador."
+        titulo="Ranking Elo"
+        subtitulo="El nivel actual, el progreso y la forma reciente de los jugadores del club."
         accion={
           puedeEditar && (
             <Link
@@ -186,7 +199,8 @@ export default function JugadoresPage() {
         }
       />
 
-      {errorCarga && <p role="status" className="text-sm text-amber-300">{errorCarga}</p>}
+      {(errorCarga||errorTorneos) && <p role="status" className="text-sm text-amber-300">{errorCarga||errorTorneos}</p>}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{[{valor:activos.length,texto:"Activos en el último año"},{valor:media??"—",texto:"Elo medio de activos"},{valor:jugadoresConStats.filter(j=>!j.jugadas).length,texto:"Aún sin partidas"}].map(m=><div key={m.texto} className="panel p-4"><p className="text-2xl font-semibold tabular-nums">{cargando||cargandoTorneos?"…":m.valor}</p><p className="mt-2 text-xs text-zinc-400">{m.texto}</p></div>)}</div>
       {distribucionElo.length > 0 && (
         <div className="panel p-5">
           <details><summary className="flex items-center justify-between gap-3 text-sm font-medium"><span>El plantel en números</span><span className="text-xs text-zinc-400">Distribución de Elo ↓</span></summary><div className="mt-5">
@@ -275,13 +289,16 @@ export default function JugadoresPage() {
           >
             Partidas jugadas
           </button>
+          <button aria-pressed={orden==="progreso"} onClick={()=>setOrden("progreso")}>Progreso</button>
         </div>
       </div>
 
       {ocultosPorInactividad > 0 && (
         <div className="flex items-center justify-between gap-3 rounded-md bg-white/10 px-3 py-2 text-xs text-zinc-400">
           <span>
-            {mostrarTodos
+            {busqueda.trim()
+              ? "La búsqueda incluye también a jugadores inactivos y sin partidas."
+              : mostrarTodos
               ? `Mostrando a todos, incluidos ${ocultosPorInactividad} que no jugaron en el último año.`
               : `${ocultosPorInactividad} jugador${ocultosPorInactividad === 1 ? "" : "es"} sin partidas en el último año ${
                   ocultosPorInactividad === 1 ? "está oculto" : "están ocultos"
@@ -296,26 +313,28 @@ export default function JugadoresPage() {
         </div>
       )}
 
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400"><p>{cargando||cargandoTorneos?"Cargando ranking…":`${lista.length} ${lista.length===1?"jugador":"jugadores"} en esta vista`}</p><p>Posición global entre jugadores con partidas · empates de Elo comparten puesto</p></div>
+      <p className="text-xs leading-relaxed text-zinc-500">Elo Atlántida es el rating interno del club. Δ Elo compara antes y después de {ultimoTorneo?`“${ultimoTorneo.nombre}”`:"la última competencia"}. La forma muestra hasta cinco resultados, de izquierda a derecha. Sin partidas: Elo inicial, sin puesto competitivo.</p>
       <div className="overflow-x-auto panel">
-        <table className="w-full text-sm">
+        <table className="ranking-table w-full text-sm">
           <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
               <th className="px-4 py-3 font-medium">#</th>
               <th className="px-4 py-3 font-medium">Nombre</th>
-              <th className="px-4 py-3 font-medium">ID FIDE</th>
+              {puedeEditar&&<th className="px-4 py-3 font-medium">ID FIDE</th>}
               <th className="px-4 py-3 font-medium">Elo Atlántida</th>
-              <th className="px-4 py-3 font-medium">Partidas</th>
-              <th className="px-4 py-3 font-medium">V</th>
-              <th className="px-4 py-3 font-medium">E</th>
-              <th className="px-4 py-3 font-medium">D</th>
-              <th className="px-4 py-3 font-medium"></th>
+              <th className="px-4 py-3 font-medium">Δ Elo</th>
+              <th className="ranking-secondary px-4 py-3 font-medium">PJ</th>
+              <th className="ranking-secondary px-4 py-3 font-medium">Rendimiento</th>
+              <th className="ranking-secondary px-4 py-3 font-medium">Forma</th>
+              {puedeEditar&&<th className="px-4 py-3 font-medium">Gestión</th>}
             </tr>
           </thead>
           <tbody>
-            {lista.map((j, i) =>
+            {(!cargando&&!cargandoTorneos?lista:[]).map((j) =>
               editandoId === j.id && puedeEditar ? (
                 <tr key={j.id} className="border-b border-white/5 bg-white/10 last:border-0">
-                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-3 text-zinc-400">{posiciones.get(j.id)??"—"}</td>
                   <td className="px-4 py-3" colSpan={2}>
                     <input
                       type="text"
@@ -334,7 +353,7 @@ export default function JugadoresPage() {
                     />
                     <div className="mt-0.5 text-[10px] text-zinc-400">Elo inicial</div>
                   </td>
-                  <td className="px-4 py-3 text-zinc-400" colSpan={3}>
+                  <td className="px-4 py-3 text-zinc-400" colSpan={4}>
                     Cambiar el nombre o el Elo inicial recalcula todo su historial.
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -354,7 +373,7 @@ export default function JugadoresPage() {
                 </tr>
               ) : (
                 <tr key={j.id} className="border-b border-white/5 last:border-0">
-                  <td className="px-4 py-3 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-3 text-zinc-400">{posiciones.get(j.id)??"—"}</td>
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/jugadores/${j.id}`} className="flex items-center gap-2 hover:underline">
                       {j.fotoUrl ? (
@@ -371,6 +390,8 @@ export default function JugadoresPage() {
                       )}
                       {nombreVisible(j)}
                     </Link>
+                    <span className="mt-1 block text-[10px] text-zinc-500">{j.jugadas?`${j.jugadas} partidas · ${j.victorias} V / ${j.empates} T / ${j.derrotas} D`:"Elo inicial · sin partidas"}</span>
+                    <span className="ranking-mobile-form mt-2"><Forma jugador={j} /></span>
                     <div>
                       <ApodoCelda
                         jugadorId={j.id}
@@ -380,20 +401,20 @@ export default function JugadoresPage() {
                       />
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  {puedeEditar&&<td className="px-4 py-3">
                     <FideIdCelda
                       jugadorId={j.id}
                       fideIdActual={j.fideId}
                       puedeEditar={puedeEditar}
                       onGuardar={actualizarFideId}
                     />
-                  </td>
-                  <td className="px-4 py-3 font-mono">{j.eloAtlantida}</td>
-                  <td className="px-4 py-3">{j.jugadas}</td>
-                  <td className="px-4 py-3 text-green-400">{j.victorias}</td>
-                  <td className="px-4 py-3 text-zinc-400">{j.empates}</td>
-                  <td className="px-4 py-3 text-red-400">{j.derrotas}</td>
-                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                  </td>}
+                  <td className="px-4 py-3 font-mono text-lg text-blue-200">{j.eloAtlantida}</td>
+                  <td className={`px-4 py-3 font-mono ${j.eloAtlantida>j.eloAntesUltimoTorneo?"text-emerald-300":j.eloAtlantida<j.eloAntesUltimoTorneo?"text-red-300":"text-zinc-500"}`}>{j.eloAtlantida>j.eloAntesUltimoTorneo?"+":""}{j.eloAtlantida-j.eloAntesUltimoTorneo}</td>
+                  <td className="ranking-secondary px-4 py-3">{j.jugadas}</td>
+                  <td className="ranking-secondary px-4 py-3">{j.jugadas?`${resumirPartidas(j.partidas).rendimiento!.toFixed(1)}%`:"—"}</td>
+                  <td className="ranking-secondary px-4 py-3"><Forma jugador={j} /></td>
+                  {puedeEditar&&<td className="px-4 py-3 text-right whitespace-nowrap">
                     {puedeEditar && (
                       <>
                         <button
@@ -410,14 +431,14 @@ export default function JugadoresPage() {
                         </button>
                       </>
                     )}
-                  </td>
+                  </td>}
                 </tr>
               )
             )}
-            {lista.length === 0 && (
+            {(lista.length === 0 || cargando || cargandoTorneos) && (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-zinc-400">
-                  {cargando
+                <td colSpan={puedeEditar?9:7} className="px-4 py-6 text-center text-zinc-400">
+                  {cargando||cargandoTorneos
                     ? "Cargando jugadores..."
                     : busqueda
                     ? "No hay jugadores que coincidan con la búsqueda."

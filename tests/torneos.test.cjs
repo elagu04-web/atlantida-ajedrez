@@ -11,9 +11,59 @@ require.extensions['.ts'] = (module, archivo) => {
 const reglas = require('../lib/tournaments.ts');
 const { calcularEloYHistorialEnVivo } = require('../lib/elo.ts');
 const { calcularTablaGeneral } = require('../lib/tablaGeneral.ts');
+const { posicionesElo, rendimientoPeriodo, resumenClub, normalizarBusqueda, resumirPartidas, formaReciente } = require('../lib/rendimiento.ts');
+const { convertirPuzzle, validarDesafio, fechaMontevideo, aplicarUci } = require('../lib/desafios.ts');
+const { Chess } = require('chess.js');
 function torneo(jugadoresIds, formato='round-robin', rondas=reglas.generarRoundRobin(jugadoresIds)) {
   return {id:'t',nombre:'Prueba',formato,jugadoresIds,rondas,desempates:[],estado:'en_curso',creadoEn:'2026-01-01T12:00:00Z',rondasObjetivo:null,inscriptosIds:[],asistieronIds:[],pagaronIds:[]};
 }
+test('Ranking global conserva puestos al buscar y comparte empates de Elo',()=>{
+  const puestos=posicionesElo([{id:'a',eloAtlantida:1800},{id:'b',eloAtlantida:1700},{id:'c',eloAtlantida:1700},{id:'d',eloAtlantida:1600}]);
+  assert.equal(puestos.get('c'),2);assert.equal(puestos.get('d'),4);
+  assert.equal(normalizarBusqueda('Víctor'),normalizarBusqueda('victor'));
+});
+test('Rendimiento del período utiliza Elo anterior y resultados reales, sin falsas muestras',()=>{
+  const p=(fecha,resultado,eloDespues,color='blancas')=>({fecha,resultado,eloDespues,color,rival:'Rival',torneo:'Prueba'});
+  const j={id:'a',nombre:'Ana',apodo:null,partidas:[p('2026-02-02','empate',1630,'negras'),p('2026-01-10','victoria',1620),p('2026-02-01','victoria',1635)],eloAtlantida:1630};
+  const s=rendimientoPeriodo(j,'2026-02',1600);
+  assert.equal(s.eloInicial,1620);assert.equal(s.eloFinal,1630);assert.equal(s.variacion,10);
+  assert.equal(s.partidas,2);assert.equal(s.rendimiento,75);assert.equal(s.blancas.rendimiento,100);assert.equal(s.negras.rendimiento,50);
+  assert.equal(rendimientoPeriodo(j,'2026-01',1600).variacion,20);
+  assert.equal(resumirPartidas([]).rendimiento,null);
+  assert.equal(formaReciente(j,1)[0].fecha,'2026-02-02');
+});
+test('Byes mantienen puntos oficiales pero no elevan PJ ni rendimiento mensual',()=>{
+  const t=torneo(['a','b','c'],'suizo',[{numero:1,emparejamientos:[{numero:1,blancasId:'a',negrasId:'b',resultado:'1/2-1/2'},{numero:2,blancasId:'c',negrasId:null,resultado:'1-0'}]}]);
+  const filas=calcularTablaGeneral([t]).filas;
+  assert.equal(filas.find(f=>f.jugadorId==='c').total,1);assert.equal(filas.find(f=>f.jugadorId==='c').partidasJugadas,0);
+  assert.equal(filas.find(f=>f.jugadorId==='a').rendimiento,50);
+  assert.deepEqual(resumenClub([t]),{partidas:1,tablas:1,blancas:0,negras:0,jugadores:2,torneos:1});
+});
+test('Tabla general conserva columnas y puntos en orden cronológico',()=>{
+  const primero={...torneo(['a','b']),id:'primero',creadoEn:'2026-01-01'};
+  const segundo={...torneo(['a','b']),id:'segundo',creadoEn:'2026-02-01'};
+  primero.rondas[0].emparejamientos[0].resultado='1-0';segundo.rondas[0].emparejamientos[0].resultado='1/2-1/2';
+  const tabla=calcularTablaGeneral([segundo,primero]);assert.deepEqual(tabla.columnas.map(c=>c.id),['primero','segundo']);
+  assert.deepEqual(tabla.filas.find(f=>f.jugadorId===primero.rondas[0].emparejamientos[0].blancasId).puntosPorTorneo,[1,.5]);
+});
+test('Desafío de reserva tiene rating comprobado y una secuencia legal completa',()=>{
+  const puzzle=require('../data/desafio-reserva.json');validarDesafio(puzzle);
+  const chess=new Chess(puzzle.fen);const color=chess.turn();for(const uci of puzzle.solution)aplicarUci(chess,uci);
+  assert.notEqual(chess.turn(),color);assert.ok(puzzle.rating>=1700&&puzzle.rating<=1900);
+  assert.throws(()=>validarDesafio({...puzzle,rating:2400}));
+  assert.throws(()=>validarDesafio({...puzzle,solution:['a1a8']}));
+});
+test('Importación Lichess presenta la posición después del movimiento del rival',()=>{
+  const api={game:{pgn:'e4 e5'},puzzle:{id:'test1',rating:1800,initialPly:1,solution:['g1f3','b8c6','f1b5'],themes:[]}};
+  const puzzle=convertirPuzzle(api,'2026-10-07');assert.equal(new Chess(puzzle.fen).history().length,0);
+  assert.equal(new Chess(puzzle.fen).get('e5').type,'p');assert.equal(new Chess(puzzle.fen).turn(),'w');
+  assert.throws(()=>convertirPuzzle({...api,puzzle:{...api.puzzle,initialPly:2}},'2026-10-07'));
+  assert.throws(()=>convertirPuzzle({...api,puzzle:{...api.puzzle,rating:2300}},'2026-10-07'));
+});
+test('La fecha diaria cambia a medianoche en Uruguay, no a medianoche UTC',()=>{
+  assert.equal(fechaMontevideo(new Date('2026-10-08T02:59:00Z')),'2026-10-07');
+  assert.equal(fechaMontevideo(new Date('2026-10-08T03:00:00Z')),'2026-10-08');
+});
 for (const n of [3,4,5,6,7,8]) for (const vuelta of [false,true]) test(`Calendario de ${n} jugadores, ${vuelta?'ida y vuelta':'ida'}`, () => {
   const ids=Array.from({length:n},(_,i)=>String(i));const rondas=reglas.generarRoundRobin(ids,vuelta);
   const parejas = new Map();

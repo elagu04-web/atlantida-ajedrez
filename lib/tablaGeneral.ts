@@ -39,20 +39,26 @@ export function agruparTorneosPorPeriodo(
 }
 
 export function calcularTablaGeneral(torneos: Torneo[]): TablaGeneral {
+  torneos = [...torneos].sort((a,b)=>(a.iniciadoEn??a.creadoEn).localeCompare(b.iniciadoEn??b.creadoEn) || a.id.localeCompare(b.id));
   const jugadoresIds = [...new Set(torneos.flatMap((t) => t.jugadoresIds))];
 
   const filas = jugadoresIds.map((jugadorId) => {
     let total = 0;
     let partidasJugadas = 0;
+    let puntosJugados = 0;
     const puntosPorTorneo = torneos.map((t) => {
       if (!t.jugadoresIds.includes(jugadorId)) return null;
       const s = calcularStandings(t).get(jugadorId);
       if (!s) return null;
       total += s.puntos;
-      partidasJugadas += s.partidasJugadas;
+      for (const r of t.rondas) for (const e of r.emparejamientos) {
+        if (!e.negrasId || !e.resultado || (e.blancasId!==jugadorId && e.negrasId!==jugadorId)) continue;
+        partidasJugadas++;
+        puntosJugados += e.resultado==="1/2-1/2" ? .5 : (e.resultado==="1-0" ? e.blancasId : e.negrasId)===jugadorId ? 1 : 0;
+      }
       return s.puntos;
     });
-    const rendimiento = partidasJugadas > 0 ? (total / partidasJugadas) * 100 : 0;
+    const rendimiento = partidasJugadas > 0 ? (puntosJugados / partidasJugadas) * 100 : 0;
     return { jugadorId, puntosPorTorneo, total, partidasJugadas, rendimiento, posicion: 0 };
   });
 
@@ -90,7 +96,7 @@ export function evolucionEloPorPeriodo(
   return jugadores.map((j) => {
     let ultimoElo: number | null = null;
     const valores = claves.map((clave) => {
-      const partidasDelPeriodo = j.partidas.filter(
+      const partidasDelPeriodo = [...j.partidas].sort((a,b)=>a.fecha.localeCompare(b.fecha)).filter(
         (p) => p.fecha.slice(0, clave.length) === clave && p.eloDespues !== undefined
       );
       if (partidasDelPeriodo.length > 0) {
