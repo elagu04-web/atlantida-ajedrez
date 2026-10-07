@@ -1,8 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { Jugador } from "@/lib/players";
 import { supabase } from "@/lib/supabase";
+import { useColeccionRemota } from "./useColeccionRemota";
+import { useAuth } from "./AuthContext";
 
 type FilaAlumno = {
   id: string;
@@ -17,10 +19,12 @@ type FilaAlumno = {
 type ColegioJugadoresContextType = {
   jugadores: Jugador[];
   cargando: boolean;
+  errorCarga: string | null;
+  ultimaActualizacion: Date | null;
   agregarJugador: (nombre: string, eloInicial: number, apodo?: string) => Promise<string>;
   eliminarJugador: (id: string) => Promise<void>;
-  actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<void>;
-  actualizarLichess: (id: string, usuario: string) => Promise<void>;
+  actualizarJugador: (id: string, nombre: string, eloInicial: number) => Promise<boolean>;
+  actualizarLichess: (id: string, usuario: string) => Promise<boolean>;
   obtenerJugador: (id: string) => Jugador | undefined;
 };
 
@@ -40,20 +44,10 @@ function filaAJugador(fila: FilaAlumno): Jugador {
 }
 
 export function ColegioJugadoresProvider({ children }: { children: ReactNode }) {
-  const [jugadores, setJugadores] = useState<Jugador[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const { esAdmin } = useAuth();
+  const { items: jugadores, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaAlumno, Jugador>("colegio_jugadores", filaAJugador, esAdmin);
 
-  useEffect(() => {
-    async function cargar() {
-      const { data, error } = await supabase
-        .from("colegio_jugadores")
-        .select("*")
-        .order("created_at");
-      if (!error && data) setJugadores(data.map(filaAJugador));
-      setCargando(false);
-    }
-    cargar();
-  }, []);
+
 
   async function agregarJugador(nombre: string, eloInicial: number, apodo?: string) {
     const { data, error } = await supabase
@@ -61,37 +55,33 @@ export function ColegioJugadoresProvider({ children }: { children: ReactNode }) 
       .insert({ nombre, elo_inicial: eloInicial, apodo: apodo?.trim() || null })
       .select()
       .single();
-    if (error || !data) return "";
+    if (error || !data) { avisar("No se pudo crear. Comprobá la conexión y tus permisos."); return ""; }
     const nuevo = filaAJugador(data);
-    setJugadores((actuales) => [...actuales, nuevo]);
+    incorporar(data);
     return nuevo.id;
   }
 
   async function eliminarJugador(id: string) {
-    const { error } = await supabase.from("colegio_jugadores").delete().eq("id", id);
-    if (!error) setJugadores((actuales) => actuales.filter((j) => j.id !== id));
+    const { data: torneosRelacionados, error } = await supabase.from("colegio_torneos").select("jugadores_ids,rondas");
+    if (error) { avisar("No se pudo comprobar el historial. El jugador no se eliminó."); return; }
+    const tieneHistorial = torneosRelacionados?.some(t => t.jugadores_ids?.includes(id) || (t.rondas as import("@/lib/tournaments").RondaTorneo[] | null)?.some(r => r.emparejamientos.some(e => e.blancasId === id || e.negrasId === id)));
+    if (tieneHistorial) { avisar("Este jugador participa en torneos. Se conserva para no alterar resultados ni el Elo de sus rivales."); return; }
+    if (!(await eliminar(id))) return;
   }
 
   async function actualizarJugador(id: string, nombre: string, eloInicial: number) {
     const nombreLimpio = nombre.trim();
-    if (!nombreLimpio) return;
-    setJugadores((actuales) =>
-      actuales.map((j) =>
-        j.id === id ? { ...j, nombre: nombreLimpio, eloAtlantida: eloInicial } : j
-      )
-    );
-    await supabase
-      .from("colegio_jugadores")
-      .update({ nombre: nombreLimpio, elo_inicial: eloInicial })
-      .eq("id", id);
+    if (!nombreLimpio) return false;
+
+    if (!(await guardar(id, { nombre: nombreLimpio, elo_inicial: eloInicial }))) return false;
+    return true;
   }
 
   async function actualizarLichess(id: string, usuario: string) {
     const usuarioLimpio = usuario.trim() || null;
-    setJugadores((actuales) =>
-      actuales.map((j) => (j.id === id ? { ...j, lichessUsuario: usuarioLimpio } : j))
-    );
-    await supabase.from("colegio_jugadores").update({ lichess_usuario: usuarioLimpio }).eq("id", id);
+
+    if (!(await guardar(id, { lichess_usuario: usuarioLimpio }))) return false;
+    return true;
   }
 
   function obtenerJugador(id: string) {
@@ -101,6 +91,7 @@ export function ColegioJugadoresProvider({ children }: { children: ReactNode }) 
   return (
     <ColegioJugadoresContext.Provider
       value={{
+        errorCarga, ultimaActualizacion,
         jugadores,
         cargando,
         agregarJugador,

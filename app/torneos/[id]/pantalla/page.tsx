@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
-import { supabase } from "@/lib/supabase";
-import { standingsConDesempates, type RondaTorneo, type EstadoTorneo } from "@/lib/tournaments";
+import { standingsConDesempates, rondaActualDelTorneo } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
 import { LogoClub } from "@/components/LogoClub";
 
@@ -80,53 +79,18 @@ function BotonPantallaCompleta() {
 
 export default function PantallaTorneoPage() {
   const { id } = useParams<{ id: string }>();
-  const { obtenerTorneo } = useTorneos();
+  const { obtenerTorneo, cargando, errorCarga, ultimaActualizacion } = useTorneos();
   const jugadores = useJugadoresEnVivo();
   const torneoBase = obtenerTorneo(id);
 
-  const [enVivo, setEnVivo] = useState<{
-    rondas: RondaTorneo[];
-    estado: EstadoTorneo;
-    inscriptosIds: string[];
-  } | null>(null);
-  const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
-  // null = seguir siempre la última ronda jugada (modo en vivo). Un número
-  // fijo = quedarse mirando esa ronda pasada hasta que alguien navegue de
-  // nuevo — pero si arranca una ronda nueva de verdad, se vuelve a enganchar
-  // sola (pensado para una pantalla en otra sala que nadie toca).
   const [rondaSeleccionada, setRondaSeleccionada] = useState<number | null>(null);
-
-  useEffect(() => {
-    let activo = true;
-    async function refrescar() {
-      const { data } = await supabase
-        .from("torneos")
-        .select("rondas, estado, inscriptos_ids")
-        .eq("id", id)
-        .single();
-      if (activo && data) {
-        setEnVivo({
-          rondas: data.rondas ?? [],
-          estado: data.estado,
-          inscriptosIds: data.inscriptos_ids ?? [],
-        });
-        setUltimaActualizacion(new Date());
-      }
-    }
-    refrescar();
-    const intervalo = setInterval(refrescar, 3000);
-    return () => {
-      activo = false;
-      clearInterval(intervalo);
-    };
-  }, [id]);
 
   // Si arranca una ronda nueva de verdad, se re-engancha sola al vivo aunque
   // alguien haya dejado pinneada una ronda pasada (ajustar estado durante el
   // render en vez de un useEffect, siguiendo el patrón recomendado por React
   // para "resetear estado cuando cambia un valor").
   const [ultimaRondaVista, setUltimaRondaVista] = useState<number | null>(null);
-  const ultimaRondaNumero = enVivo?.rondas[enVivo.rondas.length - 1]?.numero ?? null;
+  const ultimaRondaNumero = torneoBase ? rondaActualDelTorneo(torneoBase)?.numero ?? null : null;
   if (ultimaRondaNumero !== ultimaRondaVista) {
     setUltimaRondaVista(ultimaRondaNumero);
     setRondaSeleccionada(null);
@@ -144,21 +108,20 @@ export default function PantallaTorneoPage() {
   if (!torneoBase) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
-        Cargando torneo...
+        {errorCarga ?? (cargando ? "Cargando torneo..." : "Ese torneo no existe.")}
       </div>
     );
   }
 
-  const torneo = enVivo
-    ? { ...torneoBase, rondas: enVivo.rondas, estado: enVivo.estado, inscriptosIds: enVivo.inscriptosIds }
-    : torneoBase;
-  const rondaActual = torneo.rondas[torneo.rondas.length - 1] ?? null;
+  const torneo = torneoBase;
+  const rondaActual = rondaActualDelTorneo(torneo);
   const numeroAMostrar = rondaSeleccionada ?? rondaActual?.numero ?? null;
   const rondaAMostrar = torneo.rondas.find((r) => r.numero === numeroAMostrar) ?? rondaActual;
   const enVivoMostrando = rondaSeleccionada === null;
   const standings = standingsConDesempates(torneo);
-  const podio = standings.slice(0, 3);
-  const resto = standings.slice(3);
+  const hayResultados = torneo.rondas.some(r => r.emparejamientos.some(e => e.negrasId && e.resultado));
+  const podio = hayResultados ? standings.slice(0, 3) : [];
+  const resto = hayResultados ? standings.slice(3) : standings;
   const inscriptosPorElo = [...torneo.inscriptosIds]
     .map((jugadorId) => jugadores.find((x) => x.id === jugadorId))
     .filter((j): j is NonNullable<typeof j> => Boolean(j))
@@ -185,7 +148,7 @@ export default function PantallaTorneoPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400 sm:text-base">
               Atlántida Ajedrez
-              {enVivoMostrando && (
+              {enVivoMostrando && torneo.estado === "en_curso" && !errorCarga && (
                 <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-bold tracking-normal text-red-400 ring-1 ring-red-500/30">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
                   EN VIVO
@@ -224,12 +187,13 @@ export default function PantallaTorneoPage() {
               }`}
             >
               {r.numero}
-              {r.numero === rondaActual?.numero && " 🔴"}
+              {r.numero === rondaActual?.numero && torneo.estado === "en_curso" && " 🔴"}
             </button>
           ))}
         </div>
       )}
 
+      {errorCarga && <p role="status" className="mb-4 rounded-lg bg-amber-500/10 p-3 text-amber-200">{errorCarga}</p>}
       <div className="grid grid-cols-1 gap-6 lg:gap-10 xl:grid-cols-[1.6fr_1fr]">
         <div>
           <h2 className="mb-3 text-xl font-bold text-zinc-300 sm:text-2xl lg:mb-5 lg:text-3xl">
@@ -276,9 +240,9 @@ export default function PantallaTorneoPage() {
                     </span>
                     {e.negrasId ? (
                       <>
-                        <span className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3 lg:gap-4">
+                        <span className="flex min-w-0 flex-col-reverse items-center gap-1.5 sm:flex-row sm:justify-end sm:gap-3 lg:gap-4">
                           <span
-                            className={`min-w-0 truncate text-right text-sm font-bold sm:text-xl lg:text-4xl ${
+                            className={`min-w-0 break-words text-center text-sm font-bold sm:text-right sm:text-xl lg:text-4xl ${
                               ganoBlancas ? "text-amber-300" : "text-white"
                             }`}
                           >
@@ -291,10 +255,10 @@ export default function PantallaTorneoPage() {
                           <span className="font-medium">vs</span>
                           <span className="hidden h-3 w-3 rounded-sm border border-zinc-500 bg-zinc-900 sm:block sm:h-5 sm:w-5" />
                         </span>
-                        <span className="flex min-w-0 items-center gap-1.5 sm:gap-3 lg:gap-4">
+                        <span className="flex min-w-0 flex-col items-center gap-1.5 sm:flex-row sm:gap-3 lg:gap-4">
                           <FotoJugador fotoUrl={fotoDe(e.negrasId)} nombre={nombreDe(e.negrasId)} claseTam={TAM_FOTO_PARTIDO} />
                           <span
-                            className={`min-w-0 truncate text-sm font-bold sm:text-xl lg:text-4xl ${
+                            className={`min-w-0 break-words text-center text-sm font-bold sm:text-left sm:text-xl lg:text-4xl ${
                               ganoNegras ? "text-amber-300" : "text-white"
                             }`}
                           >
@@ -334,6 +298,7 @@ export default function PantallaTorneoPage() {
 
         <div>
           <h2 className="mb-3 text-xl font-bold text-zinc-300 sm:text-2xl lg:mb-5 lg:text-3xl">Tabla de posiciones</h2>
+          <p className="mb-4 text-xs text-zinc-400">Orden: puntos{torneo.desempates.length ? ` → ${torneo.desempates.join(" → ")}` : ". Los empates comparten posición."}</p>
 
           {podio.length > 0 && (
             <div className="mb-3 grid grid-cols-3 gap-1.5 sm:gap-2.5 lg:mb-5 lg:gap-3">
@@ -346,21 +311,22 @@ export default function PantallaTorneoPage() {
                       : "bg-white/[0.04] ring-white/10"
                   }`}
                 >
-                  <span className="text-lg sm:text-2xl lg:text-3xl">{MEDALLA[i]}</span>
+                  <span className="text-lg sm:text-2xl lg:text-3xl">{s.posicion <= 3 ? MEDALLA[s.posicion - 1] : s.posicion}</span>
                   <FotoJugador fotoUrl={fotoDe(s.jugadorId)} nombre={nombreDe(s.jugadorId)} claseTam={TAM_FOTO_PODIO} />
-                  <span className="truncate text-xs font-bold leading-tight sm:text-base lg:text-lg">{nombreDe(s.jugadorId)}</span>
+                  <span className="w-full break-words text-xs font-bold leading-tight sm:text-base lg:text-lg">{nombreDe(s.jugadorId)}</span>
                   <span className="font-mono text-base font-extrabold text-blue-400 sm:text-xl lg:text-2xl">{s.puntos}</span>
+                  <span className="text-xs text-zinc-400">{s.partidasJugadas} partidas</span>
                 </div>
               ))}
             </div>
           )}
 
           <div className="overflow-hidden rounded-xl bg-white/[0.04] ring-1 ring-white/10 sm:rounded-2xl">
-            <table className="w-full">
+            <table className="w-full"><caption className="sr-only">Posición, jugador y puntos</caption>
               <tbody>
-                {resto.map((s, i) => (
+                {resto.map((s) => (
                   <tr key={s.jugadorId} className="border-b border-white/5 last:border-0">
-                    <td className="w-8 px-2 py-2 text-sm text-zinc-500 sm:w-10 sm:px-3 sm:py-3 sm:text-lg lg:w-14 lg:px-4 lg:py-4 lg:text-xl">{i + 4}</td>
+                    <td className="w-8 px-2 py-2 text-sm text-zinc-500 sm:w-10 sm:px-3 sm:py-3 sm:text-lg lg:w-14 lg:px-4 lg:py-4 lg:text-xl">{s.posicion}</td>
                     <td className="px-1 py-2 sm:px-2 sm:py-3 lg:py-4">
                       <span className="flex items-center gap-1.5 text-sm font-semibold sm:gap-2 sm:text-lg lg:gap-3 lg:text-2xl">
                         <FotoJugador fotoUrl={fotoDe(s.jugadorId)} nombre={nombreDe(s.jugadorId)} claseTam={TAM_FOTO_TABLA} />
@@ -385,7 +351,7 @@ export default function PantallaTorneoPage() {
 
       {ultimaActualizacion && (
         <p className="mt-6 text-center text-xs text-zinc-600 sm:text-sm lg:mt-10">
-          Se actualiza solo · última actualización{" "}
+          {errorCarga ? "Conexión interrumpida · reintentando · última actualización" : "Se actualiza solo · última actualización"}{" "}
           {ultimaActualizacion.toLocaleTimeString("es-UY", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         </p>
       )}

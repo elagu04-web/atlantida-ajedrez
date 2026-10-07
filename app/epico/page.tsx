@@ -13,7 +13,7 @@ export default function EpicoPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+      <div className="panel p-8 text-center">
         <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
@@ -29,14 +29,14 @@ export default function EpicoPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link
           href="/epico/alumnos"
-          className="rounded-lg border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:shadow-sm"
+          className="panel p-4 hover:border-white/20 hover:shadow-sm"
         >
           <div className="font-semibold">Alumnos</div>
           <div className="mt-1 text-sm text-zinc-400">{alumnos.length} cargados</div>
         </Link>
         <Link
           href="/epico/torneos"
-          className="rounded-lg border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:shadow-sm"
+          className="panel p-4 hover:border-white/20 hover:shadow-sm"
         >
           <div className="font-semibold">Torneos</div>
           <div className="mt-1 text-sm text-zinc-400">{torneos.length} creados</div>

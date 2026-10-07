@@ -29,7 +29,7 @@ export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
-  const { actualizarFoto, actualizarDescripcion, actualizarJugador, actualizarFideId, cargando } =
+  const { actualizarFoto, actualizarDescripcion, actualizarJugador, actualizarFideId, obtenerJugador, cargando } =
     useJugadores();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
@@ -50,21 +50,19 @@ export default function JugadorPage() {
   }
 
   async function guardarDescripcion() {
-    if (jugador) await actualizarDescripcion(jugador.id, descripcionValor);
-    setEditandoDescripcion(false);
+    if (jugador && await actualizarDescripcion(jugador.id, descripcionValor)) setEditandoDescripcion(false);
   }
 
   function empezarEdicionElo() {
-    setEloValor(String(jugador?.eloAtlantida ?? ""));
+    setEloValor(String(jugador ? obtenerJugador(jugador.id)?.eloAtlantida ?? "" : ""));
     setEditandoElo(true);
   }
 
   async function guardarElo() {
     if (!jugador) return;
     const eloNumero = Number(eloValor);
-    const eloValido = Number.isFinite(eloNumero) ? eloNumero : jugador.eloAtlantida;
-    await actualizarJugador(jugador.id, jugador.nombre, Math.max(ELO_MINIMO, eloValido));
-    setEditandoElo(false);
+    const eloValido = Number.isFinite(eloNumero) ? eloNumero : obtenerJugador(jugador.id)?.eloAtlantida ?? jugador.eloAtlantida;
+    if (await actualizarJugador(jugador.id, jugador.nombre, Math.max(ELO_MINIMO, eloValido))) setEditandoElo(false);
   }
 
   function empezarEdicionFideId() {
@@ -73,8 +71,7 @@ export default function JugadorPage() {
   }
 
   async function guardarFideId() {
-    if (jugador) await actualizarFideId(jugador.id, fideIdValor);
-    setEditandoFideId(false);
+    if (jugador && await actualizarFideId(jugador.id, fideIdValor)) setEditandoFideId(false);
   }
 
   async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -94,7 +91,7 @@ export default function JugadorPage() {
       return;
     }
     const { data } = supabase.storage.from(FOTOS_BUCKET).getPublicUrl(path);
-    await actualizarFoto(jugador.id, `${data.publicUrl}?v=${Date.now()}`);
+    if (!(await actualizarFoto(jugador.id, `${data.publicUrl}?v=${Date.now()}`))) setErrorFoto("La foto se subió, pero no se pudo asociar al perfil. Volvé a intentar.");
     setSubiendoFoto(false);
   }
 
@@ -184,11 +181,11 @@ export default function JugadorPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="panel p-6 sm:p-8">
         <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
           ← Volver a jugadores
         </Link>
-        <div className="mt-2 flex items-center gap-4">
+        <div className="mt-5 flex min-w-0 items-center gap-4">
           <div className="relative shrink-0">
             {jugador.fotoUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */
@@ -221,7 +218,7 @@ export default function JugadorPage() {
             />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-4xl">
               {nombreVisible(jugador)}
             </h1>
             {jugador.apodo && <p className="text-sm text-zinc-400">{jugador.nombre}</p>}
@@ -270,7 +267,7 @@ export default function JugadorPage() {
       </div>
 
       {(editandoDescripcion || jugador.descripcion || puedeEditar) && (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+      <div className="panel p-4">
         {editandoDescripcion ? (
           <div className="flex flex-col gap-2">
             <textarea
@@ -320,7 +317,7 @@ export default function JugadorPage() {
       )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <div className="text-xs text-zinc-400">Elo Atlántida</div>
           {editandoElo ? (
             <div className="mt-1 flex flex-col gap-1">
@@ -369,7 +366,7 @@ export default function JugadorPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-lg border border-white/10 bg-white/5 p-4"
+            className="panel p-4"
           >
             <div className="text-xs text-zinc-400">{stat.label}</div>
             <div className="mt-1 text-xl font-semibold font-mono">
@@ -379,13 +376,13 @@ export default function JugadorPage() {
         ))}
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+      <div className="panel p-4">
         <h2 className="mb-3 font-semibold">Evolución de Elo</h2>
         <GraficoElo puntos={puntosElo} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <div className="text-xs text-zinc-400">Racha actual</div>
           <div className="mt-1 text-xl font-semibold">
             {rachaActual ? (
@@ -399,7 +396,7 @@ export default function JugadorPage() {
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <div className="text-xs text-zinc-400">Mejor victoria</div>
           <div className="mt-1 text-xl font-semibold">
             {mejorVictoria ? (
@@ -412,7 +409,7 @@ export default function JugadorPage() {
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <div className="text-xs text-zinc-400">Rendimiento por color</div>
           {rendimientoPorColor && (rendimientoPorColor.blancas.jugadas > 0 || rendimientoPorColor.negras.jugadas > 0) ? (
             <div className="mt-1 flex gap-4 text-sm">
@@ -439,7 +436,7 @@ export default function JugadorPage() {
           {verTodasLasPartidas ? "▾" : "▸"} Ver todas las partidas ({jugador.partidas.length})
         </button>
         {verTodasLasPartidas && (
-      <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+      <div className="overflow-hidden panel">
         <table className="w-full text-sm">
           <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
@@ -477,7 +474,7 @@ export default function JugadorPage() {
 
       <div>
         <h2 className="mb-3 font-semibold">Cabeza a cabeza</h2>
-        <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+        <div className="overflow-hidden panel">
           <table className="w-full text-sm">
             <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
               <tr>

@@ -35,7 +35,7 @@ function LichessCelda({
 
 export default function EpicoAlumnosPage() {
   const { esAdmin } = useAuth();
-  const { agregarJugador, eliminarJugador, actualizarJugador, actualizarLichess } = useEpicoJugadores();
+  const { agregarJugador, eliminarJugador, actualizarJugador, actualizarLichess, obtenerJugador } = useEpicoJugadores();
   const alumnos = useEpicoJugadoresEnVivo();
 
   const [nombre, setNombre] = useState("");
@@ -46,7 +46,7 @@ export default function EpicoAlumnosPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+      <div className="panel p-8 text-center">
         <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
@@ -55,15 +55,14 @@ export default function EpicoAlumnosPage() {
   function empezarEdicion(j: JugadorEnVivo) {
     setEditandoId(j.id);
     setEditNombre(j.nombre);
-    setEditElo(String(j.eloAtlantida));
+    setEditElo(String(obtenerJugador(j.id)?.eloAtlantida ?? j.eloAtlantida));
   }
 
-  function guardarEdicion() {
+  async function guardarEdicion() {
     if (!editandoId) return;
     const eloNumero = Number(editElo);
     const eloValido = Number.isFinite(eloNumero) ? eloNumero : 1500;
-    actualizarJugador(editandoId, editNombre, Math.max(ELO_MINIMO, eloValido));
-    setEditandoId(null);
+    if (await actualizarJugador(editandoId, editNombre, Math.max(ELO_MINIMO, eloValido))) setEditandoId(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -89,7 +88,7 @@ export default function EpicoAlumnosPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
+        className="flex flex-wrap items-end gap-3 panel p-4"
       >
         <div className="flex flex-col gap-1">
           <label htmlFor="nombre" className="text-xs font-medium text-zinc-400">
@@ -125,7 +124,7 @@ export default function EpicoAlumnosPage() {
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
+      <div className="overflow-x-auto panel">
         <table className="w-full text-sm">
           <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
@@ -201,7 +200,7 @@ export default function EpicoAlumnosPage() {
                       Editar
                     </button>
                     <button
-                      onClick={() => eliminarJugador(j.id)}
+                      onClick={() => { if (window.confirm(`¿Eliminar a ${j.nombre}? Se conservará si participa en torneos.`)) void eliminarJugador(j.id); }}
                       className="text-xs text-red-400 hover:underline"
                     >
                       Eliminar

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import {
   Torneo,
   FormatoTorneo,
@@ -26,6 +26,7 @@ import { useActividad } from "@/context/ActividadContext";
 import { calcularEloYHistorialEnVivo } from "@/lib/elo";
 import { nombreVisible } from "@/lib/players";
 import { supabase } from "@/lib/supabase";
+import { useColeccionRemota } from "./useColeccionRemota";
 
 type FilaTorneo = {
   id: string;
@@ -49,6 +50,8 @@ type FilaTorneo = {
 type TorneosContextType = {
   torneos: Torneo[];
   cargando: boolean;
+  errorCarga: string | null;
+  ultimaActualizacion: Date | null;
   crearTorneo: (
     nombre: string,
     formato: FormatoTorneo,
@@ -74,7 +77,7 @@ type TorneosContextType = {
     rondaNumero: number,
     emparejamientoNumero: number,
     resultado: ResultadoPartida | null
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   corregirColor: (
     torneoId: string,
     rondaNumero: number,
@@ -122,8 +125,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
 }
 
 export function TorneosProvider({ children }: { children: ReactNode }) {
-  const [torneos, setTorneos] = useState<Torneo[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const { items: torneos, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaTorneo, Torneo>("torneos", filaATorneo);
   const { jugadores } = useJugadores();
   const { registrar } = useActividad();
 
@@ -132,17 +134,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     return j ? nombreVisible(j) : "?";
   }
 
-  useEffect(() => {
-    async function cargar() {
-      const { data, error } = await supabase
-        .from("torneos")
-        .select("*")
-        .order("created_at");
-      if (!error && data) setTorneos(data.map(filaATorneo));
-      setCargando(false);
-    }
-    cargar();
-  }, []);
+
 
   async function crearTorneo(
     nombre: string,
@@ -166,9 +158,9 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       })
       .select()
       .single();
-    if (error || !data) return "";
+    if (error || !data) { avisar("No se pudo crear. Comprobá la conexión y tus permisos."); return ""; }
     const nuevo = filaATorneo(data);
-    setTorneos((actuales) => [...actuales, nuevo]);
+    incorporar(data);
     const etiquetaFormato =
       formato === "suizo" ? "Sistema suizo" : formato === "match" ? "Match" : "Round robin";
     registrar(
@@ -198,9 +190,9 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       })
       .select()
       .single();
-    if (error || !data) return "";
+    if (error || !data) { avisar("No se pudo crear. Comprobá la conexión y tus permisos."); return ""; }
     const nuevo = filaATorneo(data);
-    setTorneos((actuales) => [...actuales, nuevo]);
+    incorporar(data);
     registrar("torneo", `Se creó el torneo "${nuevo.nombre}" (a definir) — abierto para inscripción.`);
     return nuevo.id;
   }
@@ -209,8 +201,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
   async function cambiarFormato(torneoId: string, formato: FormatoTorneo) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo || torneo.estado !== "armado" || torneo.rondas.length > 0) return;
-    setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, formato } : t)));
-    await supabase.from("torneos").update({ formato }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { formato }))) return;
   }
 
   /**
@@ -226,13 +218,11 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (!torneo || torneo.formato !== "round-robin" || torneo.estado === "finalizado") return;
     let ultimoIndiceConResultado = -1;
     torneo.rondas.forEach((r, i) => {
-      if (r.emparejamientos.some((e) => e.resultado !== null)) ultimoIndiceConResultado = i;
+      if (r.emparejamientos.some((e) => e.negrasId && e.resultado !== null)) ultimoIndiceConResultado = i;
     });
     const nuevasRondas = torneo.rondas.slice(0, ultimoIndiceConResultado + 1);
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, formato: "suizo", rondas: nuevasRondas } : t))
-    );
-    await supabase.from("torneos").update({ formato: "suizo", rondas: nuevasRondas }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { formato: "suizo", rondas: nuevasRondas }))) return;
     registrar(
       "torneo",
       `Se cambió el torneo "${torneo.nombre}" de round robin a sistema suizo en pleno torneo (se descartaron ${
@@ -245,8 +235,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
   async function cambiarIdaYVuelta(torneoId: string, idaYVuelta: boolean) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo || torneo.estado !== "armado" || torneo.rondas.length > 0) return;
-    setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, idaYVuelta } : t)));
-    await supabase.from("torneos").update({ ida_y_vuelta: idaYVuelta }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { ida_y_vuelta: idaYVuelta }))) return;
   }
 
   /**
@@ -256,17 +246,15 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
    * los resultados ya cargados.
    */
   async function cambiarDesempates(torneoId: string, desempates: string[]) {
-    setTorneos((actuales) => actuales.map((t) => (t.id === torneoId ? { ...t, desempates } : t)));
-    await supabase.from("torneos").update({ desempates }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { desempates }))) return;
   }
 
   /**
    * Anotarse/desanotarse de un torneo próximo. A propósito no exige sesión
-   * de admin — cualquiera puede tocar su propio nombre en la lista pública
-   * de inscripción (como una planilla física, funciona a confianza). El
-   * permiso real que lo hace posible sin login vive en Supabase: una
-   * política RLS que solo deja tocar la columna inscriptos_ids, y solo
-   * mientras el torneo sigue "armado".
+   * de admin — el socio autenticado puede modificar su inscripción. Supabase debe
+   * validar su identidad y que el torneo siga armado. La comparación de
+   * la versión anterior evita sobrescribir inscripciones simultáneas.
    */
   async function alternarInscripcion(torneoId: string, jugadorId: string) {
     const torneo = obtenerTorneo(torneoId);
@@ -275,10 +263,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     const nuevosIds = yaInscripto
       ? torneo.inscriptosIds.filter((id) => id !== jugadorId)
       : [...torneo.inscriptosIds, jugadorId];
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, inscriptosIds: nuevosIds } : t))
-    );
-    await supabase.from("torneos").update({ inscriptos_ids: nuevosIds }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { inscriptos_ids: nuevosIds }))) return;
   }
 
   /**
@@ -293,10 +279,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     const nuevosIds = yaVino
       ? torneo.asistieronIds.filter((id) => id !== jugadorId)
       : [...torneo.asistieronIds, jugadorId];
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, asistieronIds: nuevosIds } : t))
-    );
-    await supabase.from("torneos").update({ asistieron_ids: nuevosIds }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { asistieron_ids: nuevosIds }))) return;
   }
 
   /**
@@ -310,10 +294,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     const nuevosIds = yaPago
       ? torneo.pagaronIds.filter((id) => id !== jugadorId)
       : [...torneo.pagaronIds, jugadorId];
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, pagaronIds: nuevosIds } : t))
-    );
-    await supabase.from("torneos").update({ pagaron_ids: nuevosIds }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { pagaron_ids: nuevosIds }))) return;
   }
 
   function obtenerTorneo(id: string) {
@@ -326,21 +308,21 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
       return;
     }
     const nuevosIds = [...torneo.jugadoresIds, jugadorId];
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, jugadoresIds: nuevosIds } : t))
-    );
-    await supabase.from("torneos").update({ jugadores_ids: nuevosIds }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { jugadores_ids: nuevosIds }))) return;
     registrar("torneo", `Se agregó a ${nombreDe(jugadorId)} al torneo "${torneo.nombre}".`);
   }
 
   async function quitarJugadorDeTorneo(torneoId: string, jugadorId: string) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo || !puedeEditarJugadores(torneo)) return;
+    if (torneo.rondas.some(r => r.emparejamientos.some(e => e.blancasId === jugadorId || e.negrasId === jugadorId))) {
+      avisar("Este jugador ya tiene emparejamientos. Se conserva en la tabla para mantener el historial del torneo.");
+      return;
+    }
     const nuevosIds = torneo.jugadoresIds.filter((id) => id !== jugadorId);
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, jugadoresIds: nuevosIds } : t))
-    );
-    await supabase.from("torneos").update({ jugadores_ids: nuevosIds }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { jugadores_ids: nuevosIds }))) return;
     registrar("torneo", `Se quitó a ${nombreDe(jugadorId)} del torneo "${torneo.nombre}".`);
   }
 
@@ -380,15 +362,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     // torneo — con la creación rápida puede haber quedado armado días antes.
     const iniciadoEn = torneo.iniciadoEn ?? new Date().toISOString();
 
-    setTorneos((actuales) =>
-      actuales.map((t) =>
-        t.id === torneoId ? { ...t, rondas: nuevasRondas, estado: nuevoEstado, iniciadoEn } : t
-      )
-    );
-    await supabase
-      .from("torneos")
-      .update({ rondas: nuevasRondas, estado: nuevoEstado, iniciado_en: iniciadoEn })
-      .eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas, estado: nuevoEstado, iniciado_en: iniciadoEn }))) return;
     registrar(
       "torneo",
       torneo.formato === "round-robin" || torneo.formato === "match"
@@ -404,7 +379,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     resultado: ResultadoPartida | null
   ) {
     const torneo = obtenerTorneo(torneoId);
-    if (!torneo) return;
+    if (!torneo) return false;
     const nuevasRondas = torneo.rondas.map((r) => {
       if (r.numero !== rondaNumero) return r;
       return {
@@ -414,10 +389,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         ),
       };
     });
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
-    );
-    await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas }))) return false;
 
     if (resultado) {
       const ronda = torneo.rondas.find((r) => r.numero === rondaNumero);
@@ -429,6 +402,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         );
       }
     }
+    return true;
   }
 
   async function corregirColor(
@@ -447,10 +421,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         ),
       };
     });
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
-    );
-    await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas }))) return;
     registrar(
       "torneo",
       `Se corrigió el color de una partida en la ronda ${rondaNumero} de "${torneo.nombre}".`
@@ -475,10 +447,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (!esValido) rondaNueva.advertenciaManual = true;
 
     const nuevasRondas = torneo.rondas.map((r) => (r.numero === rondaNumero ? rondaNueva : r));
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
-    );
-    await supabase.from("torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas }))) return false;
     registrar(
       "torneo",
       `Se intercambiaron jugadores en la ronda ${rondaNumero} de "${torneo.nombre}"${
@@ -493,31 +463,22 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     if (!torneo || torneo.rondas.length === 0) return;
     const nuevasRondas = torneo.rondas.slice(0, -1);
     const nuevoEstado: EstadoTorneo = nuevasRondas.length === 0 ? "armado" : "en_curso";
-    setTorneos((actuales) =>
-      actuales.map((t) =>
-        t.id === torneoId ? { ...t, rondas: nuevasRondas, estado: nuevoEstado } : t
-      )
-    );
-    await supabase
-      .from("torneos")
-      .update({ rondas: nuevasRondas, estado: nuevoEstado })
-      .eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas, estado: nuevoEstado }))) return;
     registrar("torneo", `Se eliminó la ronda ${torneo.rondas.length} del torneo "${torneo.nombre}".`);
   }
 
   async function eliminarTorneo(torneoId: string) {
     const torneo = obtenerTorneo(torneoId);
-    setTorneos((actuales) => actuales.filter((t) => t.id !== torneoId));
-    await supabase.from("torneos").delete().eq("id", torneoId);
+
+    if (!(await eliminar(torneoId))) return;
     registrar("torneo", `Se eliminó el torneo "${torneo?.nombre ?? torneoId}".`);
   }
 
   async function finalizarTorneo(torneoId: string) {
     const torneo = obtenerTorneo(torneoId);
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, estado: "finalizado" } : t))
-    );
-    await supabase.from("torneos").update({ estado: "finalizado" }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { estado: "finalizado" }))) return;
     registrar("torneo", `Se finalizó el torneo "${torneo?.nombre ?? torneoId}".`);
   }
 
@@ -530,10 +491,8 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
   async function registrarFinalDesempate(torneoId: string, jugadorIds: string[], ganadorId: string) {
     const torneo = obtenerTorneo(torneoId);
     const finalDesempate: FinalDesempate = { jugadorIds, ganadorId };
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, finalDesempate } : t))
-    );
-    await supabase.from("torneos").update({ final_desempate: finalDesempate }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { final_desempate: finalDesempate }))) return;
     registrar(
       "torneo",
       `Se cargó el resultado de la final de desempate de "${torneo?.nombre ?? torneoId}": ganó ${nombreDe(ganadorId)}.`
@@ -543,6 +502,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
   return (
     <TorneosContext.Provider
       value={{
+        errorCarga, ultimaActualizacion,
         torneos,
         cargando,
         crearTorneo,

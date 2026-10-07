@@ -180,7 +180,7 @@ export default function CompartirElosPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+      <div className="panel p-8 text-center">
         <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
@@ -211,7 +211,7 @@ export default function CompartirElosPage() {
       {lista.length === 0 ? (
         <p className="text-sm text-zinc-400">No hay jugadores activos para mostrar.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/10 p-4">
+        <div className="overflow-x-auto panel bg-white/10 p-4">
           <canvas ref={canvasRef} className="mx-auto rounded-md shadow-sm" />
         </div>
       )}

@@ -53,7 +53,8 @@ export function calcularEloYHistorialEnVivo(
   }
 
   const partidas: PartidaOrdenada[] = [];
-  torneos.forEach((t, torneoIndex) => {
+  const torneosOrdenados = [...torneos].sort((a, b) => (a.iniciadoEn ?? a.creadoEn).localeCompare(b.iniciadoEn ?? b.creadoEn) || a.id.localeCompare(b.id));
+  torneosOrdenados.forEach((t, torneoIndex) => {
     t.rondas.forEach((ronda) => {
       ronda.emparejamientos.forEach((e, i) => {
         if (!e.negrasId || !e.resultado) return;

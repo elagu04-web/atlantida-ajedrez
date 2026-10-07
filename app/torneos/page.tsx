@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
 import { useAuth } from "@/context/AuthContext";
-import { DESEMPATES_DISPONIBLES, FormatoTorneo, standingsConDesempates } from "@/lib/tournaments";
+import { DESEMPATES_DISPONIBLES, FormatoTorneo } from "@/lib/tournaments";
 import { nombreVisible } from "@/lib/players";
+import { TarjetaTorneo } from "@/components/TarjetaTorneo";
+import { Icono } from "@/components/Icono";
 import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 
 const formatoLabel: Record<string, string> = {
@@ -16,21 +18,17 @@ const formatoLabel: Record<string, string> = {
   match: "Match",
 };
 
-const formatoIcono: Record<string, string> = {
-  "round-robin": "🔄",
-  suizo: "♟️",
-  match: "⚔️",
-};
-
-const MEDALLA: Record<number, string> = { 0: "🥇", 1: "🥈", 2: "🥉" };
 
 export default function TorneosPage() {
   const router = useRouter();
   const jugadoresConStats = useJugadoresEnVivo();
-  const { torneos, crearTorneo, crearTorneoRapido, eliminarTorneo, cargando } = useTorneos();
+  const { torneos, crearTorneo, crearTorneoRapido, eliminarTorneo, cargando, errorCarga } = useTorneos();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
 
+  const [buscarTorneo, setBuscarTorneo] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState("todos");
+  const listaTorneos = [...torneos].filter(t => (estadoFiltro === "todos" || t.estado === estadoFiltro) && t.nombre.toLocaleLowerCase().includes(buscarTorneo.trim().toLocaleLowerCase())).sort((a, b) => (b.iniciadoEn ?? b.creadoEn).localeCompare(a.iniciadoEn ?? a.creadoEn));
   const [nombreRapido, setNombreRapido] = useState("");
   const [creandoRapido, setCreandoRapido] = useState(false);
 
@@ -115,12 +113,12 @@ export default function TorneosPage() {
     <div className="flex flex-col gap-6">
       <EncabezadoPagina
         titulo="Torneos"
-        subtitulo="Creá un torneo, elegí el formato, los jugadores y los desempates."
+        subtitulo={puedeEditar ? "Administrá los torneos, jugadores y desempates." : "Consultá resultados, posiciones e inscripciones del club."}
       />
 
       {!puedeEditar && (
         <p className="text-sm text-zinc-400">
-          Iniciá sesión para crear torneos o borrarlos.
+          Encontrá el próximo torneo o consultá los resultados de las competencias anteriores.
         </p>
       )}
 
@@ -159,7 +157,7 @@ export default function TorneosPage() {
       {puedeEditar && (
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-5 rounded-lg border border-white/10 bg-white/5 p-5"
+        className="flex flex-col gap-5 panel p-5"
       >
         <span className="text-xs font-medium text-zinc-400">
           O crear con todos los detalles de una:
@@ -381,90 +379,15 @@ export default function TorneosPage() {
       </form>
       )}
 
-      <div className="flex flex-col gap-3">
-        <h2 className="font-semibold">Torneos creados</h2>
-        {torneos.length === 0 && (
-          <p className="text-sm text-zinc-400">
-            {cargando ? "Cargando torneos..." : "Todavía no creaste ningún torneo."}
-          </p>
-        )}
-        {[...torneos].reverse().map((t) => {
-          const podio = t.rondas.length > 0 ? standingsConDesempates(t).slice(0, 3) : [];
-          return (
-            <div
-              key={t.id}
-              className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-blue-500/30 hover:shadow-sm"
-            >
-              <div
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg ${
-                  t.estado === "en_curso"
-                    ? "bg-blue-500/10 ring-1 ring-blue-500/30"
-                    : t.estado === "finalizado"
-                    ? "bg-amber-500/10 ring-1 ring-amber-500/30"
-                    : "bg-white/10 ring-1 ring-white/10"
-                }`}
-              >
-                {formatoIcono[t.formato]}
-              </div>
-
-              <Link href={`/torneos/${t.id}`} className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="truncate font-medium">{t.nombre}</span>
-                  {t.estado === "en_curso" && (
-                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-400 ring-1 ring-red-500/30">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
-                      En vivo
-                    </span>
-                  )}
-                  {t.estado === "armado" && (
-                    <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
-                      Armado
-                    </span>
-                  )}
-                  {t.estado === "finalizado" && (
-                    <span className="shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-300">
-                      Finalizado
-                    </span>
-                  )}
-                </div>
-                <div className="text-sm text-zinc-400">
-                  {formatoLabel[t.formato]} · {t.jugadoresIds.length} jugadores
-                </div>
-              </Link>
-
-              {podio.length > 0 && (
-                <div className="hidden shrink-0 items-center gap-3 sm:flex">
-                  {podio.map((s, i) => {
-                    const j = jugadoresConStats.find((x) => x.id === s.jugadorId);
-                    return (
-                      <span
-                        key={s.jugadorId}
-                        className="flex items-center gap-1 text-xs font-medium text-zinc-400"
-                      >
-                        <span>{MEDALLA[i]}</span>
-                        <span className="max-w-[6rem] truncate">{j ? nombreVisible(j) : "?"}</span>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-
-              {puedeEditar && (
-                <button
-                  onClick={() => {
-                    if (window.confirm(`¿Borrar el torneo "${t.nombre}"? Esto no se puede deshacer.`)) {
-                      eliminarTorneo(t.id);
-                    }
-                  }}
-                  className="shrink-0 text-xs text-red-400 hover:underline"
-                >
-                  Eliminar
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <section aria-labelledby="titulo-torneos">
+        <div className="section-heading"><h2 id="titulo-torneos">Calendario del club</h2><span className="text-xs text-zinc-400">{listaTorneos.length} {listaTorneos.length === 1 ? "torneo" : "torneos"}</span></div>
+        {errorCarga && <p role="status" className="mb-4 text-sm text-amber-300">{errorCarga}</p>}
+        <div className="filter-toolbar mb-6">
+          <div className="search-field"><Icono nombre="buscar" className="h-4 w-4 shrink-0 text-zinc-500" /><input aria-label="Buscar torneo" placeholder="Buscar por nombre…" value={buscarTorneo} onChange={e=>setBuscarTorneo(e.target.value)} />{buscarTorneo&&<button type="button" aria-label="Limpiar búsqueda de torneos" onClick={()=>setBuscarTorneo("")}><Icono nombre="cerrar" className="h-4 w-4 text-zinc-400" /></button>}</div>
+          <div className="segmented-control" role="group" aria-label="Filtrar torneos por estado">{[{id:"todos",texto:"Todos"},{id:"en_curso",texto:"En curso"},{id:"armado",texto:"Próximos"},{id:"finalizado",texto:"Finalizados"}].map(f=><button type="button" key={f.id} aria-pressed={estadoFiltro===f.id} onClick={()=>setEstadoFiltro(f.id)}>{f.texto}</button>)}</div>
+        </div>
+        {cargando ? <div role="status" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"><span className="sr-only">Cargando torneos</span>{[0,1,2].map(i=><div key={i} className="panel h-60 p-6" aria-hidden="true"><div className="skeleton h-5 w-20" /><div className="skeleton mt-8 h-6 w-3/4" /><div className="skeleton mt-3 h-3 w-1/2" /></div>)}</div> : listaTorneos.length ? <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{listaTorneos.map(t=><TarjetaTorneo key={t.id} torneo={t} nombreJugador={id=>{const j=jugadoresConStats.find(j=>j.id===id);return j?nombreVisible(j):"Jugador";}} accion={puedeEditar&&<button type="button" className="text-xs text-red-300 hover:text-red-200" onClick={()=>{if(window.confirm('¿Borrar el torneo "'+t.nombre+'"? Esto no se puede deshacer.'))void eliminarTorneo(t.id);}}>Eliminar torneo</button>} />)}</div> : <div className="empty-state"><Icono nombre="trofeo" className="h-8 w-8 text-zinc-500" /><h3>{torneos.length?"No hay torneos con estos filtros":"La próxima competencia empieza acá"}</h3><p>{torneos.length?"Probá otro nombre o consultá todos los estados.":"Los torneos publicados aparecerán en este calendario."}</p>{torneos.length>0&&<button type="button" onClick={()=>{setBuscarTorneo("");setEstadoFiltro("todos");}} className="text-link">Limpiar filtros<Icono nombre="flecha" className="h-4 w-4" /></button>}</div>}
+      </section>
     </div>
   );
 }

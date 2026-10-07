@@ -45,7 +45,7 @@ export default function InscribirseTorneoPage() {
         <Link href={`/torneos/${torneo.id}`} className="text-sm text-blue-400 hover:underline">
           ← Ver el torneo
         </Link>
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+        <div className="panel p-8 text-center">
           <p className="text-zinc-400">
             La inscripción para &quot;{torneo.nombre}&quot; ya está cerrada — el torneo ya arrancó.
           </p>
@@ -92,7 +92,7 @@ export default function InscribirseTorneoPage() {
       </div>
 
       {!session ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+        <div className="panel p-8 text-center">
           <p className="mb-4 text-zinc-400">
             Iniciá sesión con Google para anotarte — así solo vos podés anotarte o sacarte a vos
             mismo.
@@ -126,7 +126,7 @@ export default function InscribirseTorneoPage() {
             className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
           />
 
-          <div className="rounded-lg border border-white/10 bg-white/5 p-2">
+          <div className="panel p-2">
             {elegibles.length === 0 ? (
               <p className="p-4 text-center text-sm text-zinc-400">
                 {busqueda ? "Nadie coincide con la búsqueda." : "No hay jugadores activos cargados."}
@@ -182,7 +182,7 @@ export default function InscribirseTorneoPage() {
             className="w-full max-w-sm rounded-md border border-white/20 px-3 py-2 text-sm"
           />
 
-          <div className="rounded-lg border border-white/10 bg-white/5 p-2">
+          <div className="panel p-2">
             <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
               {elegibles.map((j) => {
                 const anotado = torneo.inscriptosIds.includes(j.id);

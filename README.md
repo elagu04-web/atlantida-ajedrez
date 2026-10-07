@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Atlántida Ajedrez
 
-## Getting Started
+Sistema de torneos, ranking Elo y transmisión del club. Next.js, React y Supabase.
 
-First, run the development server:
+## Desarrollo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Configurá NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local. No publiques claves privadas.
+- npm install
+- npm run dev
+- Abrí http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Verificación
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- npm test: calendarios, descansos, rondas, empates, finales, Elo y protección de escrituras simultáneas con datos ficticios. No accede a Supabase.
+- npm run lint
+- npx tsc --noEmit
+- npm run build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Reglas y sincronización
 
-## Learn More
+- Descanso en round robin: 0 puntos y 0 partidas. Bye suizo: conserva 1 punto.
+- Los calendarios de round robin y match se generan completos; la pantalla sigue la ronda indicada por los resultados reales, no la última del calendario.
+- Empates tras aplicar todos los criterios comparten posición. Se conserva la final de desempate propia del club.
+- Las listas se sincronizan por Supabase Realtime, con respaldo por consulta cada 5 segundos. No se solapan consultas.
+- Un cambio se muestra y registra después de confirmar su escritura. Las actualizaciones comparan el valor anterior de los campos modificados para evitar sobrescribir cambios de otra pantalla.
+- No se permite eliminar jugadores que aparecen en calendarios de torneos.
 
-To learn more about Next.js, take a look at the following resources:
+## Permisos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Supabase debe aplicar RLS: ocultar botones en el navegador no concede ni limita permisos en la base de datos. Los módulos escolares se cargan únicamente para el administrador. Las políticas de acceso a datos personales requieren una revisión independiente; este cambio no modifica el esquema ni las políticas de Supabase.

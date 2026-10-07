@@ -23,7 +23,9 @@ export function GraficoMultiLinea({
   series: SerieLinea[];
   formatoValor?: (v: number) => string;
 }) {
-  const [activo, setActivo] = useState<number | null>(null);
+  const [seleccionado, setSeleccionado] = useState<number | null>(null);
+  const [hover, setHover] = useState<number | null>(null);
+  const activo = hover ?? seleccionado;
 
   const todosLosValores = series.flatMap((s) => s.valores.filter((v): v is number => v !== null));
   if (todosLosValores.length === 0 || categorias.length < 2) {
@@ -36,7 +38,7 @@ export function GraficoMultiLinea({
   const valorMin = Math.min(...todosLosValores);
   const valorMax = Math.max(...todosLosValores);
   const rango = Math.max(1, valorMax - valorMin);
-  const mostrarEtiquetasX = categorias.length <= 10;
+  const pasoEtiquetas = Math.max(1, Math.ceil(categorias.length / 5));
 
   function x(i: number) {
     return margen.izquierda + (i / (categorias.length - 1)) * (ancho - margen.izquierda - margen.derecha);
@@ -47,7 +49,7 @@ export function GraficoMultiLinea({
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full" onMouseLeave={() => setActivo(null)}>
+      <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full" role="img" aria-label="Evolución por período. Elegí un período debajo para consultar los valores." onMouseLeave={() => setHover(null)}>
         <text x={4} y={y(valorMax) + 4} className="fill-zinc-400 text-[10px]">
           {formatoValor(valorMax)}
         </text>
@@ -70,21 +72,20 @@ export function GraficoMultiLinea({
                 cy={y(v)}
                 r={activo === i ? 5 : 3}
                 fill={s.color}
-                onMouseEnter={() => setActivo(i)}
+                onMouseEnter={() => setHover(i)}
                 className="cursor-pointer"
               />
             )
           )
         )}
-        {mostrarEtiquetasX &&
-          categorias.map((c, i) => (
-            <text key={i} x={x(i)} y={alto - 4} textAnchor="middle" className="fill-zinc-500 text-[9px]">
+        {categorias.map((c, i) => i % pasoEtiquetas === 0 || i === categorias.length - 1 ? (
+            <text key={i} x={x(i)} y={alto - 4} textAnchor={i === 0 ? "start" : i === categorias.length - 1 ? "end" : "middle"} className="fill-zinc-400 text-[10px]">
               {c}
             </text>
-          ))}
+          ) : null)}
       </svg>
       {activo !== null && (
-        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 rounded-md border border-white/10 bg-zinc-900 px-2.5 py-1.5 text-xs shadow-lg">
+        <div role="status" className="mt-3 rounded-md border border-white/10 bg-zinc-900 px-3 py-2 text-xs">
           <div className="mb-1 font-semibold text-zinc-300">{categorias[activo]}</div>
           <div className="flex flex-col gap-0.5">
             {series.map((s) =>
@@ -100,6 +101,10 @@ export function GraficoMultiLinea({
           </div>
         </div>
       )}
+      <label className="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-400">
+        Consultar período
+        <select aria-label="Período del gráfico" value={seleccionado ?? ""} onChange={e => setSeleccionado(e.target.value === "" ? null : Number(e.target.value))} className="max-w-full rounded-md border border-white/20 bg-zinc-900 px-3 py-2 text-zinc-200"><option value="">Elegir…</option>{categorias.map((c, i) => <option key={i} value={i}>{c}</option>)}</select>
+      </label>
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-400">
         {series.map((s) => (
           <span key={s.id} className="flex items-center gap-1.5">

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import {
   Torneo,
   FormatoTorneo,
@@ -17,6 +17,8 @@ import {
 import { useEpicoJugadores } from "@/context/EpicoJugadoresContext";
 import { calcularEloYHistorialEnVivo } from "@/lib/elo";
 import { supabase } from "@/lib/supabase";
+import { useColeccionRemota } from "./useColeccionRemota";
+import { useAuth } from "./AuthContext";
 
 type FilaTorneo = {
   id: string;
@@ -34,6 +36,8 @@ type FilaTorneo = {
 type EpicoTorneosContextType = {
   torneos: Torneo[];
   cargando: boolean;
+  errorCarga: string | null;
+  ultimaActualizacion: Date | null;
   crearTorneo: (
     nombre: string,
     formato: FormatoTorneo,
@@ -78,21 +82,11 @@ function filaATorneo(fila: FilaTorneo): Torneo {
 }
 
 export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
-  const [torneos, setTorneos] = useState<Torneo[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const { esAdmin } = useAuth();
+  const { items: torneos, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaTorneo, Torneo>("epico_torneos", filaATorneo, esAdmin);
   const { jugadores } = useEpicoJugadores();
 
-  useEffect(() => {
-    async function cargar() {
-      const { data, error } = await supabase
-        .from("epico_torneos")
-        .select("*")
-        .order("created_at");
-      if (!error && data) setTorneos(data.map(filaATorneo));
-      setCargando(false);
-    }
-    cargar();
-  }, []);
+
 
   async function crearTorneo(
     nombre: string,
@@ -114,9 +108,9 @@ export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
       })
       .select()
       .single();
-    if (error || !data) return "";
+    if (error || !data) { avisar("No se pudo crear. Comprobá la conexión y tus permisos."); return ""; }
     const nuevo = filaATorneo(data);
-    setTorneos((actuales) => [...actuales, nuevo]);
+    incorporar(data);
     return nuevo.id;
   }
 
@@ -130,20 +124,20 @@ export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
       return;
     }
     const nuevosIds = [...torneo.jugadoresIds, jugadorId];
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, jugadoresIds: nuevosIds } : t))
-    );
-    await supabase.from("epico_torneos").update({ jugadores_ids: nuevosIds }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { jugadores_ids: nuevosIds }))) return;
   }
 
   async function quitarJugadorDeTorneo(torneoId: string, jugadorId: string) {
     const torneo = obtenerTorneo(torneoId);
     if (!torneo || !puedeEditarJugadores(torneo)) return;
+    if (torneo.rondas.some(r => r.emparejamientos.some(e => e.blancasId === jugadorId || e.negrasId === jugadorId))) {
+      avisar("Este jugador ya tiene emparejamientos. Se conserva en la tabla para mantener el historial del torneo.");
+      return;
+    }
     const nuevosIds = torneo.jugadoresIds.filter((id) => id !== jugadorId);
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, jugadoresIds: nuevosIds } : t))
-    );
-    await supabase.from("epico_torneos").update({ jugadores_ids: nuevosIds }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { jugadores_ids: nuevosIds }))) return;
   }
 
   async function generarRondas(torneoId: string) {
@@ -174,15 +168,8 @@ export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
       nuevasRondas = [...torneo.rondas, nuevaRonda];
     }
 
-    setTorneos((actuales) =>
-      actuales.map((t) =>
-        t.id === torneoId ? { ...t, rondas: nuevasRondas, estado: nuevoEstado } : t
-      )
-    );
-    await supabase
-      .from("epico_torneos")
-      .update({ rondas: nuevasRondas, estado: nuevoEstado })
-      .eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas, estado: nuevoEstado }))) return;
   }
 
   async function registrarResultado(
@@ -202,10 +189,8 @@ export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
         ),
       };
     });
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, rondas: nuevasRondas } : t))
-    );
-    await supabase.from("epico_torneos").update({ rondas: nuevasRondas }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas }))) return;
   }
 
   async function eliminarUltimaRonda(torneoId: string) {
@@ -213,27 +198,18 @@ export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
     if (!torneo || torneo.rondas.length === 0) return;
     const nuevasRondas = torneo.rondas.slice(0, -1);
     const nuevoEstado: EstadoTorneo = nuevasRondas.length === 0 ? "armado" : "en_curso";
-    setTorneos((actuales) =>
-      actuales.map((t) =>
-        t.id === torneoId ? { ...t, rondas: nuevasRondas, estado: nuevoEstado } : t
-      )
-    );
-    await supabase
-      .from("epico_torneos")
-      .update({ rondas: nuevasRondas, estado: nuevoEstado })
-      .eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { rondas: nuevasRondas, estado: nuevoEstado }))) return;
   }
 
   async function eliminarTorneo(torneoId: string) {
-    setTorneos((actuales) => actuales.filter((t) => t.id !== torneoId));
-    await supabase.from("epico_torneos").delete().eq("id", torneoId);
+
+    if (!(await eliminar(torneoId))) return;
   }
 
   async function finalizarTorneo(torneoId: string) {
-    setTorneos((actuales) =>
-      actuales.map((t) => (t.id === torneoId ? { ...t, estado: "finalizado" } : t))
-    );
-    await supabase.from("epico_torneos").update({ estado: "finalizado" }).eq("id", torneoId);
+
+    if (!(await guardar(torneoId, { estado: "finalizado" }))) return;
   }
 
   function standingsDeTorneo(torneoId: string) {
@@ -245,6 +221,7 @@ export function EpicoTorneosProvider({ children }: { children: ReactNode }) {
   return (
     <EpicoTorneosContext.Provider
       value={{
+        errorCarga, ultimaActualizacion,
         torneos,
         cargando,
         crearTorneo,

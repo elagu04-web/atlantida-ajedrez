@@ -204,6 +204,9 @@ export function calcularStandings(torneo: Torneo): Map<string, Standing> {
   }
   for (const ronda of torneo.rondas) {
     for (const emp of ronda.emparejamientos) {
+      // Un descanso de round robin no es una partida ni otorga puntos.
+      // También corrige calendarios antiguos que lo guardaron como 1-0.
+      if (!emp.negrasId && torneo.formato === "round-robin") continue;
       const blancas = standings.get(emp.blancasId);
       const negras = emp.negrasId ? standings.get(emp.negrasId) : undefined;
 
@@ -241,8 +244,9 @@ export function calcularStandings(torneo: Torneo): Map<string, Standing> {
 export function puntosAcumuladosPorRonda(
   torneo: Torneo
 ): { numero: number; puntos: Record<string, number> }[] {
-  return torneo.rondas.map((ronda, i) => {
-    const parcial: Torneo = { ...torneo, rondas: torneo.rondas.slice(0, i + 1) };
+  const rondas = rondasTranscurridas(torneo);
+  return rondas.map((ronda, i) => {
+    const parcial: Torneo = { ...torneo, rondas: rondas.slice(0, i + 1) };
     const standings = calcularStandings(parcial);
     const puntos: Record<string, number> = {};
     for (const [id, s] of standings) puntos[id] = s.puntos;
@@ -251,6 +255,15 @@ export function puntosAcumuladosPorRonda(
 }
 
 type JugadaTorneo = { rivalId: string; resultadoPropio: number };
+
+/** Un calendario generado de antemano no representa rondas ya jugadas. */
+function rondasTranscurridas(torneo: Torneo): RondaTorneo[] {
+  const rondas = [...torneo.rondas].sort((a, b) => a.numero - b.numero);
+  if (torneo.formato === "suizo") return rondas;
+  const ultimaConJuego = rondas.reduce((ultima, ronda) =>
+    ronda.emparejamientos.some(e => e.negrasId && e.resultado !== null) ? ronda.numero : ultima, 0);
+  return rondas.filter(ronda => ronda.numero <= ultimaConJuego);
+}
 
 function historialDeJugador(torneo: Torneo, jugadorId: string): JugadaTorneo[] {
   const historial: JugadaTorneo[] = [];
@@ -274,13 +287,13 @@ function historialDeJugador(torneo: Torneo, jugadorId: string): JugadaTorneo[] {
 function progresivoDeJugador(torneo: Torneo, jugadorId: string): number {
   let acumulado = 0;
   let total = 0;
-  for (const ronda of [...torneo.rondas].sort((a, b) => a.numero - b.numero)) {
+  for (const ronda of rondasTranscurridas(torneo)) {
     const emp = ronda.emparejamientos.find(
       (e) => e.blancasId === jugadorId || e.negrasId === jugadorId
     );
     if (!emp || !emp.resultado) continue;
     let ganado = 0;
-    if (!emp.negrasId) ganado = 1; // descanso: punto libre
+    if (!emp.negrasId) ganado = torneo.formato === "round-robin" ? 0 : 1;
     else if (emp.resultado === "1/2-1/2") ganado = 0.5;
     else if (
       (emp.resultado === "1-0" && emp.blancasId === jugadorId) ||
@@ -341,7 +354,7 @@ export function calcularDesempates(torneo: Torneo): Map<string, Record<string, n
   return resultado;
 }
 
-export type StandingConDesempates = Standing & { desempates: Record<string, number> };
+export type StandingConDesempates = Standing & { desempates: Record<string, number>; posicion: number };
 
 /**
  * Tabla de posiciones ordenada de verdad: primero por puntos, y en caso de
@@ -355,6 +368,7 @@ export function standingsConDesempates(torneo: Torneo): StandingConDesempates[] 
   const combinados: StandingConDesempates[] = standings.map((s) => ({
     ...s,
     desempates: desempates.get(s.jugadorId) ?? {},
+    posicion: 0,
   }));
 
   combinados.sort((a, b) => {
@@ -365,7 +379,28 @@ export function standingsConDesempates(torneo: Torneo): StandingConDesempates[] 
     }
     return 0;
   });
+  combinados.forEach((s, i) => {
+    const anterior = combinados[i - 1];
+    const empatado = anterior && s.puntos === anterior.puntos && torneo.desempates.every(
+      criterio => (s.desempates[criterio] ?? 0) === (anterior.desempates[criterio] ?? 0)
+    );
+    s.posicion = empatado ? anterior.posicion : i + 1;
+  });
   return combinados;
+}
+
+/** La última ronda programada no es la ronda actual de un calendario completo.
+ * Los resultados reales indican el avance; los descansos automáticos no. */
+export function rondaActualDelTorneo(torneo: Torneo): RondaTorneo | null {
+  const rondas = [...torneo.rondas].sort((a, b) => a.numero - b.numero);
+  if (!rondas.length) return null;
+  if (torneo.formato === "suizo" || torneo.estado === "finalizado") return rondas[rondas.length - 1];
+  let indice = 0;
+  for (let i = 0; i < rondas.length; i++) {
+    if (rondas[i].emparejamientos.some(e => e.negrasId && e.resultado !== null)) indice = i;
+  }
+  while (indice < rondas.length - 1 && rondaCompleta(rondas[indice])) indice++;
+  return rondas[indice];
 }
 
 /**
@@ -479,7 +514,7 @@ export function generarRondaSuiza(
 }
 
 export function rondaCompleta(ronda: RondaTorneo): boolean {
-  return ronda.emparejamientos.every((e) => e.resultado !== null);
+  return ronda.emparejamientos.every((e) => !e.negrasId || e.resultado !== null);
 }
 
 /**
@@ -489,8 +524,9 @@ export function rondaCompleta(ronda: RondaTorneo): boolean {
  * "cuánto subió/bajó cada uno" desde la última vez que se jugó.
  */
 export function ultimoTorneoConResultados(torneos: Torneo[]): Torneo | null {
-  for (let i = torneos.length - 1; i >= 0; i--) {
-    const t = torneos[i];
+  const ordenados = [...torneos].sort((a, b) => (a.iniciadoEn ?? a.creadoEn).localeCompare(b.iniciadoEn ?? b.creadoEn) || a.id.localeCompare(b.id));
+  for (let i = ordenados.length - 1; i >= 0; i--) {
+    const t = ordenados[i];
     if (t.excluirDeElo) continue;
     const tieneResultados = t.rondas.some((r) => r.emparejamientos.some((e) => e.negrasId && e.resultado));
     if (tieneResultados) return t;

@@ -3,6 +3,7 @@ import type { JugadorEnVivo } from "./elo";
 import { nombreVisible } from "./players";
 
 export type FilaTablaGeneral = {
+  posicion: number;
   jugadorId: string;
   puntosPorTorneo: (number | null)[]; // null = no jugó ese torneo
   total: number;
@@ -52,10 +53,15 @@ export function calcularTablaGeneral(torneos: Torneo[]): TablaGeneral {
       return s.puntos;
     });
     const rendimiento = partidasJugadas > 0 ? (total / partidasJugadas) * 100 : 0;
-    return { jugadorId, puntosPorTorneo, total, partidasJugadas, rendimiento };
+    return { jugadorId, puntosPorTorneo, total, partidasJugadas, rendimiento, posicion: 0 };
   });
 
   filas.sort((a, b) => b.total - a.total || b.rendimiento - a.rendimiento);
+  filas.forEach((fila, i) => {
+    const anterior = filas[i - 1];
+    fila.posicion = anterior && fila.total === anterior.total && fila.rendimiento === anterior.rendimiento
+      ? anterior.posicion : i + 1;
+  });
 
   return {
     columnas: torneos.map((t) => ({ id: t.id, nombre: t.nombre })),

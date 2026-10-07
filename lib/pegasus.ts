@@ -37,8 +37,15 @@ export type PegasusCallbacks = {
   onBateria?: (porcentaje: number) => void;
 };
 
+
+type CaracteristicaBluetooth = EventTarget & { uuid: string; value?: DataView; readValue: () => Promise<DataView>; writeValue: (valor: Uint8Array) => Promise<void>; startNotifications: () => Promise<CaracteristicaBluetooth> };
+type ServicioBluetooth = { getCharacteristic: (uuid: string) => Promise<CaracteristicaBluetooth>; getCharacteristics: (uuid: string) => Promise<CaracteristicaBluetooth[]> };
+type ServidorBluetooth = { connect: () => Promise<ServidorBluetooth>; disconnect: () => void; getPrimaryService: (uuid: string) => Promise<ServicioBluetooth> };
+type DispositivoBluetooth = EventTarget & { gatt: ServidorBluetooth };
+type Bluetooth = { requestDevice: (opciones: { filters: { services: string[] }[]; optionalServices: string[] }) => Promise<DispositivoBluetooth> };
+
 export async function conectarPegasus(cb: PegasusCallbacks) {
-  const bt = (navigator as unknown as { bluetooth?: any }).bluetooth;
+  const bt = (navigator as unknown as { bluetooth?: Bluetooth }).bluetooth;
   if (!bt) {
     throw new Error(
       "Este navegador no soporta Bluetooth (Web Bluetooth). Probá con Chrome o Edge en computadora."
@@ -51,7 +58,11 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
     optionalServices: ["battery_service"],
   });
 
+  let intervaloBateria: ReturnType<typeof setInterval> | null = null;
+  let intervaloEstado: ReturnType<typeof setInterval> | null = null;
+  function limpiarIntervalos() { if (intervaloBateria) clearInterval(intervaloBateria); if (intervaloEstado) clearInterval(intervaloEstado); }
   device.addEventListener("gattserverdisconnected", () => {
+    limpiarIntervalos();
     cb.onLog("⚠ Se desconectó el tablero.");
   });
 
@@ -85,7 +96,7 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
       }
     }
     await leerBateria();
-    setInterval(leerBateria, 60000);
+    intervaloBateria = setInterval(leerBateria, 60000);
   } catch {
     // este tablero no expone el nivel de batería por Bluetooth; seguimos sin eso
   }
@@ -93,27 +104,29 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
   const service = await server.getPrimaryService(SERVICE_UUID);
 
   const caracteristicasRx = await service.getCharacteristics(RX_CHARACTERISTIC_UUID);
-  const rx = caracteristicasRx.find((c: any) => c.uuid === RX_CHARACTERISTIC_UUID);
+  const rx = caracteristicasRx.find((c: CaracteristicaBluetooth) => c.uuid === RX_CHARACTERISTIC_UUID);
   const caracteristicasTx = await service.getCharacteristics(TX_CHARACTERISTIC_UUID);
-  const tx = caracteristicasTx.find((c: any) => c.uuid === TX_CHARACTERISTIC_UUID);
+  const tx = caracteristicasTx.find((c: CaracteristicaBluetooth) => c.uuid === TX_CHARACTERISTIC_UUID);
   if (!rx || !tx) throw new Error("No se encontraron las características Bluetooth esperadas.");
+  const transmisor = tx;
 
   cb.onLog("Activando notificaciones...");
   await rx.startNotifications();
 
   async function pedirEstado() {
     try {
-      await tx.writeValue(CMD_BITBOARD);
+      await transmisor.writeValue(CMD_BITBOARD);
     } catch {
       // se reintenta en el próximo ciclo
     }
   }
 
-  rx.addEventListener("characteristicvaluechanged", (event: any) => {
-    const value: DataView = event.target.value;
+  rx.addEventListener("characteristicvaluechanged", (event: Event) => {
+    const value = (event.target as CaracteristicaBluetooth | null)?.value;
+    if (!value || value.byteLength === 0) return;
     const tipo = value.getUint8(0);
 
-    if (tipo === 142) {
+    if (tipo === 142 && value.byteLength >= 5) {
       // 0x8E: una pieza se levantó o se apoyó en una casilla
       const casilla = casillaDesdeIndice(value.getUint8(3));
       const esLevantada = value.getUint8(4) === 0;
@@ -132,7 +145,7 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
     }
   });
 
-  const intervalo = setInterval(pedirEstado, 500);
+  intervaloEstado = setInterval(pedirEstado, 500);
 
   cb.onLog("Inicializando el tablero...");
   await tx.writeValue(DEVELOPER_KEY);
@@ -143,7 +156,7 @@ export async function conectarPegasus(cb: PegasusCallbacks) {
 
   return {
     desconectar() {
-      clearInterval(intervalo);
+      limpiarIntervalos();
       try {
         device.gatt?.disconnect();
       } catch {

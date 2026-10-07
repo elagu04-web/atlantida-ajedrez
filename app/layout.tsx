@@ -9,6 +9,7 @@ import { ColegioJugadoresProvider } from "@/context/ColegioJugadoresContext";
 import { ColegioTorneosProvider } from "@/context/ColegioTorneosContext";
 import { EpicoJugadoresProvider } from "@/context/EpicoJugadoresContext";
 import { EpicoTorneosProvider } from "@/context/EpicoTorneosContext";
+import { AvisosProvider } from "@/context/AvisosContext";
 import { ChromeDelSitio } from "@/components/ChromeDelSitio";
 
 const geistSans = Geist({
@@ -29,11 +30,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="es"
+      lang="es" data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100 font-sans">
-        <AuthProvider>
+        <AvisosProvider><AuthProvider>
           <ActividadProvider>
             <JugadoresProvider>
               <TorneosProvider>
@@ -49,7 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </TorneosProvider>
             </JugadoresProvider>
           </ActividadProvider>
-        </AuthProvider>
+        </AuthProvider></AvisosProvider>
       </body>
     </html>
   );

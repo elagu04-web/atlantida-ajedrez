@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO, jugoRecientemente, type JugadorEnVivo } from "@/lib/elo";
 import { EncabezadoPagina } from "@/components/EncabezadoPagina";
+import { Icono } from "@/components/Icono";
 import { GraficoBarras } from "@/components/GraficoBarras";
 
 type Orden = "elo" | "partidas";
@@ -101,6 +102,7 @@ function FideIdCelda({
 export default function JugadoresPage() {
   const { agregarJugador, eliminarJugador, actualizarApodo, actualizarFideId, actualizarJugador, cargando } =
     useJugadores();
+  const { obtenerJugador, errorCarga } = useJugadores();
   const jugadoresConStats = useJugadoresEnVivo();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
@@ -129,15 +131,14 @@ export default function JugadoresPage() {
   function empezarEdicion(j: JugadorEnVivo) {
     setEditandoId(j.id);
     setEditNombre(j.nombre);
-    setEditElo(String(j.eloAtlantida));
+    setEditElo(String(obtenerJugador(j.id)?.eloAtlantida ?? j.eloAtlantida));
   }
 
-  function guardarEdicion() {
+  async function guardarEdicion() {
     if (!editandoId) return;
     const eloNumero = Number(editElo);
     const eloValido = Number.isFinite(eloNumero) ? eloNumero : 1500;
-    actualizarJugador(editandoId, editNombre, Math.max(ELO_MINIMO, eloValido));
-    setEditandoId(null);
+    if (await actualizarJugador(editandoId, editNombre, Math.max(ELO_MINIMO, eloValido))) setEditandoId(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -157,7 +158,7 @@ export default function JugadoresPage() {
   );
 
   const lista = useMemo(() => {
-    const activos = mostrarTodos ? jugadoresConStats : jugadoresConStats.filter(jugoRecientemente);
+    const activos = mostrarTodos || busqueda.trim() ? jugadoresConStats : jugadoresConStats.filter(jugoRecientemente);
     const filtrados = busqueda.trim()
       ? activos.filter((j: JugadorEnVivo) =>
           `${j.nombre} ${j.apodo ?? ""}`.toLowerCase().includes(busqueda.trim().toLowerCase())
@@ -172,7 +173,7 @@ export default function JugadoresPage() {
     <div className="flex flex-col gap-6">
       <EncabezadoPagina
         titulo="Jugadores"
-        subtitulo="Lista de jugadores del club con su Elo Atlántida y estadísticas."
+        subtitulo="Los protagonistas del club. Explorá el ranking y la historia detrás de cada jugador."
         accion={
           puedeEditar && (
             <Link
@@ -185,17 +186,18 @@ export default function JugadoresPage() {
         }
       />
 
+      {errorCarga && <p role="status" className="text-sm text-amber-300">{errorCarga}</p>}
       {distribucionElo.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
-          <h2 className="mb-3 font-semibold">Distribución de Elo del plantel</h2>
-          <GraficoBarras datos={distribucionElo} />
+        <div className="panel p-5">
+          <details><summary className="flex items-center justify-between gap-3 text-sm font-medium"><span>El plantel en números</span><span className="text-xs text-zinc-400">Distribución de Elo ↓</span></summary><div className="mt-5">
+          <GraficoBarras datos={distribucionElo} /></div></details>
         </div>
       )}
 
       {puedeEditar && (
       <form
         onSubmit={handleSubmit}
-        className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/5 p-4"
+        className="flex flex-wrap items-end gap-3 panel p-4"
       >
         <div className="flex flex-col gap-1">
           <label htmlFor="nombre" className="text-xs font-medium text-zinc-400">
@@ -245,17 +247,18 @@ export default function JugadoresPage() {
       </form>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <input
+      <div className="filter-toolbar">
+        <div className="search-field"><Icono nombre="buscar" className="h-4 w-4 shrink-0 text-zinc-500" /><input
           type="text"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
+          aria-label="Buscar jugador por nombre o apodo"
           placeholder="Buscar jugador..."
-          className="w-64 rounded-md border border-white/20 px-3 py-2 text-sm"
-        />
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-xs font-medium text-zinc-400">Ordenar por:</span>
+          className="min-w-0 flex-1"
+        />{busqueda&&<button type="button" aria-label="Limpiar búsqueda de jugadores" onClick={()=>setBusqueda("")}><Icono nombre="cerrar" className="h-4 w-4 text-zinc-400" /></button>}</div>
+        <div className="segmented-control" role="group" aria-label="Ordenar jugadores">
           <button
+            aria-pressed={orden === "elo"}
             onClick={() => setOrden("elo")}
             className={`rounded-md px-3 py-1.5 text-xs font-medium ${
               orden === "elo" ? "bg-blue-600 text-white" : "border border-white/20 hover:bg-white/10"
@@ -264,6 +267,7 @@ export default function JugadoresPage() {
             Elo
           </button>
           <button
+            aria-pressed={orden === "partidas"}
             onClick={() => setOrden("partidas")}
             className={`rounded-md px-3 py-1.5 text-xs font-medium ${
               orden === "partidas" ? "bg-blue-600 text-white" : "border border-white/20 hover:bg-white/10"
@@ -292,7 +296,7 @@ export default function JugadoresPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
+      <div className="overflow-x-auto panel">
         <table className="w-full text-sm">
           <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
@@ -399,7 +403,7 @@ export default function JugadoresPage() {
                           Editar
                         </button>
                         <button
-                          onClick={() => eliminarJugador(j.id)}
+                          onClick={() => { if (window.confirm(`¿Eliminar a ${nombreVisible(j)}? Solo se permite si no tiene historial en torneos.`)) void eliminarJugador(j.id); }}
                           className="text-xs text-red-400 hover:underline"
                         >
                           Eliminar

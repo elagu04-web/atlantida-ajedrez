@@ -64,6 +64,7 @@ export default function TorneoPage() {
     alternarAsistencia,
     alternarPago,
     cargando,
+    errorCarga,
   } = useTorneos();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
@@ -90,7 +91,7 @@ export default function TorneoPage() {
           ← Volver a torneos
         </Link>
         <p className="text-zinc-400">
-          {cargando ? "Cargando..." : "Ese torneo no existe."}
+          {errorCarga ?? (cargando ? "Cargando..." : "Ese torneo no existe.")}
         </p>
       </div>
     );
@@ -224,14 +225,14 @@ export default function TorneoPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="page-heading block!">
         <Link href="/torneos" className="text-sm text-blue-400 hover:underline">
           ← Volver a torneos
         </Link>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">{torneo.nombre}</h1>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-zinc-400">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{torneo.nombre}</h1>
+            <span className={`status-badge status-${torneo.estado}`}>
               {estadoLabel[torneo.estado]}
             </span>
           </div>
@@ -403,7 +404,8 @@ export default function TorneoPage() {
         </div>
       )}
 
-      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+      <nav className="section-navigation" aria-label="Secciones del torneo"><a href="#participantes">Participantes</a>{torneo.rondas.length>0&&<><a href="#posiciones">Posiciones</a><a href="#rondas">Rondas y resultados</a></>}</nav>
+      <div id="participantes" className="panel p-5">
         <h2 className="mb-3 font-semibold">Jugadores inscriptos ({inscriptos.length})</h2>
         <ul className="flex flex-col gap-1">
           {inscriptos.map((j) => {
@@ -643,14 +645,15 @@ export default function TorneoPage() {
       )}
 
       {resultadoCampeon?.tipo === "empate" && (
-        <div className="rounded-lg border border-white/10 bg-white/10 p-4 text-sm text-zinc-300">
+        <div className="panel bg-white/10 p-4 text-sm text-zinc-300">
           Empate en la punta entre {resultadoCampeon.jugadorIds.map((jid) => nombreDe(jid)).join(", ")} — para
           poder elegir quiénes juegan la final hace falta configurar al menos un desempate en el torneo.
         </div>
       )}
 
+      {errorCarga && <p role="status" className="text-sm text-amber-300">{errorCarga}</p>}
       {standings.length > 0 && torneo.rondas.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+        <div id="posiciones" className="overflow-x-auto panel">
           <h2 className="border-b border-white/10 bg-white/10 px-4 py-3 font-semibold">
             Tabla de posiciones
           </h2>
@@ -669,9 +672,9 @@ export default function TorneoPage() {
               </tr>
             </thead>
             <tbody>
-              {standings.map((s, i) => (
+              {standings.map((s) => (
                 <tr key={s.jugadorId} className="border-b border-white/5 last:border-0">
-                  <td className="px-4 py-2 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-2 text-zinc-400">{s.posicion}</td>
                   <td className="px-4 py-2">{nombreDe(s.jugadorId)}</td>
                   <td className="px-4 py-2 font-mono">{s.puntos}</td>
                   <td className="px-4 py-2">{s.partidasJugadas}</td>
@@ -688,7 +691,7 @@ export default function TorneoPage() {
       )}
 
       {torneo.rondas.length >= 2 && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+        <div className="panel p-5">
           <h2 className="mb-3 font-semibold">Carrera del torneo</h2>
           <GraficoMultiLinea
             categorias={carrera.map((r) => `R${r.numero}`)}
@@ -703,7 +706,7 @@ export default function TorneoPage() {
       )}
 
       {standings.length > 0 && torneo.rondas.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+        <div className="panel p-5">
           <h2 className="mb-3 font-semibold">Balance de colores</h2>
           <div className="flex flex-col gap-2">
             {standings.map((s) => {
@@ -735,13 +738,13 @@ export default function TorneoPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-4">
+      <div id="rondas" className="flex flex-col gap-4">
         {[...torneo.rondas].reverse().map((ronda) => {
           const esUltima = ronda.numero === ultimaRonda?.numero;
           const editandoEstaRonda = esUltima && modoEdicion && puedeEditarEstaRonda;
 
           return (
-            <div key={ronda.numero} className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+            <div key={ronda.numero} className="overflow-hidden panel">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/10 px-4 py-3">
                 <h3 className="font-semibold">
                   Ronda {ronda.numero}
@@ -848,7 +851,7 @@ export default function TorneoPage() {
                     return (
                       <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-400">
                         <span>{nombreDe(e.blancasId)}</span>
-                        <span className="text-zinc-400">— descansa (punto libre) —</span>
+                        <span className="text-zinc-400">{torneo.formato === "round-robin" ? "— descanso · 0 puntos —" : "— bye · 1 punto —"}</span>
                       </div>
                     );
                   }

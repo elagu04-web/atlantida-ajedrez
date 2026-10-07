@@ -69,12 +69,19 @@ export default function TransmisionPage() {
   const [estado, setEstado] = useState<EstadoTransmision | null>(null);
   const [cargando, setCargando] = useState(true);
   const [fotoTick, setFotoTick] = useState(0);
+  const [errorCarga, setErrorCarga] = useState<string | null>(null);
 
   useEffect(() => {
     let activo = true;
+    let pendiente = false;
 
     async function cargar() {
-      const { data } = await supabase.from("transmision").select("*").limit(1).single();
+      if (pendiente) return;
+      pendiente = true;
+      try {
+      const { data, error } = await supabase.from("transmision").select("*").limit(1).maybeSingle();
+      if (error) throw error;
+      if (activo) { setErrorCarga(null); setCargando(false); if (!data) setEstado(null); }
       if (activo && data) {
         setEstado({
           activa: data.activa,
@@ -93,6 +100,9 @@ export default function TransmisionPage() {
         setFotoTick((t) => t + 1);
         setCargando(false);
       }
+      } catch {
+        if (activo) { setErrorCarga("No se pudo actualizar la transmisión. Se reintentará automáticamente."); setCargando(false); }
+      } finally { pendiente = false; }
     }
 
     cargar();
@@ -113,11 +123,13 @@ export default function TransmisionPage() {
         subtitulo="Partida en vivo desde el tablero del club."
       />
 
+      {errorCarga && <p role="status" className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-200">{errorCarga}</p>}
+
       {cargando ? (
         <p className="text-sm text-zinc-400">Cargando...</p>
       ) : !estado?.activa ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
-          <p className="text-zinc-400">No hay ninguna transmisión en este momento.</p>
+        <div className="panel p-8 text-center">
+          <p className="text-zinc-400">{errorCarga ? "Esperando conexión con la transmisión…" : "No hay ninguna transmisión en este momento."}</p>
         </div>
       ) : (
         <>
@@ -168,7 +180,7 @@ export default function TransmisionPage() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+            <div className="panel p-4">
               <AnalisisMotor fen={estado.fen} />
               {estado.resultado && (
                 <div className="mt-3 flex items-center justify-between rounded-md bg-green-500/10 px-3 py-2">
@@ -187,7 +199,7 @@ export default function TransmisionPage() {
                 </div>
               )}
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+            <div className="panel p-4">
               <h2 className="mb-3 font-semibold">Jugadas</h2>
               {estado.jugadas.length === 0 ? (
                 <p className="text-sm text-zinc-400">Todavía no se jugó ninguna jugada.</p>

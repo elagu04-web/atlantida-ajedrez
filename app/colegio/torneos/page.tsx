@@ -43,7 +43,7 @@ export default function ColegioTorneosPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+      <div className="panel p-8 text-center">
         <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
@@ -109,7 +109,7 @@ export default function ColegioTorneosPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-5 rounded-lg border border-white/10 bg-white/5 p-5"
+        className="flex flex-col gap-5 panel p-5"
       >
         <div className="flex flex-col gap-1">
           <label htmlFor="nombre" className="text-xs font-medium text-zinc-400">
@@ -303,7 +303,7 @@ export default function ColegioTorneosPage() {
         {[...torneos].reverse().map((t) => (
           <div
             key={t.id}
-            className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:shadow-sm"
+            className="flex items-center justify-between panel p-4 hover:border-white/20 hover:shadow-sm"
           >
             <Link href={`/colegio/torneos/${t.id}`} className="flex-1">
               <div className="font-medium">{t.nombre}</div>

@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { useAvisos } from "./AvisosContext";
 
 // Único admin real del sitio. Cualquier otra sesión iniciada (por ejemplo,
 // un socio del club que entra con Google para anotarse a un torneo) NO da
@@ -24,17 +25,19 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [cargando, setCargando] = useState(true);
+  const avisar = useAvisos();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setCargando(false);
-    });
+    }).catch(() => { avisar("No se pudo comprobar la sesión. Volvé a intentar."); setCargando(false); });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, nuevaSesion) => {
       setSession(nuevaSesion);
+      setCargando(false);
     });
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [avisar]);
 
   async function iniciarSesion(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -42,14 +45,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function iniciarSesionConGoogle() {
-    await supabase.auth.signInWithOAuth({
+    try {
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.href },
     });
+    if (error) throw error;
+    } catch { avisar("No se pudo iniciar sesión con Google. Volvé a intentar."); }
   }
 
   async function cerrarSesion() {
-    await supabase.auth.signOut();
+    try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    } catch { avisar("No se pudo cerrar la sesión. Volvé a intentar."); }
   }
 
   const esAdmin = session?.user?.email === EMAIL_ADMIN;

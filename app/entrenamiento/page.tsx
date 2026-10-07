@@ -135,7 +135,7 @@ function ComparacionProgreso({
           Últimas 10 partidas comparadas contra las 10 anteriores a esas.
         </p>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
+      <div className="overflow-x-auto panel">
         <table className="w-full text-sm">
           <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
@@ -177,7 +177,7 @@ function ComparacionProgreso({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <h3 className="text-xs font-medium uppercase text-zinc-400">Patrones — antes</h3>
           <div className="mt-2 flex flex-col gap-2">
             {anteriores.patronesRecurrentes.slice(0, 4).map((p) => (
@@ -188,7 +188,7 @@ function ComparacionProgreso({
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <h3 className="text-xs font-medium uppercase text-zinc-400">Patrones — ahora</h3>
           <div className="mt-2 flex flex-col gap-2">
             {recientes.patronesRecurrentes.slice(0, 4).map((p) => (
@@ -272,7 +272,7 @@ function EntrenamientoContenido() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+      <div className="panel p-8 text-center">
         <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
@@ -412,7 +412,7 @@ function EntrenamientoContenido() {
           para encontrar sus errores más grandes — herramienta solo para vos, no la ven los alumnos."
       />
 
-      <form onSubmit={handleBuscar} className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+      <form onSubmit={handleBuscar} className="flex flex-wrap items-end gap-3 panel p-4">
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium text-zinc-400">Plataforma</span>
           <div className="flex gap-3 py-2">
@@ -478,7 +478,7 @@ function EntrenamientoContenido() {
       )}
 
       {partidas.length > 0 && (
-        <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="flex flex-col gap-2 panel p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">Últimas partidas</h2>
             <button
@@ -517,7 +517,7 @@ function EntrenamientoContenido() {
       )}
 
       {analizando && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
+        <div className="panel p-4 text-sm text-zinc-400">
           Analizando con el motor
           {progreso ? ` — jugada ${progreso.hechas} de ${progreso.total}...` : "..."}
         </div>
@@ -529,7 +529,7 @@ function EntrenamientoContenido() {
         <div className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             {resultado.peorJugadaBlancas && resultado.peorJugadaBlancas.perdidaCentipeones > 0 && (
-              <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="panel p-4">
                 <div className="text-xs font-medium text-zinc-400">Peor jugada de blancas</div>
                 <div className="mt-1 text-lg font-semibold">
                   {resultado.peorJugadaBlancas.numero}. {resultado.peorJugadaBlancas.san}
@@ -544,7 +544,7 @@ function EntrenamientoContenido() {
               </div>
             )}
             {resultado.peorJugadaNegras && resultado.peorJugadaNegras.perdidaCentipeones > 0 && (
-              <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="panel p-4">
                 <div className="text-xs font-medium text-zinc-400">Peor jugada de negras</div>
                 <div className="mt-1 text-lg font-semibold">
                   {resultado.peorJugadaNegras.numero}...{resultado.peorJugadaNegras.san}
@@ -560,7 +560,7 @@ function EntrenamientoContenido() {
             )}
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+          <div className="overflow-hidden panel">
             <h2 className="border-b border-white/10 bg-white/10 px-4 py-3 font-semibold">
               Jugada por jugada
             </h2>
@@ -658,7 +658,7 @@ function EntrenamientoContenido() {
           </div>
 
           {patrones.patronesRecurrentes.length > 0 && (
-            <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+            <div className="panel p-5">
               <h2 className="font-semibold">Patrones recurrentes</h2>
               <p className="mt-1 text-xs text-zinc-400">
                 Qué se repite entre todas las jugadas marcadas como error, de más a menos frecuente.
@@ -671,7 +671,7 @@ function EntrenamientoContenido() {
             </div>
           )}
 
-          <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
+          <div className="overflow-x-auto panel">
             <table className="w-full text-sm">
               <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
                 <tr>
@@ -705,7 +705,7 @@ function EntrenamientoContenido() {
           </div>
 
           {patrones.aperturas.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/5">
+            <div className="overflow-x-auto panel">
               <h2 className="border-b border-white/10 bg-white/10 px-4 py-3 font-semibold">
                 Rendimiento por apertura
               </h2>

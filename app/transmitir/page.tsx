@@ -44,7 +44,7 @@ function TransmitirContenido() {
 
   const chessRef = useRef(new Chess());
   const desconectarRef = useRef<(() => void) | null>(null);
-  const [log, setLog] = useState<string[]>([]);
+  const [log, setLog] = useState<string[]>(() => parametros.get("torneo") ? [`🔗 Conectado a la ronda ${parametros.get("ronda")} del torneo (partida ${parametros.get("emp")}).`] : []);
   const [conectado, setConectado] = useState(false);
   const [conectando, setConectando] = useState(false);
   const [fen, setFen] = useState(chessRef.current.fen());
@@ -54,10 +54,10 @@ function TransmitirContenido() {
   const [transmisionId, setTransmisionId] = useState<string | null>(null);
   const [transmitiendo, setTransmitiendo] = useState(false);
   const transmitiendoRef = useRef(false);
-  const [blancas, setBlancas] = useState("");
-  const [negras, setNegras] = useState("");
-  const blancasRef = useRef("");
-  const negrasRef = useRef("");
+  const [blancas, setBlancas] = useState(parametros.get("blancas") ?? "");
+  const [negras, setNegras] = useState(parametros.get("negras") ?? "");
+  const blancasRef = useRef(parametros.get("blancas") ?? "");
+  const negrasRef = useRef(parametros.get("negras") ?? "");
 
   // Seguimiento de qué casillas quedaron distintas de la posición
   // confirmada (chessRef.current) por los eventos de levantar/apoyar
@@ -83,19 +83,17 @@ function TransmitirContenido() {
   );
   const [editandoPosicion, setEditandoPosicion] = useState(false);
 
-  const [torneoId, setTorneoId] = useState<string | null>(null);
-  const [rondaNumero, setRondaNumero] = useState<number | null>(null);
-  const [empNumero, setEmpNumero] = useState<number | null>(null);
+  const torneoId = parametros.get("torneo");
+  const rondaNumero = Number(parametros.get("ronda")) || null;
+  const empNumero = Number(parametros.get("emp")) || null;
   const torneoIdRef = useRef<string | null>(null);
   const rondaNumeroRef = useRef<number | null>(null);
   const empNumeroRef = useRef<number | null>(null);
 
-  const [jugadorBlancas, setJugadorBlancas] = useState<{ fotoUrl: string | null; eloAtlantida: number } | null>(
-    null
-  );
-  const [jugadorNegras, setJugadorNegras] = useState<{ fotoUrl: string | null; eloAtlantida: number } | null>(
-    null
-  );
+  const [blancasPersonalizadas, setBlancasPersonalizadas] = useState(false);
+  const [negrasPersonalizadas, setNegrasPersonalizadas] = useState(false);
+  const jugadorBlancas = blancasPersonalizadas ? null : jugadoresEnVivo.find(j => j.id === parametros.get("blancasId")) ?? null;
+  const jugadorNegras = negrasPersonalizadas ? null : jugadoresEnVivo.find(j => j.id === parametros.get("negrasId")) ?? null;
   const blancasFotoRef = useRef<string | null>(null);
   const negrasFotoRef = useRef<string | null>(null);
   const blancasEloRef = useRef<number | null>(null);
@@ -147,60 +145,22 @@ function TransmitirContenido() {
   }, []);
 
   useEffect(() => {
-    const torneo = parametros.get("torneo");
-    const ronda = parametros.get("ronda");
-    const emp = parametros.get("emp");
-    const nombreBlancas = parametros.get("blancas");
-    const nombreNegras = parametros.get("negras");
-    if (!torneo || !ronda || !emp) return;
-
-    torneoIdRef.current = torneo;
-    rondaNumeroRef.current = Number(ronda);
-    empNumeroRef.current = Number(emp);
-    setTorneoId(torneo);
-    setRondaNumero(Number(ronda));
-    setEmpNumero(Number(emp));
-
-    if (nombreBlancas) {
-      blancasRef.current = nombreBlancas;
-      setBlancas(nombreBlancas);
-    }
-    if (nombreNegras) {
-      negrasRef.current = nombreNegras;
-      setNegras(nombreNegras);
-    }
-    agregarLog(`🔗 Conectado a la ronda ${ronda} del torneo (partida ${emp}).`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    torneoIdRef.current = torneoId;
+    rondaNumeroRef.current = rondaNumero;
+    empNumeroRef.current = empNumero;
+  }, [torneoId, rondaNumero, empNumero]);
 
   useEffect(() => {
-    if (jugadoresEnVivo.length === 0) return;
-    const idBlancas = parametros.get("blancasId");
-    const idNegras = parametros.get("negrasId");
-
-    if (idBlancas) {
-      const j = jugadoresEnVivo.find((x) => x.id === idBlancas);
-      if (j) {
-        setJugadorBlancas({ fotoUrl: j.fotoUrl, eloAtlantida: j.eloAtlantida });
-        blancasFotoRef.current = j.fotoUrl;
-        blancasEloRef.current = j.eloAtlantida;
-      }
-    }
-    if (idNegras) {
-      const j = jugadoresEnVivo.find((x) => x.id === idNegras);
-      if (j) {
-        setJugadorNegras({ fotoUrl: j.fotoUrl, eloAtlantida: j.eloAtlantida });
-        negrasFotoRef.current = j.fotoUrl;
-        negrasEloRef.current = j.eloAtlantida;
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jugadoresEnVivo]);
+    blancasFotoRef.current = jugadorBlancas?.fotoUrl ?? null;
+    blancasEloRef.current = jugadorBlancas?.eloAtlantida ?? null;
+    negrasFotoRef.current = jugadorNegras?.fotoUrl ?? null;
+    negrasEloRef.current = jugadorNegras?.eloAtlantida ?? null;
+  }, [jugadorBlancas, jugadorNegras]);
 
   function cambiarBlancas(valor: string) {
     setBlancas(valor);
     blancasRef.current = valor;
-    setJugadorBlancas(null);
+    setBlancasPersonalizadas(true);
     blancasFotoRef.current = null;
     blancasEloRef.current = null;
   }
@@ -208,7 +168,7 @@ function TransmitirContenido() {
   function cambiarNegras(valor: string) {
     setNegras(valor);
     negrasRef.current = valor;
-    setJugadorNegras(null);
+    setNegrasPersonalizadas(true);
     negrasFotoRef.current = null;
     negrasEloRef.current = null;
   }
@@ -573,8 +533,8 @@ function TransmitirContenido() {
     agregarLog(`🏁 Partida terminada: ${res}. PGN generado.`);
 
     if (torneoIdRef.current && rondaNumeroRef.current && empNumeroRef.current) {
-      await registrarResultado(torneoIdRef.current, rondaNumeroRef.current, empNumeroRef.current, res);
-      agregarLog("✅ Resultado cargado también en el torneo.");
+      const guardado = await registrarResultado(torneoIdRef.current, rondaNumeroRef.current, empNumeroRef.current, res);
+      agregarLog(guardado ? "✅ Resultado cargado también en el torneo." : "⚠ Resultado sin guardar en el torneo. Revisá el aviso y volvé a cargarlo.");
     }
 
     if (transmitiendoRef.current) publicarEstado(true, res, pgnGenerado);
@@ -617,7 +577,7 @@ function TransmitirContenido() {
       </div>
 
       {(jugadorBlancas || jugadorNegras) && (
-        <div className="flex flex-wrap items-center justify-center gap-6 rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="flex flex-wrap items-center justify-center gap-6 panel p-4">
           {[
             { jugador: jugadorBlancas, nombre: blancas, color: "Blancas" },
             { jugador: jugadorNegras, nombre: negras, color: "Negras" },
@@ -648,7 +608,7 @@ function TransmitirContenido() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+      <div className="flex flex-wrap items-end gap-3 panel p-4">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-zinc-400">Blancas</label>
           <input
@@ -686,7 +646,7 @@ function TransmitirContenido() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-4">
+      <div className="flex flex-wrap items-center gap-3 panel p-4">
         <span className="text-xs font-medium text-zinc-400">Terminar partida con resultado:</span>
         <button
           onClick={() => handleTerminarPartida("1-0")}
@@ -710,7 +670,7 @@ function TransmitirContenido() {
       </div>
 
       {pgn && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-semibold">PGN de la partida</h2>
             <button
@@ -846,7 +806,7 @@ function TransmitirContenido() {
       )}
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <h2 className="mb-3 font-semibold">Tablero (según lo que se movió)</h2>
           <TableroMini fen={fen} />
           <p className="mt-3 text-xs text-zinc-400">
@@ -854,7 +814,7 @@ function TransmitirContenido() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+        <div className="panel p-4">
           <h2 className="mb-3 font-semibold">Registro</h2>
           <div className="h-80 overflow-y-auto rounded bg-blue-600 p-3 font-mono text-xs text-zinc-100">
             {log.length === 0 && <p className="text-zinc-400">Todavía no hay actividad.</p>}

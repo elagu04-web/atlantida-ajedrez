@@ -17,7 +17,7 @@ import { GraficoMultiLinea, colorDeSerie, type SerieLinea } from "@/components/G
 import { GraficoBarras } from "@/components/GraficoBarras";
 
 export default function EstadisticasPage() {
-  const { torneos, cargando } = useTorneos();
+  const { torneos, cargando, errorCarga } = useTorneos();
   const jugadores = useJugadoresEnVivo();
   const [modo, setModo] = useState<"mes" | "anio">("mes");
   const [periodo, setPeriodo] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function EstadisticasPage() {
   const periodosDisponibles = useMemo(() => [...grupos.keys()].sort().reverse(), [grupos]);
   const periodoActivo =
     periodo && periodosDisponibles.includes(periodo) ? periodo : periodosDisponibles[0];
-  const torneosDelPeriodo = periodoActivo ? grupos.get(periodoActivo) ?? [] : [];
+  const torneosDelPeriodo = useMemo(() => periodoActivo ? grupos.get(periodoActivo) ?? [] : [], [periodoActivo, grupos]);
   const tabla = useMemo(() => calcularTablaGeneral(torneosDelPeriodo), [torneosDelPeriodo]);
 
   const anioActual = new Date().getFullYear();
@@ -98,8 +98,9 @@ export default function EstadisticasPage() {
         subtitulo="Tabla general por período y Copa de Campeones."
       />
 
+      {errorCarga && <p role="status" className="text-sm text-amber-300">{errorCarga}</p>}
       {seriesElo.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+        <div className="panel p-5">
           <h2 className="mb-3 font-semibold">Evolución de Elo — top jugadores</h2>
           <GraficoMultiLinea
             categorias={mesesAscendentes.map(etiquetaPeriodo)}
@@ -113,11 +114,12 @@ export default function EstadisticasPage() {
         </div>
       )}
 
-      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+      <div className="panel p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-semibold">Tabla general</h2>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <button
+              aria-pressed={modo === "mes"}
               onClick={() => {
                 setModo("mes");
                 setPeriodo(null);
@@ -129,6 +131,7 @@ export default function EstadisticasPage() {
               Mensual
             </button>
             <button
+              aria-pressed={modo === "anio"}
               onClick={() => {
                 setModo("anio");
                 setPeriodo(null);
@@ -141,6 +144,7 @@ export default function EstadisticasPage() {
             </button>
             {periodosDisponibles.length > 0 && (
               <select
+                aria-label="Período de estadísticas"
                 value={periodoActivo}
                 onChange={(e) => setPeriodo(e.target.value)}
                 className="rounded-md border border-white/20 bg-white/5 px-2 py-1.5 text-xs"
@@ -177,10 +181,10 @@ export default function EstadisticasPage() {
                 </tr>
               </thead>
               <tbody>
-                {tabla.filas.map((f, i) => (
+                {tabla.filas.map((f) => (
                   <tr key={f.jugadorId} className="border-b border-white/5 last:border-0">
                     <td className="px-3 py-2 text-zinc-400">
-                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                      {f.posicion === 1 ? "🥇" : f.posicion === 2 ? "🥈" : f.posicion === 3 ? "🥉" : f.posicion}
                     </td>
                     <td className="px-3 py-2 font-medium">{nombreDe(f.jugadorId)}</td>
                     {f.puntosPorTorneo.map((p, j) => (
@@ -203,13 +207,13 @@ export default function EstadisticasPage() {
       </div>
 
       {rendimientoOrdenado.length > 0 && periodoActivo && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+        <div className="panel p-5">
           <h2 className="mb-3 font-semibold">Rendimiento — {etiquetaPeriodo(periodoActivo)}</h2>
           <GraficoBarras datos={rendimientoOrdenado} formatoValor={(v) => `${v.toFixed(0)}%`} />
         </div>
       )}
 
-      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+      <div className="panel p-5">
         <h2 className="mb-4 font-semibold">🏆 Copa de Campeones {anioActual}</h2>
         {campeones.length === 0 ? (
           <p className="text-sm text-zinc-400">
@@ -252,7 +256,7 @@ export default function EstadisticasPage() {
       </div>
 
       {actividadPorMes.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+        <div className="panel p-5">
           <h2 className="mb-3 font-semibold">Actividad del club — torneos por mes</h2>
           <GraficoBarras datos={actividadPorMes} />
         </div>

@@ -55,7 +55,7 @@ export default function EpicoTorneoPage() {
 
   if (!esAdmin) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+      <div className="panel p-8 text-center">
         <p className="text-zinc-400">Esta sección es solo para administradores.</p>
       </div>
     );
@@ -141,7 +141,7 @@ export default function EpicoTorneoPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+      <div className="panel p-5">
         <h2 className="mb-3 font-semibold">Alumnos inscriptos ({inscriptos.length})</h2>
         <ul className="flex flex-col gap-1">
           {inscriptos.map((j) => (
@@ -249,7 +249,7 @@ export default function EpicoTorneoPage() {
       </div>
 
       {standings.length > 0 && torneo.rondas.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+        <div className="overflow-x-auto panel">
           <h2 className="border-b border-white/10 bg-white/10 px-4 py-3 font-semibold">
             Tabla de posiciones
           </h2>
@@ -268,9 +268,9 @@ export default function EpicoTorneoPage() {
               </tr>
             </thead>
             <tbody>
-              {standings.map((s, i) => (
+              {standings.map((s) => (
                 <tr key={s.jugadorId} className="border-b border-white/5 last:border-0">
-                  <td className="px-4 py-2 text-zinc-400">{i + 1}</td>
+                  <td className="px-4 py-2 text-zinc-400">{s.posicion}</td>
                   <td className="px-4 py-2">{nombreDe(s.jugadorId)}</td>
                   <td className="px-4 py-2 font-mono">{s.puntos}</td>
                   <td className="px-4 py-2">{s.partidasJugadas}</td>
@@ -288,7 +288,7 @@ export default function EpicoTorneoPage() {
 
       <div className="flex flex-col gap-4">
         {[...torneo.rondas].reverse().map((ronda) => (
-          <div key={ronda.numero} className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
+          <div key={ronda.numero} className="overflow-hidden panel">
             <div className="border-b border-white/10 bg-white/10 px-4 py-3">
               <h3 className="font-semibold">Ronda {ronda.numero}</h3>
             </div>
@@ -298,7 +298,7 @@ export default function EpicoTorneoPage() {
                   return (
                     <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-400">
                       <span>{nombreDe(e.blancasId)}</span>
-                      <span>— descansa (punto libre) —</span>
+                      <span>{torneo.formato === "round-robin" ? "— descanso · 0 puntos —" : "— bye · 1 punto —"}</span>
                     </div>
                   );
                 }
