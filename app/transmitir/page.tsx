@@ -2,828 +2,150 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Chess, type Square } from "chess.js";
+import { Chess, type Move } from "chess.js";
 import { useAuth } from "@/context/AuthContext";
 import { useTorneos } from "@/context/TorneosContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { supabase } from "@/lib/supabase";
-import { conectarPegasus, casillaDesdeIndice } from "@/lib/pegasus";
+import { conectarPegasus } from "@/lib/pegasus";
+import { RegistroPegasus, recuperarPartida, hacerJugadaManual, type LecturaPegasus } from "@/lib/registroPegasus";
+import { ColaTransmision } from "@/lib/colaTransmision";
+import { fechaMontevideo } from "@/lib/desafios";
 import { TableroMini } from "@/components/TableroMini";
 import { EditorPosicion } from "@/components/EditorPosicion";
 import { CamaraTablero, type CamaraTableroHandle } from "@/components/CamaraTablero";
+import { AuthWidget } from "@/components/AuthWidget";
+import { EncabezadoPagina } from "@/components/EncabezadoPagina";
+import { GuiaPegasus } from "@/components/GuiaPegasus";
 import type { ResultadoPartida } from "@/lib/tournaments";
 
-// Cuánto esperar, después del último levantar/apoyar, antes de intentar
-// reconocer una jugada. No es un sondeo periódico: el reloj se reinicia
-// en cada evento nuevo, así que mientras el tablero siga cambiando (una
-// captura larga, piezas acomodándose) no se intenta nada — recién cuando
-// pasa este ratito sin ningún evento nuevo.
-const ESPERA_QUIETUD_MS = 400;
+type Borrador={pgn:string;fen:string;jugadas:string[];blancas:string;negras:string;resultado:ResultadoPartida|null;fecha:string};
+type Publicacion={activa:boolean;fen:string;jugadas:string[];blancas:string|null;negras:string|null;blancas_foto:string|null;negras_foto:string|null;blancas_elo:number|null;negras_elo:number|null;torneo_id:string|null;ronda_numero:number|null;emparejamiento_numero:number|null;resultado:ResultadoPartida|null;pgn:string;actualizado_en:string};
+const CORONACIONES:Record<string,string>={q:"Dama",r:"Torre",b:"Alfil",n:"Caballo"};
 
-// Cuántas rondas de espera de quietud pueden fallar en encajar con alguna
-// jugada legal antes de avisar que el tablero físico se desincronizó. Le
-// da margen extra a una captura "deslizada" (empujando la pieza comida en
-// vez de levantarla y apoyarla limpio), que puede dejar el seguimiento con
-// alguna casilla de más por un instante incluso después de quedar quieto.
-const INTENTOS_ANTES_DE_DESINCRONIZAR = 3;
-
-export default function TransmitirPage() {
-  return (
-    <Suspense fallback={<p className="text-sm text-zinc-400">Cargando...</p>}>
-      <TransmitirContenido />
-    </Suspense>
-  );
+export default function TransmitirPage(){
+  const {esAdmin,cargando,session}=useAuth();
+  return <><EncabezadoPagina titulo="Transmitir con Pegasus" subtitulo="Registrá la partida completa y compartí cada jugada con el club."/>
+    {cargando?<p className="mt-6 text-zinc-400">Comprobando tu sesión…</p>:esAdmin?<Suspense fallback={<p>Cargando partida…</p>}><MesaTransmitir key={session!.user.id}/></Suspense>:<section className="panel my-6 p-5"><p className="mb-3 text-zinc-400">El registro y la transmisión están disponibles para el administrador del club.</p><AuthWidget/></section>}
+    <GuiaPegasus/>
+  </>;
 }
+function MesaTransmitir(){const parametros=useSearchParams();return <TransmitirContenido key={`${parametros.get("torneo")??"libre"}:${parametros.get("ronda")??0}:${parametros.get("emp")??0}`}/>;}
 
-function TransmitirContenido() {
-  const { esAdmin } = useAuth();
-  const puedeUsar = esAdmin;
-  const parametros = useSearchParams();
-  const { torneos, registrarResultado } = useTorneos();
-  const jugadoresEnVivo = useJugadoresEnVivo();
-
-  const chessRef = useRef(new Chess());
-  const desconectarRef = useRef<(() => void) | null>(null);
-  const [log, setLog] = useState<string[]>(() => parametros.get("torneo") ? [`🔗 Conectado a la ronda ${parametros.get("ronda")} del torneo (partida ${parametros.get("emp")}).`] : []);
-  const [conectado, setConectado] = useState(false);
-  const [conectando, setConectando] = useState(false);
-  const [fen, setFen] = useState(chessRef.current.fen());
-  const [jugadas, setJugadas] = useState<string[]>([]);
-  const [bateria, setBateria] = useState<number | null>(null);
-
-  const [transmisionId, setTransmisionId] = useState<string | null>(null);
-  const [transmitiendo, setTransmitiendo] = useState(false);
-  const transmitiendoRef = useRef(false);
-  const [blancas, setBlancas] = useState(parametros.get("blancas") ?? "");
-  const [negras, setNegras] = useState(parametros.get("negras") ?? "");
-  const blancasRef = useRef(parametros.get("blancas") ?? "");
-  const negrasRef = useRef(parametros.get("negras") ?? "");
-
-  // Seguimiento de qué casillas quedaron distintas de la posición
-  // confirmada (chessRef.current) por los eventos de levantar/apoyar
-  // recibidos desde la última jugada resuelta. Tocar una pieza y devolverla
-  // al mismo lugar se cancela solo: si una casilla vuelve a coincidir con
-  // la posición confirmada, sale de estos sets.
-  const vaciadasRef = useRef<Set<string>>(new Set());
-  const llenadasRef = useRef<Set<string>>(new Set());
-  // Superset de vaciadasRef/llenadasRef: toda casilla que tuvo al menos un
-  // evento (se cancele o no en la ocupación final). Una comida sobre una
-  // casilla que ya estaba ocupada no cambia su ocupación (ocupada antes,
-  // ocupada después, solo cambió de dueño) — así que por ocupación sola es
-  // indistinguible de cualquier otra captura legal desde el mismo origen
-  // que termine en una casilla también ya ocupada. Esta lista sirve para
-  // desempatar: la jugada real siempre toca físicamente su casilla destino.
-  const tocadasRef = useRef<Set<string>>(new Set());
-  const timerQuietoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const desincronizadoRef = useRef(false);
-  const intentosSinResolverRef = useRef(0);
-  const [casillasSospechosas, setCasillasSospechosas] = useState<string[] | null>(null);
-  const [ultimaPromocion, setUltimaPromocion] = useState<{ origen: string; destino: string } | null>(
-    null
-  );
-  const [editandoPosicion, setEditandoPosicion] = useState(false);
-
-  const torneoId = parametros.get("torneo");
-  const rondaNumero = Number(parametros.get("ronda")) || null;
-  const empNumero = Number(parametros.get("emp")) || null;
-  const torneoIdRef = useRef<string | null>(null);
-  const rondaNumeroRef = useRef<number | null>(null);
-  const empNumeroRef = useRef<number | null>(null);
-
-  const [blancasPersonalizadas, setBlancasPersonalizadas] = useState(false);
-  const [negrasPersonalizadas, setNegrasPersonalizadas] = useState(false);
-  const jugadorBlancas = blancasPersonalizadas ? null : jugadoresEnVivo.find(j => j.id === parametros.get("blancasId")) ?? null;
-  const jugadorNegras = negrasPersonalizadas ? null : jugadoresEnVivo.find(j => j.id === parametros.get("negrasId")) ?? null;
-  const blancasFotoRef = useRef<string | null>(null);
-  const negrasFotoRef = useRef<string | null>(null);
-  const blancasEloRef = useRef<number | null>(null);
-  const negrasEloRef = useRef<number | null>(null);
-  const [resultado, setResultadoState] = useState<ResultadoPartida | null>(null);
-  const [pgn, setPgn] = useState<string | null>(null);
-  const camaraRef = useRef<CamaraTableroHandle>(null);
-  const camaraActivaRef = useRef(false);
-
-  useEffect(() => {
-    // Si salimos de la página (navegando, recargando o cerrando la pestaña)
-    // con el tablero todavía conectado, lo desconectamos prolijamente para
-    // que no quede "pensando" que sigue enganchado la próxima vez.
-    function desconectarAntesDeSalir() {
-      desconectarRef.current?.();
+function TransmitirContenido(){
+  const {session}=useAuth(),parametros=useSearchParams();
+  const {torneos,registrarResultado}=useTorneos();const jugadores=useJugadoresEnVivo();
+  const torneoId=parametros.get("torneo"),ronda=Number(parametros.get("ronda"))||null,emp=Number(parametros.get("emp"))||null;
+  const clave=`atlantida-pegasus-v2:${session!.user.id}:${torneoId??"libre"}:${ronda??0}:${emp??0}`;
+  const partida=useRef(new Chess()),registro=useRef(new RegistroPegasus());
+  const bluetooth=useRef<Awaited<ReturnType<typeof conectarPegasus>>|null>(null),cola=useRef<ColaTransmision<Publicacion>|null>(null);
+  const id=useRef<string|null>(null),version=useRef<string|null>(null),activa=useRef(false),final=useRef<ResultadoPartida|null>(null);
+  const nombres=useRef({blancas:parametros.get("blancas")??"",negras:parametros.get("negras")??""});
+  const [blancas,setBlancas]=useState(nombres.current.blancas),[negras,setNegras]=useState(nombres.current.negras);
+  const [personalizadas,setPersonalizadas]=useState({blancas:false,negras:false});
+  const [vista,setVista]=useState({fen:partida.current.fen(),jugadas:[] as string[],pgn:partida.current.pgn()});
+  const [conexion,setConexion]=useState<"sin-conectar"|"conectando"|"conectado">("sin-conectar");
+  const [bateria,setBateria]=useState<number|null>(null),[lectura,setLectura]=useState<LecturaPegasus|null>(null);
+  const [estadoGuardado,setEstadoGuardado]=useState("Preparando canal…"),[lista,setLista]=useState(false),[cargaError,setCargaError]=useState("");
+  const [transmitiendo,setTransmitiendo]=useState(false),[resultado,setResultado]=useState<ResultadoPartida|null>(null);
+  const [editando,setEditando]=useState(false),[manual,setManual]=useState(""),[log,setLog]=useState<string[]>([]);
+  const [copias,setCopias]=useState<Borrador[]>([]),[finalizando,setFinalizando]=useState(false);
+  const timer=useRef<ReturnType<typeof setTimeout>|null>(null),cierre=useRef(false),ultimoAviso=useRef(""),errorGuardado=useRef(false),pausado=useRef(false);
+  const camara=useRef<CamaraTableroHandle>(null);
+  const diagnostico=useRef<{fecha:string;evento:string;datos:unknown}[]>([]);
+  const jugadorBlancas=personalizadas.blancas?null:jugadores.find(j=>j.id===parametros.get("blancasId"));
+  const jugadorNegras=personalizadas.negras?null:jugadores.find(j=>j.id===parametros.get("negrasId"));
+  const perfiles=useRef({blancasFoto:null as string|null,negrasFoto:null as string|null,blancasElo:null as number|null,negrasElo:null as number|null});
+  useEffect(()=>{perfiles.current={blancasFoto:jugadorBlancas?.fotoUrl??null,negrasFoto:jugadorNegras?.fotoUrl??null,blancasElo:jugadorBlancas?.eloAtlantida??null,negrasElo:jugadorNegras?.eloAtlantida??null};},[jugadorBlancas,jugadorNegras]);
+  function anotar(texto:string){if(!cierre.current)setLog(l=>[...l.slice(-99),`${new Date().toLocaleTimeString("es-UY")} · ${texto}`]);}
+  function trazar(evento:string,datos:unknown){diagnostico.current.push({fecha:new Date().toISOString(),evento,datos});if(diagnostico.current.length>2000)diagnostico.current.shift();}
+  function borrador():Borrador{return {pgn:partida.current.pgn(),fen:partida.current.fen(),jugadas:partida.current.history(),...nombres.current,resultado:final.current,fecha:new Date().toISOString()};}
+  function refrescar(){
+    const datos=borrador();setVista({fen:datos.fen,jugadas:datos.jugadas,pgn:datos.pgn});
+    try{localStorage.setItem(clave,JSON.stringify(datos));}catch{anotar("No se pudo guardar la copia local. Descargá el PGN para conservar la partida.");}
+  }
+  function archivar(){if(!partida.current.history().length)return true;try{const anteriores: Borrador[]=JSON.parse(localStorage.getItem(`${clave}:copias`)??"[]");const nuevas=[borrador(),...anteriores].slice(0,10);localStorage.setItem(`${clave}:copias`,JSON.stringify(nuevas));setCopias(nuevas);return true;}catch{anotar("No se pudo archivar la copia local. Descargá el PGN antes de continuar.");return false;}}
+  useEffect(()=>{
+    let cancelado=false;cierre.current=false;
+    async function cargar(){
+      let local:Borrador|null=null;try{local=JSON.parse(localStorage.getItem(clave)??"null");const guardadas=JSON.parse(localStorage.getItem(`${clave}:copias`)??"[]");if(Array.isArray(guardadas))setCopias(guardadas);}catch{}
+      const {data,error}=await supabase.from("transmision").select("*").limit(1).abortSignal(AbortSignal.timeout(12000)).maybeSingle();if(cancelado)return;
+      if(error)setCargaError("No se pudo cargar el canal. La copia local sigue disponible; recargá para reintentar.");
+      if(data){
+        id.current=data.id;version.current=data.actualizado_en??null;
+        cola.current=new ColaTransmision(async datos=>{
+          let consulta=supabase.from("transmision").update(datos).eq("id",id.current!);
+          consulta=version.current===null?consulta.is("actualizado_en",null):consulta.eq("actualizado_en",version.current);
+          const {data:confirmada,error:e}=await consulta.select("id,actualizado_en").maybeSingle();
+          if(e)throw e;if(!confirmada)throw new Error("Otra pantalla cambió la transmisión. Tu copia está conservada; recargá para revisar antes de reemplazarla.");version.current=confirmada.actualizado_en;
+        },(estado,err)=>{if(cancelado)return;setEstadoGuardado(estado==="guardado"?"Guardado en el servidor":estado==="guardando"?"Guardando…":"Pendiente de conexión · copia local conservada");if(estado==="pendiente"&&!errorGuardado.current){errorGuardado.current=true;anotar(err instanceof Error?err.message:"No se pudo publicar. Se reintentará sin borrar la partida.");}if(estado==="guardado"){errorGuardado.current=false;setTransmitiendo(activa.current);}});
+      }else if(!error)setCargaError("No existe un canal de transmisión en Supabase. Podés registrar y descargar la partida; el administrador debe crear el canal para publicarla.");
+      const coincide=!torneoId||(data?.torneo_id===torneoId&&data.ronda_numero===ronda&&data.emparejamiento_numero===emp);
+      const fuente=local&&(!data||!coincide||local.fecha>(data.actualizado_en??""))?local:coincide&&(data?.activa||data?.resultado||data?.jugadas?.length)?{...data,fecha:data.actualizado_en}:local;
+      if(fuente){try{partida.current=recuperarPartida(fuente);final.current=fuente.resultado??null;setResultado(final.current);if(!parametros.get("blancas")){nombres.current.blancas=fuente.blancas??"";setBlancas(nombres.current.blancas);}if(!parametros.get("negras")){nombres.current.negras=fuente.negras??"";setNegras(nombres.current.negras);}setVista({fen:partida.current.fen(),jugadas:partida.current.history(),pgn:partida.current.pgn()});anotar(`Partida recuperada: ${partida.current.history().length} medias jugadas. Conectá y verificá las piezas para continuar.`);}catch{setCargaError("La partida guardada no pudo reconstruirse. Se conserva el borrador; revisá su PGN antes de empezar otra partida.");}}
+      activa.current=Boolean(coincide&&data?.activa);setTransmitiendo(activa.current);setLista(true);if(data)setEstadoGuardado("Canal preparado");
     }
-    window.addEventListener("beforeunload", desconectarAntesDeSalir);
-    return () => {
-      window.removeEventListener("beforeunload", desconectarAntesDeSalir);
-      desconectarRef.current?.();
-      if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Si llegamos con un enlace de "Transmitir" de un torneo, esos datos de la
-    // URL mandan sobre lo que haya quedado guardado de una transmisión
-    // anterior. Si no, solo retomamos blancas/negras cuando la transmisión
-    // anterior sigue activa (por ejemplo, si se recargó la página a mitad de
-    // una partida) — si ya terminó, arrancamos en blanco.
-    const vieneDeTorneo = Boolean(parametros.get("torneo"));
-
-    async function cargar() {
-      const { data } = await supabase.from("transmision").select("*").limit(1).single();
-      if (data) {
-        setTransmisionId(data.id);
-        setTransmitiendo(data.activa);
-        transmitiendoRef.current = data.activa;
-        if (!vieneDeTorneo && data.activa) {
-          setBlancas(data.blancas ?? "");
-          setNegras(data.negras ?? "");
-          blancasRef.current = data.blancas ?? "";
-          negrasRef.current = data.negras ?? "";
-        }
-      }
-    }
-    cargar();
+    void cargar();const reintento=setInterval(()=>void cola.current?.reintentar(),5000);
+    const online=()=>void cola.current?.reintentar();window.addEventListener("online",online);
+    return()=>{cancelado=true;cierre.current=true;clearInterval(reintento);window.removeEventListener("online",online);if(timer.current)clearTimeout(timer.current);cola.current?.cerrar();bluetooth.current?.desconectar();};
+    // La identidad de esta mesa es fija hasta navegar a otra partida.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    torneoIdRef.current = torneoId;
-    rondaNumeroRef.current = rondaNumero;
-    empNumeroRef.current = empNumero;
-  }, [torneoId, rondaNumero, empNumero]);
-
-  useEffect(() => {
-    blancasFotoRef.current = jugadorBlancas?.fotoUrl ?? null;
-    blancasEloRef.current = jugadorBlancas?.eloAtlantida ?? null;
-    negrasFotoRef.current = jugadorNegras?.fotoUrl ?? null;
-    negrasEloRef.current = jugadorNegras?.eloAtlantida ?? null;
-  }, [jugadorBlancas, jugadorNegras]);
-
-  function cambiarBlancas(valor: string) {
-    setBlancas(valor);
-    blancasRef.current = valor;
-    setBlancasPersonalizadas(true);
-    blancasFotoRef.current = null;
-    blancasEloRef.current = null;
+  },[clave]);
+  function publicar(valor=activa.current){
+    refrescar();if(!cola.current)return Promise.resolve(false);
+    const datos:Publicacion={activa:valor,fen:partida.current.fen(),jugadas:partida.current.history(),blancas:nombres.current.blancas.trim()||null,negras:nombres.current.negras.trim()||null,blancas_foto:perfiles.current.blancasFoto,negras_foto:perfiles.current.negrasFoto,blancas_elo:perfiles.current.blancasElo,negras_elo:perfiles.current.negrasElo,torneo_id:torneoId,ronda_numero:ronda,emparejamiento_numero:emp,resultado:final.current,pgn:partida.current.pgn(),actualizado_en:new Date().toISOString()};
+    return cola.current.agregar(datos);
   }
-
-  function cambiarNegras(valor: string) {
-    setNegras(valor);
-    negrasRef.current = valor;
-    setNegrasPersonalizadas(true);
-    negrasFotoRef.current = null;
-    negrasEloRef.current = null;
+  function aceptar(m:Move,yaRegistrada=false){
+    if(!yaRegistrada)registro.current.confirmarJugada(partida.current,m.san);setLectura(registro.current.evaluar(partida.current));ultimoAviso.current="";anotar(`Registrada: ${m.san}`);refrescar();if(activa.current)void publicar();
+    if(partida.current.isCheckmate())anotar("Jaque mate. Confirmá el resultado para guardarlo también en el torneo.");
   }
-
-  function agregarLog(linea: string) {
-    setLog((actual) => [...actual.slice(-49), linea]);
-  }
-
-  function actualizarDesdeChess() {
-    setFen(chessRef.current.fen());
-    setJugadas(chessRef.current.history());
-  }
-
-  async function publicarEstado(activa: boolean, resultadoFinal?: ResultadoPartida, pgnFinal?: string) {
-    if (!transmisionId) return;
-    // camara_activa NO va acá a propósito: se guarda aparte (ver
-    // onCambiaActiva de CamaraTablero más abajo). Si algún día esa columna
-    // no existiera todavía en la base, no queremos que eso tumbe TODA esta
-    // actualización (que es la que prende/apaga la transmisión y guarda la
-    // partida) — mejor que solo falle lo de la cámara, no todo lo demás.
-    const { error } = await supabase
-      .from("transmision")
-      .update({
-        activa,
-        fen: chessRef.current.fen(),
-        jugadas: chessRef.current.history(),
-        blancas: blancasRef.current.trim() || null,
-        negras: negrasRef.current.trim() || null,
-        blancas_foto: blancasFotoRef.current,
-        negras_foto: negrasFotoRef.current,
-        blancas_elo: blancasEloRef.current,
-        negras_elo: negrasEloRef.current,
-        torneo_id: torneoIdRef.current,
-        ronda_numero: rondaNumeroRef.current,
-        emparejamiento_numero: empNumeroRef.current,
-        resultado: resultadoFinal ?? null,
-        pgn: pgnFinal ?? null,
-        actualizado_en: new Date().toISOString(),
-      })
-      .eq("id", transmisionId);
-    if (error) {
-      agregarLog(`❌ No se pudo guardar el estado de la transmisión: ${error.message}`);
+  function resolver(){
+    if(timer.current)clearTimeout(timer.current);timer.current=null;if(final.current||pausado.current)return;
+    const estado=registro.current.evaluar(partida.current);setLectura(estado);
+    if(estado.tipo==="jugada"){aceptar(estado.candidatos[0]);return;}
+    if(estado.tipo==="moviendo"){timer.current=setTimeout(resolver,250);return;}
+    if(estado.tipo==="desajuste"||estado.tipo==="acomodar"){
+      const aviso=`${estado.tipo}:${estado.diferencias.join(",")}`;if(aviso!==ultimoAviso.current){ultimoAviso.current=aviso;anotar(`Acomodá las casillas ${estado.diferencias.join(", ")}. La partida registrada se conserva.`);if(estado.tipo==="desajuste")camara.current?.capturarDesajuste();}
     }
   }
-
-  function ocupacionCoincide(tablero: ({ type: string; color: string } | null)[][], ocupado: boolean[]) {
-    return casillasQueNoCoinciden(tablero, ocupado).length === 0;
+  function programar(){if(timer.current)clearTimeout(timer.current);timer.current=setTimeout(resolver,950);}
+  function campo(casilla:string,ocupada:boolean){trazar("casilla",{casilla,ocupada});if(final.current||pausado.current)return;const anterior=registro.current.campoConPartida(partida.current,casilla,ocupada);if(anterior)aceptar(anterior,true);programar();}
+  async function conectar(){
+    setConexion("conectando");registro.current.iniciarConexion();setLectura(null);
+    trazar("conectar",{fen:partida.current.fen()});
+    try{const enlace=await conectarPegasus({onLog:anotar,onBateria:setBateria,onDesconectado:()=>{trazar("desconectar",null);bluetooth.current=null;if(!cierre.current){setConexion("sin-conectar");setBateria(null);setLectura(null);}if(timer.current)clearTimeout(timer.current);registro.current.iniciarConexion();},onPiezaLevantada:c=>campo(c,false),onPiezaApoyada:c=>campo(c,true),onVolcadoTablero:foto=>{trazar("foto",foto);registro.current.foto(foto);resolver();}});if(cierre.current){enlace.desconectar();return;}bluetooth.current=enlace;setConexion("conectado");}catch(e){setConexion("sin-conectar");anotar(e instanceof Error?e.message:"No se pudo conectar.");}
   }
-
-  function casillasQueNoCoinciden(
-    tablero: ({ type: string; color: string } | null)[][],
-    ocupado: boolean[]
-  ): string[] {
-    const distintas: string[] = [];
-    for (let i = 0; i < 64; i++) {
-      const fila = Math.floor(i / 8);
-      const columna = i - fila * 8;
-      if (ocupado[i] !== Boolean(tablero[fila][columna])) {
-        distintas.push(casillaDesdeIndice(i));
-      }
-    }
-    return distintas;
+  function deshacer(){const m=partida.current.undo();if(!m)return;final.current=null;partida.current.removeHeader("Result");setResultado(null);registro.current.exigirAcomodo();refrescar();if(activa.current)void publicar();resolver();anotar(`Se deshizo ${m.san}. Acomodá las piezas antes de seguir.`);}
+  function nueva(){if(!archivar())return;partida.current=new Chess();final.current=null;setResultado(null);registro.current.exigirAcomodo();pausado.current=false;setEditando(false);refrescar();resolver();if(activa.current)void publicar();anotar("Nueva partida. La anterior quedó en Copias recientes de este navegador.");}
+  async function transmitir(valor:boolean){activa.current=valor;const ok=await publicar(valor);if(ok)anotar(valor?"Transmisión confirmada: visible en En directo.":"Transmisión apagada. Se conservaron las jugadas, el resultado y el PGN.");else anotar("Cambio pendiente de guardar. El registro local sigue funcionando.");}
+  async function terminar(res:ResultadoPartida){
+    if(finalizando)return;setFinalizando(true);
+    try{final.current=res;partida.current.header("White",nombres.current.blancas.trim()||"Blancas","Black",nombres.current.negras.trim()||"Negras","Result",res,"Date",fechaMontevideo().replaceAll("-","."),"Event",torneos.find(t=>t.id===torneoId)?.nombre??"Atlántida Ajedrez",...(ronda?["Round",String(ronda)]:[]));setResultado(res);refrescar();archivar();
+      if(cola.current){const ok=await publicar();anotar(ok?"Partida y PGN guardados en el servidor.":"PGN conservado localmente; la publicación se reintentará.");}
+      if(torneoId&&ronda&&emp){const ok=await registrarResultado(torneoId,ronda,emp,res);anotar(ok?"Resultado confirmado también en el torneo.":"El resultado no se guardó en el torneo. Reintentá confirmándolo de nuevo.");}
+    }finally{setFinalizando(false);}
   }
-
-  /**
-   * Arma la "foto" completa del tablero (64 casillas, ocupada o no) tal
-   * como debería verse ahora mismo según la posición confirmada más los
-   * cambios que se vienen siguiendo desde los eventos de levantar/apoyar.
-   */
-  function ocupadoDesdeSeguimiento(): boolean[] {
-    const tablero = chessRef.current.board();
-    const ocupado: boolean[] = [];
-    for (let i = 0; i < 64; i++) {
-      const fila = Math.floor(i / 8);
-      const columna = i - fila * 8;
-      const casilla = casillaDesdeIndice(i);
-      let val = Boolean(tablero[fila][columna]);
-      if (vaciadasRef.current.has(casilla)) val = false;
-      if (llenadasRef.current.has(casilla)) val = true;
-      ocupado.push(val);
-    }
-    return ocupado;
+  function descargar(texto=partida.current.pgn()){
+    const url=URL.createObjectURL(new Blob([texto],{type:"application/x-chess-pgn;charset=utf-8"})),a=document.createElement("a");a.href=url;a.download=`atlantida-${fechaMontevideo()}.pgn`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
-
-  /** Borra cualquier seguimiento en curso — se usa cada vez que la posición confirmada cambia por otro medio (deshacer, corrección manual, reinicio). */
-  function limpiarSeguimiento() {
-    vaciadasRef.current.clear();
-    llenadasRef.current.clear();
-    tocadasRef.current.clear();
-    if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
-    timerQuietoRef.current = null;
-    intentosSinResolverRef.current = 0;
-    desincronizadoRef.current = false;
-    setCasillasSospechosas(null);
+  function descargarDiagnostico(){
+    const texto=JSON.stringify({version:2,fen:partida.current.fen(),pgn:partida.current.pgn(),bateria,lectura,registro:diagnostico.current},null,2);
+    const url=URL.createObjectURL(new Blob([texto],{type:"application/json;charset=utf-8"})),a=document.createElement("a");a.href=url;a.download=`pegasus-diagnostico-${fechaMontevideo()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
-
-  function manejarLevantada(casilla: string) {
-    agregarLog(`↑ se levantó una pieza de ${casilla}`);
-    // El seguimiento es relativo a la posición confirmada (chessRef.current),
-    // no a un contador: si la casilla tenía pieza ahí, ahora está distinta
-    // (vacía); si no tenía nada, este levantar cancela un "apoyó" anterior
-    // en la misma casilla (alguien la tocó y la volvió a levantar antes de
-    // asentarse).
-    tocadasRef.current.add(casilla);
-    if (chessRef.current.get(casilla as Square)) {
-      vaciadasRef.current.add(casilla);
-    } else {
-      llenadasRef.current.delete(casilla);
-    }
-    reprogramarResolucion();
-  }
-
-  function manejarApoyada(casilla: string) {
-    agregarLog(`↓ se apoyó una pieza en ${casilla}`);
-    tocadasRef.current.add(casilla);
-    if (chessRef.current.get(casilla as Square)) {
-      // La casilla ya tenía pieza en la posición confirmada: apoyar algo
-      // ahí de nuevo la deja como estaba (cancela un "levantó" anterior,
-      // sea porque era la misma pieza vuelta a su lugar, o porque es el
-      // final de una comida: la pieza propia terminó ahí y "reemplaza",
-      // en términos de ocupación, a la que se sacó).
-      vaciadasRef.current.delete(casilla);
-    } else {
-      llenadasRef.current.add(casilla);
-    }
-    reprogramarResolucion();
-  }
-
-  /** Reinicia el reloj de "quietud" cada vez que llega un evento nuevo. */
-  function reprogramarResolucion() {
-    if (timerQuietoRef.current) clearTimeout(timerQuietoRef.current);
-    timerQuietoRef.current = null;
-    if (vaciadasRef.current.size === 0 && llenadasRef.current.size === 0) return;
-    timerQuietoRef.current = setTimeout(intentarResolver, ESPERA_QUIETUD_MS);
-  }
-
-  function intentarResolver() {
-    timerQuietoRef.current = null;
-    if (vaciadasRef.current.size === 0 && llenadasRef.current.size === 0) return;
-
-    const ocupado = ocupadoDesdeSeguimiento();
-    const tablero = chessRef.current.board();
-
-    // Ojo: en algún momento hubo acá una búsqueda que probaba combinar
-    // varias jugadas seguidas para explicar fotos atrasadas. Se sacó a
-    // propósito — cualquier jugada de "ida y vuelta" (mover una pieza y
-    // devolverla) no cambia el tablero, así que ese tipo de búsqueda
-    // termina inventando jugadas que nunca pasaron con tal de encontrar
-    // ALGUNA combinación que encaje. Mejor avisar que no se sabe qué pasó
-    // y dejar corregir a mano, que inventar una historia falsa.
-    const candidatos = chessRef.current.moves({ verbose: true }).slice().sort((a, b) => {
-      if (a.promotion === b.promotion) return 0;
-      if (a.promotion === "q") return -1;
-      if (b.promotion === "q") return 1;
-      return 0;
-    });
-    const coincidencia = candidatos.find((c) => {
-      // Una captura no cambia la ocupación de su casilla destino (tenía
-      // pieza rival antes, tiene la propia después — sigue "ocupada" en
-      // los dos casos), así que si la pieza que se mueve tiene más de una
-      // captura legal posible, todas encajan igual de bien con la sola
-      // ocupación final. Se desempata exigiendo que el origen y el destino
-      // hayan tenido de verdad algún evento de levantar/apoyar — la jugada
-      // real siempre toca físicamente las dos casillas.
-      if (!tocadasRef.current.has(c.from) || !tocadasRef.current.has(c.to)) return false;
-      const prueba = new Chess(chessRef.current.fen());
-      prueba.move(c.san);
-      return ocupacionCoincide(prueba.board(), ocupado);
-    });
-
-    if (coincidencia) {
-      const mov = chessRef.current.move(coincidencia.san);
-      agregarLog(`♟ Jugada detectada: ${mov.san}`);
-      actualizarDesdeChess();
-      if (transmitiendoRef.current) publicarEstado(true);
-      if (mov.promotion) {
-        setUltimaPromocion({ origen: mov.from, destino: mov.to });
-        agregarLog("👑 Coronó a Dama por defecto — corregí abajo si en realidad fue otra pieza.");
-      } else {
-        setUltimaPromocion(null);
-      }
-      vaciadasRef.current.clear();
-      llenadasRef.current.clear();
-      tocadasRef.current.clear();
-      intentosSinResolverRef.current = 0;
-      desincronizadoRef.current = false;
-      setCasillasSospechosas(null);
-      return;
-    }
-
-    // Todavía no encaja con ninguna jugada legal, pero no avisamos
-    // desincronización al primer intento fallido: una captura donde la
-    // pieza se desliza (en vez de levantarse y apoyarse limpio) puede dejar
-    // el seguimiento con alguna casilla de más por un instante incluso
-    // después de quedar quieto. Le damos unas vueltas más de margen (sigue
-    // siendo el mismo seguimiento, no una combinación inventada) antes de
-    // rendirnos.
-    intentosSinResolverRef.current++;
-    if (intentosSinResolverRef.current < INTENTOS_ANTES_DE_DESINCRONIZAR) {
-      timerQuietoRef.current = setTimeout(intentarResolver, ESPERA_QUIETUD_MS);
-      return;
-    }
-
-    const distintas = casillasQueNoCoinciden(tablero, ocupado);
-    setCasillasSospechosas(distintas);
-    if (!desincronizadoRef.current) {
-      desincronizadoRef.current = true;
-      agregarLog(
-        `⚠ El tablero físico no coincide con ninguna jugada legal desde la posición registrada. Casilleros distintos: ${distintas.join(", ")}. Corregí a mano o reiniciá la partida.`
-      );
-      camaraRef.current?.capturarDesajuste();
-    }
-  }
-
-  function manejarVolcado(ocupado: boolean[]) {
-    // El Pegasus también manda esta foto completa de las 64 casillas cada
-    // medio segundo, aparte de los eventos de levantar/apoyar. Sirve de
-    // respaldo: si en este momento no hay ningún cambio en seguimiento
-    // (todo coincide con la posición confirmada) pero esta foto real no
-    // coincide, es que se perdió algún evento por el camino (una
-    // notificación Bluetooth que no llegó) — se reconstruye el seguimiento
-    // directamente desde esta foto para no quedar desincronizados sin
-    // enterarnos. Si ya hay un cambio en curso por eventos, no se pisa.
-    if (vaciadasRef.current.size > 0 || llenadasRef.current.size > 0) return;
-
-    const tablero = chessRef.current.board();
-    if (ocupacionCoincide(tablero, ocupado)) return;
-
-    for (const casilla of casillasQueNoCoinciden(tablero, ocupado)) {
-      tocadasRef.current.add(casilla);
-      if (chessRef.current.get(casilla as Square)) vaciadasRef.current.add(casilla);
-      else llenadasRef.current.add(casilla);
-    }
-    reprogramarResolucion();
-  }
-
-  const NOMBRE_PIEZA: Record<string, string> = { q: "Dama", r: "Torre", b: "Alfil", n: "Caballo" };
-
-  function corregirPromocion(piezaCorrecta: "r" | "b" | "n") {
-    if (!ultimaPromocion) return;
-    chessRef.current.undo();
-    const mov = chessRef.current.move({
-      from: ultimaPromocion.origen,
-      to: ultimaPromocion.destino,
-      promotion: piezaCorrecta,
-    });
-    agregarLog(`✏️ Corregido: coronó a ${NOMBRE_PIEZA[piezaCorrecta]} (${mov.san}).`);
-    actualizarDesdeChess();
-    if (transmitiendoRef.current) publicarEstado(true);
-    setUltimaPromocion(null);
-  }
-
-  function handleDeshacer() {
-    const deshecha = chessRef.current.undo();
-    if (!deshecha) {
-      agregarLog("No hay ninguna jugada para deshacer.");
-      return;
-    }
-    limpiarSeguimiento();
-    setUltimaPromocion(null);
-    // Si la partida ya se había dado por terminada, deshacer una jugada la
-    // vuelve a dejar en curso — el resultado y el PGN viejos ya no valen.
-    setResultadoState(null);
-    setPgn(null);
-    actualizarDesdeChess();
-    if (transmitiendoRef.current) publicarEstado(true);
-    agregarLog(
-      `⏪ Se deshizo la jugada "${deshecha.san}". Le toca mover a ${
-        chessRef.current.turn() === "w" ? "blancas" : "negras"
-      }. Acomodá las piezas en el tablero real para que coincida con esta posición antes de seguir.`
-    );
-  }
-
-  function aplicarPosicionCorregida(fen: string) {
-    chessRef.current.load(fen);
-    limpiarSeguimiento();
-    setUltimaPromocion(null);
-    setEditandoPosicion(false);
-    agregarLog("🛠 Se aplicó una posición corregida a mano. La lista de jugadas arranca de nuevo desde acá.");
-    actualizarDesdeChess();
-    if (transmitiendoRef.current) publicarEstado(true);
-  }
-
-  async function handleConectar() {
-    setConectando(true);
-    try {
-      const { desconectar } = await conectarPegasus({
-        onLog: agregarLog,
-        onPiezaLevantada: manejarLevantada,
-        onPiezaApoyada: manejarApoyada,
-        onVolcadoTablero: manejarVolcado,
-        onBateria: setBateria,
-      });
-      desconectarRef.current = desconectar;
-      setConectado(true);
-    } catch (err) {
-      const mensaje = err instanceof Error ? err.message : String(err);
-      agregarLog(`❌ Error: ${mensaje}`);
-      if (mensaje.includes("Connection attempt failed")) {
-        agregarLog(
-          "💡 Esto suele pasar cuando el tablero sigue conectado a otra cosa (el celular con la app DGT Chess, u otra pestaña). Apagá el Bluetooth del celular o cerrá esa app, y si sigue sin andar, abrí chrome://bluetooth-internals en otra pestaña, buscá el DGT Pegasus y conectalo manualmente ahí una vez — eso suele destrabarlo para que después conecte bien desde acá."
-        );
-      }
-    }
-    setConectando(false);
-  }
-
-  function handleDesconectar() {
-    desconectarRef.current?.();
-    desconectarRef.current = null;
-    setConectado(false);
-    setBateria(null);
-    agregarLog("Tablero desconectado prolijamente.");
-  }
-
-  function handleReiniciar() {
-    setUltimaPromocion(null);
-    setResultadoState(null);
-    setPgn(null);
-    limpiarSeguimiento();
-    chessRef.current = new Chess();
-    actualizarDesdeChess();
-    agregarLog("Se reinició la partida (el tablero físico sigue conectado).");
-    if (transmitiendoRef.current) publicarEstado(true);
-  }
-
-  async function handleIniciarTransmision() {
-    transmitiendoRef.current = true;
-    setTransmitiendo(true);
-    await publicarEstado(true);
-    agregarLog("🔴 Transmisión iniciada — ya se puede ver en /transmision.");
-  }
-
-  async function handleTerminarTransmision() {
-    transmitiendoRef.current = false;
-    setTransmitiendo(false);
-    await publicarEstado(false);
-    agregarLog("Transmisión terminada.");
-  }
-
-  async function handleTerminarPartida(res: ResultadoPartida) {
-    const torneoVinculado = torneoIdRef.current
-      ? torneos.find((t) => t.id === torneoIdRef.current)
-      : undefined;
-
-    chessRef.current.header(
-      "White",
-      blancasRef.current.trim() || "Blancas",
-      "Black",
-      negrasRef.current.trim() || "Negras",
-      "Result",
-      res,
-      "Date",
-      new Date().toISOString().slice(0, 10).replace(/-/g, "."),
-      "Event",
-      torneoVinculado?.nombre || "Atlántida Ajedrez",
-      ...(rondaNumeroRef.current ? ["Round", String(rondaNumeroRef.current)] : [])
-    );
-    const pgnGenerado = chessRef.current.pgn();
-    setResultadoState(res);
-    setPgn(pgnGenerado);
-    agregarLog(`🏁 Partida terminada: ${res}. PGN generado.`);
-
-    if (torneoIdRef.current && rondaNumeroRef.current && empNumeroRef.current) {
-      const guardado = await registrarResultado(torneoIdRef.current, rondaNumeroRef.current, empNumeroRef.current, res);
-      agregarLog(guardado ? "✅ Resultado cargado también en el torneo." : "⚠ Resultado sin guardar en el torneo. Revisá el aviso y volvé a cargarlo.");
-    }
-
-    if (transmitiendoRef.current) publicarEstado(true, res, pgnGenerado);
-  }
-
-  function descargarPgn() {
-    if (!pgn) return;
-    const blob = new Blob([pgn], { type: "application/x-chess-pgn" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${(blancasRef.current || "blancas").trim()}_vs_${(negrasRef.current || "negras").trim()}.pgn`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  if (!puedeUsar) {
-    return (
-      <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Transmitir</h1>
-        <p className="text-zinc-400">Iniciá sesión para transmitir una partida.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Transmitir</h1>
-        <p className="mt-1 text-zinc-400">
-          Conectá el tablero DGT Pegasus por Bluetooth (Chrome o Edge de computadora, tablero
-          prendido y cerca) y transmitilo en vivo en /transmision.
-        </p>
-        {torneoId && (
-          <p className="mt-1 text-sm text-blue-300">
-            🔗 Vinculada al torneo &quot;{torneos.find((t) => t.id === torneoId)?.nombre ?? "?"}&quot;
-            — ronda {rondaNumero}, partida {empNumero}. El resultado se va a cargar ahí también.
-          </p>
-        )}
-      </div>
-
-      {(jugadorBlancas || jugadorNegras) && (
-        <div className="flex flex-wrap items-center justify-center gap-6 panel p-4">
-          {[
-            { jugador: jugadorBlancas, nombre: blancas, color: "Blancas" },
-            { jugador: jugadorNegras, nombre: negras, color: "Negras" },
-          ].map(({ jugador, nombre, color }) =>
-            jugador ? (
-              <div key={color} className="flex items-center gap-3">
-                {jugador.fotoUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={jugador.fotoUrl}
-                    alt={nombre}
-                    className="h-12 w-12 rounded-full border border-white/10 object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/10 text-lg font-semibold text-zinc-400">
-                    {nombre.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm font-medium">{nombre}</p>
-                  <p className="text-xs text-zinc-400">
-                    {color} · Elo {jugador.eloAtlantida}
-                  </p>
-                </div>
-              </div>
-            ) : null
-          )}
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-end gap-3 panel p-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-400">Blancas</label>
-          <input
-            type="text"
-            value={blancas}
-            onChange={(e) => cambiarBlancas(e.target.value)}
-            placeholder="Nombre jugador blancas"
-            className="w-48 rounded-md border border-white/20 px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-400">Negras</label>
-          <input
-            type="text"
-            value={negras}
-            onChange={(e) => cambiarNegras(e.target.value)}
-            placeholder="Nombre jugador negras"
-            className="w-48 rounded-md border border-white/20 px-3 py-2 text-sm"
-          />
-        </div>
-        {!transmitiendo ? (
-          <button
-            onClick={handleIniciarTransmision}
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-          >
-            🔴 Iniciar transmisión
-          </button>
-        ) : (
-          <button
-            onClick={handleTerminarTransmision}
-            className="rounded-md border border-red-500/40 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10"
-          >
-            Terminar transmisión
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3 panel p-4">
-        <span className="text-xs font-medium text-zinc-400">Terminar partida con resultado:</span>
-        <button
-          onClick={() => handleTerminarPartida("1-0")}
-          className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
-        >
-          1 – 0
-        </button>
-        <button
-          onClick={() => handleTerminarPartida("1/2-1/2")}
-          className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
-        >
-          ½ – ½
-        </button>
-        <button
-          onClick={() => handleTerminarPartida("0-1")}
-          className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
-        >
-          0 – 1
-        </button>
-        {resultado && <span className="text-sm font-medium text-green-400">Resultado: {resultado}</span>}
-      </div>
-
-      {pgn && (
-        <div className="panel p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-semibold">PGN de la partida</h2>
-            <button
-              onClick={descargarPgn}
-              className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-            >
-              Descargar .pgn
-            </button>
-          </div>
-          <textarea
-            readOnly
-            value={pgn}
-            className="h-32 w-full rounded border border-white/10 bg-white/10 p-2 font-mono text-xs"
-          />
-        </div>
-      )}
-
-      {casillasSospechosas && !editandoPosicion && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-500/40 bg-red-500/10 p-4">
-          <p className="text-sm text-red-300">
-            ⚠ El tablero físico no coincide con ninguna jugada legal. Casilleros distintos:{" "}
-            <span className="font-mono font-semibold">{casillasSospechosas.join(", ")}</span>.
-          </p>
-          <button
-            onClick={() => setEditandoPosicion(true)}
-            className="shrink-0 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-          >
-            🛠 Corregir posición ahora
-          </button>
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          onClick={handleConectar}
-          disabled={conectando || conectado}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {conectado ? "Conectado" : conectando ? "Conectando..." : "Conectar tablero"}
-        </button>
-        {conectado && (
-          <button
-            onClick={handleDesconectar}
-            className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/10"
-          >
-            Desconectar tablero
-          </button>
-        )}
-        {bateria !== null && (
-          <span
-            className={`text-sm font-medium ${bateria <= 20 ? "text-red-400" : "text-zinc-400"}`}
-          >
-            🔋 {bateria}%
-          </span>
-        )}
-        <button
-          onClick={handleDeshacer}
-          disabled={jugadas.length === 0}
-          className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          ⏪ Deshacer última jugada
-        </button>
-        <button
-          onClick={handleReiniciar}
-          className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium hover:bg-white/10"
-        >
-          Reiniciar partida
-        </button>
-        {!editandoPosicion && (
-          <button
-            onClick={() => setEditandoPosicion(true)}
-            className="rounded-md border border-amber-500/50 px-4 py-2 text-sm font-medium text-amber-300 hover:bg-amber-500/10"
-          >
-            🛠 Corregir posición a mano
-          </button>
-        )}
-      </div>
-
-      <CamaraTablero
-        ref={camaraRef}
-        onCambiaActiva={async (activa) => {
-          camaraActivaRef.current = activa;
-          if (transmisionId) {
-            const { error } = await supabase
-              .from("transmision")
-              .update({ camara_activa: activa })
-              .eq("id", transmisionId);
-            if (error) {
-              agregarLog(
-                `❌ No se pudo guardar el estado de la cámara (¿falta correr el SQL de configuración?): ${error.message}`
-              );
-            }
-          }
-        }}
-      />
-
-      {editandoPosicion && (
-        <EditorPosicion
-          chess={chessRef.current}
-          casillasSospechosas={casillasSospechosas}
-          onAplicar={aplicarPosicionCorregida}
-          onCancelar={() => setEditandoPosicion(false)}
-        />
-      )}
-
-      {ultimaPromocion && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
-          <p className="text-sm text-amber-300">
-            👑 Se registró como coronación a <strong>Dama</strong>. Si en la mesa fue otra pieza,
-            corregilo acá:
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => corregirPromocion("r")}
-              className="rounded-md border border-amber-500/50 bg-white/5 px-3 py-1.5 text-sm font-medium hover:bg-amber-500/20"
-            >
-              Torre
-            </button>
-            <button
-              onClick={() => corregirPromocion("b")}
-              className="rounded-md border border-amber-500/50 bg-white/5 px-3 py-1.5 text-sm font-medium hover:bg-amber-500/20"
-            >
-              Alfil
-            </button>
-            <button
-              onClick={() => corregirPromocion("n")}
-              className="rounded-md border border-amber-500/50 bg-white/5 px-3 py-1.5 text-sm font-medium hover:bg-amber-500/20"
-            >
-              Caballo
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div className="panel p-4">
-          <h2 className="mb-3 font-semibold">Tablero (según lo que se movió)</h2>
-          <TableroMini fen={fen} />
-          <p className="mt-3 text-xs text-zinc-400">
-            Jugadas: {jugadas.length > 0 ? jugadas.join(", ") : "ninguna todavía"}
-          </p>
-        </div>
-
-        <div className="panel p-4">
-          <h2 className="mb-3 font-semibold">Registro</h2>
-          <div className="h-80 overflow-y-auto rounded bg-blue-600 p-3 font-mono text-xs text-zinc-100">
-            {log.length === 0 && <p className="text-zinc-400">Todavía no hay actividad.</p>}
-            {log.map((linea, i) => (
-              <div key={i}>{linea}</div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  function corregir(){try{const m=hacerJugadaManual(partida.current,manual);final.current=null;partida.current.removeHeader("Result");setResultado(null);registro.current.exigirAcomodo();setManual("");refrescar();if(activa.current)void publicar();resolver();anotar(`Jugada añadida sin borrar el historial: ${m.san}. Verificá las piezas.`);}catch{anotar("La jugada no es legal. Usá origen y destino: e2e4; para coronar, a7a8q/r/b/n.");}}
+  return <div className="my-6 flex flex-col gap-5">
+    <section className="panel flex flex-wrap items-center gap-4 p-5"><div className="min-w-48 flex-1"><p className="font-semibold">{conexion==="conectado"?"Pegasus conectado":conexion==="conectando"?"Conectando…":"Conectá el tablero para continuar"}</p><p role="status" className="mt-1 text-xs text-zinc-400">{estadoGuardado}{bateria!==null?` · Batería ${bateria}%`:""}</p></div><button className="button-primary" disabled={!lista||conexion!=="sin-conectar"} onClick={()=>void conectar()}>Conectar Pegasus</button>{conexion==="conectado"&&<><button className="button-secondary" onClick={()=>void bluetooth.current?.pedirEstado()}>Comprobar piezas</button><button className="button-secondary" onClick={()=>bluetooth.current?.desconectar()}>Desconectar</button></>}</section>
+    {cargaError&&<p role="alert" className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-4 text-sm text-amber-200">{cargaError}</p>}
+    {torneoId&&<p className="text-sm text-blue-300">{torneos.find(t=>t.id===torneoId)?.nombre??"Torneo vinculado"} · ronda {ronda} · mesa {emp}</p>}
+    <section className="panel flex flex-wrap items-end gap-3 p-5"><label className="flex-1 text-xs text-zinc-400">Blancas<input value={blancas} onChange={e=>{setBlancas(e.target.value);nombres.current.blancas=e.target.value;setPersonalizadas(v=>({...v,blancas:true}));perfiles.current.blancasFoto=null;perfiles.current.blancasElo=null;refrescar();}} className="mt-1 w-full min-w-40 rounded-lg border border-white/15 p-2.5"/></label><label className="flex-1 text-xs text-zinc-400">Negras<input value={negras} onChange={e=>{setNegras(e.target.value);nombres.current.negras=e.target.value;setPersonalizadas(v=>({...v,negras:true}));perfiles.current.negrasFoto=null;perfiles.current.negrasElo=null;refrescar();}} className="mt-1 w-full min-w-40 rounded-lg border border-white/15 p-2.5"/></label><button className="button-primary" disabled={!lista||!id.current||estadoGuardado==="Guardando…"} onClick={()=>void transmitir(!transmitiendo)}>{transmitiendo?"Apagar transmisión":"Publicar en directo"}</button><button className="button-secondary" onClick={()=>descargar()} disabled={!vista.jugadas.length}>Descargar PGN</button></section>
+    <div className="grid gap-5 lg:grid-cols-2"><section className="panel p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Posición registrada</h2><span className="text-xs text-zinc-400">{vista.jugadas.length} medias jugadas</span></div><TableroMini fen={vista.fen}/><p className="mt-4 text-sm text-zinc-400">{resultado?`Partida terminada: ${resultado}`:`Turno de ${partida.current.turn()==="w"?"blancas":"negras"}`}</p></section><div className="flex flex-col gap-5">
+      <section className="panel p-5"><h2 className="font-semibold">Seguimiento del tablero</h2><p role="status" className="mt-3 text-sm text-zinc-300">{!lectura||lectura.tipo==="sin-foto"?"Esperando una foto completa de las 64 casillas.":lectura.tipo==="sin-cambio"?"Las piezas coinciden. Podés continuar.":lectura.tipo==="moviendo"?"Esperando que termines de mover las piezas…":lectura.tipo==="elegir"?(lectura.candidatos.length===1&&lectura.candidatos[0].piece==="r"&&!lectura.candidatos[0].captured?"Puede ser el inicio de un enroque: terminá de mover el rey o confirmá la jugada de torre.":"Confirmá la jugada: el sensor no distingue estas continuaciones."):`Acomodá estas casillas: ${lectura.diferencias.join(", ")}. El historial está conservado.`}</p>{lectura?.tipo==="elegir"&&<div className="mt-4 flex flex-wrap gap-2">{lectura.candidatos.map(m=><button key={m.lan} className="button-secondary" onClick={()=>aceptar(m)}>{m.san}{m.promotion?` · ${CORONACIONES[m.promotion]??m.promotion}`:""}</button>)}</div>}</section>
+      <section className="panel p-5"><h2 className="font-semibold">Recuperar una jugada</h2><p className="mt-2 text-xs text-zinc-400">Si faltó una jugada, agregala por origen y destino. Conserva todas las anteriores.</p><form className="mt-3 flex gap-2" onSubmit={e=>{e.preventDefault();corregir();}}><input aria-label="Jugada de origen y destino" value={manual} onChange={e=>setManual(e.target.value)} placeholder="e2e4" maxLength={5} className="min-w-0 flex-1 rounded-lg border border-white/15 p-2.5 font-mono"/><button className="button-secondary" disabled={!lista||!manual}>Agregar</button></form><div className="mt-3 flex flex-wrap gap-2"><button className="button-secondary" disabled={!vista.jugadas.length} onClick={deshacer}>Deshacer última</button><button className="button-secondary" onClick={()=>{registro.current.exigirAcomodo();pausado.current=true;setEditando(true);}}>Editar posición</button><button className="button-secondary" onClick={nueva} disabled={!lista}>Nueva partida</button></div></section>
+      <section className="panel p-5"><h2 className="font-semibold">Confirmar resultado</h2><p className="mt-2 text-xs text-zinc-400">Guardá el PGN final y, si esta mesa está vinculada, el resultado del torneo.</p><div className="mt-3 flex gap-2">{(["1-0","1/2-1/2","0-1"] as const).map(res=><button key={res} disabled={!lista||finalizando||lectura?.tipo==="elegir"||lectura?.tipo==="moviendo"} className="button-secondary" onClick={()=>void terminar(res)}>{res}</button>)}</div></section>
+    </div></div>
+    {editando&&<><p className="text-xs text-amber-200">La edición libre inicia un nuevo tramo del PGN. La partida anterior se conserva en Copias recientes. Para corregir una sola jugada, usá Agregar o Deshacer.</p><EditorPosicion chess={partida.current} casillasSospechosas={lectura?.diferencias} onCancelar={()=>{pausado.current=false;setEditando(false);resolver();}} onAplicar={fen=>{if(!archivar())return;partida.current=new Chess(fen);final.current=null;setResultado(null);registro.current.exigirAcomodo();pausado.current=false;setEditando(false);refrescar();if(activa.current)void publicar();anotar("Posición aplicada. Verificá las piezas antes de seguir.");}}/></>}
+    <CamaraTablero ref={camara} onCambiaActiva={async valor=>{if(!id.current)return;const {error}=await supabase.from("transmision").update({camara_activa:valor}).eq("id",id.current);if(error)anotar("No se pudo publicar el estado de la cámara. El registro de jugadas sigue disponible.");}}/>
+    <div className="grid gap-5 lg:grid-cols-2"><section className="panel p-5"><h2 className="font-semibold">Planilla completa</h2><ol className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 font-mono text-sm">{vista.jugadas.map((san,i)=><li key={i}>{i%2===0?`${Math.floor(i/2)+1}. `:"… "}{san}</li>)}</ol><details className="mt-4"><summary className="text-sm text-zinc-400">Ver PGN y copias recientes</summary><textarea aria-label="PGN de la partida" readOnly value={vista.pgn} className="mt-3 h-44 w-full rounded-lg border border-white/15 p-3 font-mono text-xs"/>{copias.map((c,i)=><button key={i} onClick={()=>descargar(c.pgn)} className="mt-2 block text-xs text-blue-300">Descargar copia {i+1} · {c.blancas||"Blancas"} / {c.negras||"Negras"} · {c.jugadas.length} medias jugadas</button>)}</details></section><section className="panel p-5"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-semibold">Registro de conexión</h2><button className="button-secondary" onClick={descargarDiagnostico}>Descargar diagnóstico</button></div><p className="mt-2 text-xs text-zinc-500">Guarda los últimos eventos y el PGN en tu computadora para revisar un fallo.</p><div className="mt-4 h-72 overflow-y-auto rounded-lg bg-black/20 p-3 font-mono text-xs leading-relaxed text-zinc-400">{log.map((l,i)=><p key={i}>{l}</p>)}</div></section></div>
+  </div>;
 }

@@ -19,7 +19,7 @@ export default function PrivacidadPage() {
       <h2 className="mt-2 font-semibold">Desafíos diarios y rachas</h2>
       <p className="text-zinc-400">
         Podés practicar sin iniciar sesión. Si elegís sumar una resolución a tu racha,
-        guardamos la fecha del problema resuelto asociada a tu cuenta y el nombre o apodo
+        guardamos las fechas de resolución y de los intentos incorrectos asociadas a tu cuenta, para calcular la racha, y el nombre o apodo
         que elegís para la clasificación pública. En esa tabla se muestran ese nombre,
         tu racha actual, tu mejor racha, el total resuelto y la última fecha de resolución.
         La clasificación no muestra tu email ni el identificador de tu cuenta.

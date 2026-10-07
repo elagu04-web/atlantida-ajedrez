@@ -32,6 +32,14 @@ alter table public.desafios_busquedas enable row level security;
 alter table public.desafios_participantes enable row level security;
 alter table public.desafios_resueltos enable row level security;
 revoke all on public.desafios_diarios,public.desafios_busquedas,public.desafios_participantes,public.desafios_resueltos from anon,authenticated;
+create table if not exists public.desafios_fallados (
+  usuario_id uuid not null references auth.users(id) on delete cascade,
+  dia date not null references public.desafios_diarios(dia),
+  fallado_en timestamptz not null default now(),
+  primary key(usuario_id,dia)
+);
+alter table public.desafios_fallados enable row level security;
+revoke all on public.desafios_fallados from anon,authenticated;
 
 create or replace function public.desafios_actualizar()
 returns boolean language plpgsql security definer set search_path = pg_catalog, public, extensions as $$
@@ -92,7 +100,9 @@ returns boolean language plpgsql security definer set search_path=pg_catalog, pu
 declare d_usuario uuid := auth.uid(); d_dia date := (now() at time zone 'America/Montevideo')::date; d_solucion jsonb;
 begin
   if d_usuario is null then raise exception 'Iniciá sesión para participar.'; end if;
-  if p_dia<>d_dia then raise exception 'Solo cuenta el problema de hoy.'; end if;
+  if p_dia is distinct from d_dia then raise exception 'Solo cuenta el problema de hoy.'; end if;
+  perform pg_advisory_xact_lock(hashtextextended(d_usuario::text||':'||d_dia::text,0));
+  if exists(select 1 from public.desafios_fallados where usuario_id=d_usuario and dia=d_dia) then raise exception 'Un error cortó la racha: el problema de hoy ya no suma.'; end if;
   select datos->'puzzle'->'solution' into d_solucion from public.desafios_diarios where dia=d_dia and puzzle_id=p_puzzle_id;
   if d_solucion is null or p_solucion is distinct from d_solucion then raise exception 'La solución no coincide con el problema de hoy.'; end if;
   if char_length(trim(p_nombre)) not between 2 and 40 or trim(p_nombre) ~ '[[:cntrl:]]' then raise exception 'Elegí un nombre público de 2 a 40 caracteres.'; end if;
@@ -105,12 +115,30 @@ $$;
 revoke all on function public.registrar_desafio_resuelto(date,text,text,jsonb) from public,anon;
 grant execute on function public.registrar_desafio_resuelto(date,text,text,jsonb) to authenticated;
 
+create or replace function public.registrar_desafio_error(p_dia date,p_puzzle_id text)
+returns boolean language plpgsql security definer set search_path=pg_catalog,public as $$
+declare d_usuario uuid := auth.uid(); d_dia date := (now() at time zone 'America/Montevideo')::date;
+begin
+  if d_usuario is null then raise exception 'Iniciá sesión para participar.'; end if;
+  if p_dia is distinct from d_dia then raise exception 'Solo cuenta el problema de hoy.'; end if;
+  perform pg_advisory_xact_lock(hashtextextended(d_usuario::text||':'||d_dia::text,0));
+  if not exists(select 1 from public.desafios_diarios where dia=d_dia and puzzle_id=p_puzzle_id) then raise exception 'El problema no corresponde a hoy.'; end if;
+  -- Una resolución ya confirmada no se revoca al practicar otra vez.
+  if exists(select 1 from public.desafios_resueltos where usuario_id=d_usuario and dia=d_dia) then return false; end if;
+  insert into public.desafios_fallados(usuario_id,dia) values(d_usuario,d_dia) on conflict do nothing;
+  return true;
+end;
+$$;
+revoke all on function public.registrar_desafio_error(date,text) from public,anon;
+grant execute on function public.registrar_desafio_error(date,text) to authenticated;
+
 create or replace function public.mi_desafio_resuelto()
 returns jsonb language sql stable security definer set search_path=pg_catalog,public as $$
-  select jsonb_build_object('nombre',p.nombre,'resuelto',exists(
+  select jsonb_build_object('nombre',(select p.nombre from public.desafios_participantes p where p.usuario_id=auth.uid()),'resuelto',exists(
     select 1 from public.desafios_resueltos r where r.usuario_id=auth.uid()
-      and r.dia=(now() at time zone 'America/Montevideo')::date))
-  from public.desafios_participantes p where p.usuario_id=auth.uid();
+      and r.dia=(now() at time zone 'America/Montevideo')::date),'fallado',exists(
+    select 1 from public.desafios_fallados f where f.usuario_id=auth.uid()
+      and f.dia=(now() at time zone 'America/Montevideo')::date));
 $$;
 revoke all on function public.mi_desafio_resuelto() from public,anon;
 grant execute on function public.mi_desafio_resuelto() to authenticated;
@@ -128,6 +156,7 @@ language sql stable security definer set search_path=pg_catalog,public as $$
   )
   select p.nombre,
     case when s.ultimo>=(now() at time zone 'America/Montevideo')::date-1
+      and not exists(select 1 from public.desafios_fallados f where f.usuario_id=s.usuario_id and f.dia=(now() at time zone 'America/Montevideo')::date)
       then (select r.longitud from rachas r where r.usuario_id=s.usuario_id and r.fin=s.ultimo) else 0 end,
     s.mejor,s.total,s.ultimo
     from resumen s join public.desafios_participantes p on p.usuario_id=s.usuario_id

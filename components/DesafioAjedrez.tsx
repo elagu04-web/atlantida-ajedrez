@@ -37,6 +37,7 @@ function TableroDesafio({desafio}:{desafio:Desafio}) {
   const [promocion,setPromocion]=useState<Square|null>(null);
   const [ultimoDestino,setUltimoDestino]=useState<Square|null>(null);
   const [foco,setFoco]=useState(0);
+  const [fallado,setFallado]=useState(false);
   const casillas=useRef<(HTMLButtonElement|null)[]>([]);
   const partida=new Chess(fen);
   const color=new Chess(desafio.fen).turn();
@@ -52,7 +53,7 @@ function TableroDesafio({desafio}:{desafio:Desafio}) {
     const uci=`${seleccion}${destino}${piezaPromocion??""}`;
     const movimiento=intento.move({from:seleccion,to:destino,promotion:piezaPromocion});
     setPromocion(null);
-    if(uci!==desafio.solution[paso]&&!intento.isCheckmate()){setMensaje("Esa jugada no es la mejor continuación. La posición se mantiene; probá otra.");return;}
+    if(uci!==desafio.solution[paso]&&!intento.isCheckmate()){setFallado(true);setMensaje("Esa jugada no es la mejor continuación. El intento de hoy ya no suma racha; podés seguir practicando.");return;}
     let siguiente=paso+1;
     let texto=`Bien: ${sanEsp(movimiento.san)}.`;
     let destinoFinal=movimiento.to;
@@ -80,7 +81,7 @@ function TableroDesafio({desafio}:{desafio:Desafio}) {
     }))}</div>
     {promocion&&<div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Elegir coronación">{(["q","r","b","n"] as const).map(p=><button key={p} className="comparison-chip" onClick={()=>jugar(promocion,p)}>{nombres[p]}</button>)}</div>}
     <p role="status" className={`mt-3 min-h-10 text-xs leading-relaxed ${resuelto?"text-emerald-300":"text-zinc-300"}`}>{mensaje}</p>
-    <GuardarRacha desafio={desafio} resuelto={resuelto}/>
+    <GuardarRacha desafio={desafio} resuelto={resuelto} fallado={fallado}/>
     <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-3"><button type="button" disabled={resuelto} onClick={pista} className="puzzle-action"><Icono nombre="idea" className="h-4 w-4"/>Ver pista</button><button type="button" onClick={()=>{setFen(desafio.fen);setPaso(0);setSeleccion(null);setPromocion(null);setUltimoDestino(null);setMensaje("Elegí la mejor jugada y continuá la secuencia.");}} className="puzzle-action"><Icono nombre="reiniciar" className="h-4 w-4"/>Reiniciar</button></div>
     <details className="mt-3 text-xs text-zinc-400"><summary>Ver solución</summary><p className="mt-2 leading-relaxed">{solucion.join(" · ")}</p></details>
     <p className="mt-3 text-[10px] text-zinc-500">Dificultad de problemas Lichess · {desafio.fecha}{desafio.reserva?" · problema de reserva":""} · <a href={`https://lichess.org/training/${desafio.id}`} target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline">Original ↗</a></p>

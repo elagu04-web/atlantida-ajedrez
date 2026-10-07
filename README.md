@@ -45,7 +45,7 @@ Supabase debe aplicar RLS: ocultar botones en el navegador no concede ni limita 
 
 La base guarda un problema compartido por fecha y evita repetir IDs. La fuente es la [API pública de problemas de Lichess](https://lichess.org/api); la [base de problemas](https://database.lichess.org/#puzzles) se publica bajo CC0. El rating de táctica no equivale a Elo FIDE.
 
-No se requiere una clave privada en Vercel: las funciones SQL controlan las escrituras y comprueban la identidad con `auth.uid()`. Las tablas de resoluciones no se exponen directamente; la clasificación publica únicamente el nombre elegido y sus contadores. Se registra una resolución por cuenta y día, se conserva el récord y una ausencia de un día corta la racha. No es un sistema de arbitraje ni de control de trampas: las pistas y la solución son públicas.
+No se requiere una clave privada en Vercel: las funciones SQL controlan las escrituras y comprueban la identidad con `auth.uid()`. Las tablas de resoluciones no se exponen directamente; la clasificación publica únicamente el nombre elegido y sus contadores. Se registra una resolución por cuenta y día, se conserva el récord y una ausencia de un día o una jugada legal incorrecta corta la racha. Después de un error ese problema no puede sumar, aunque se reinicie el tablero o se resuelva luego. Una resolución ya acreditada no se revoca al practicar de nuevo. No es un sistema de arbitraje ni de control de trampas: las pistas y la solución son públicas.
 
 Antes de ejecutar la migración, el servidor ofrece práctica con una selección diaria en caché. Si falla la fuente, muestra un problema de reserva identificado como tal y reintenta desde el navegador cada diez minutos. La práctica de reserva no suma rachas. La selección en caché se hace al recibir una visita; la programación independiente y el archivo persistente requieren activar el SQL anterior.
 
@@ -55,3 +55,18 @@ Para comprobar el cron sin consultar información personal:
 select jobname, schedule, active from cron.job where jobname = 'atlantida-desafio-diario';
 select dia, puzzle_id, rating from public.desafios_diarios order by dia desc limit 7;
 ```
+
+## Registro Pegasus
+
+- Bluetooth recibe un flujo de tramas DGT. El decodificador conserva notificaciones fragmentadas y procesa varias tramas en una notificación, respetando la longitud de cabecera.
+- Escrituras y lecturas GATT se serializan. Las solicitudes de foto se agrupan; el respaldo se pide cada dos segundos. Desconexión, error de preparación y vencimiento del intento limpian temporizadores y listeners.
+- El registro sigue la ocupación física completa y los apoyos. Una captura no se registra sólo por levantar la atacante. Una transición completa observada puede confirmarse al empezar el turno siguiente, conservando los eventos posteriores: las jugadas rápidas no se funden en una sola foto.
+- Una foto de 64 casillas repara eventos perdidos incluso con un movimiento en curso. No se reconstruyen combinaciones arbitrarias de varias jugadas desde una foto. Capturas ambiguas y coronaciones piden confirmación.
+- Conexión y reconexión exigen verificar las piezas. Si la torre se mueve primero y puede ser un enroque, se espera al rey o a la confirmación de la jugada de torre; se recomienda mover primero el rey.
+- Cada jugada se conserva en un borrador local, separado por cuenta y mesa. Al recargar se valida y recupera el PGN completo, comparándolo con el estado del canal. Nueva partida y edición de posición archivan el tramo anterior, con hasta diez copias en ese navegador.
+- Las publicaciones se serializan, coalescen estados intermedios y reintentan cuando vuelve la conexión. Se compara actualizado_en antes de escribir para detectar otra pantalla. Apagar la transmisión conserva PGN y resultado. Las confirmaciones se muestran después de la respuesta de la base.
+- Agregar una jugada legal y deshacer preservan el historial. La edición libre de FEN inicia un tramo nuevo; su aviso y la copia anterior evitan presentar ese tramo como una partida íntegra.
+- La prueba local en /transmitir usa el mismo registro sin Bluetooth, sesión administrativa ni publicaciones. No sustituye una prueba con el dispositivo real. Para publicar se mantiene el permiso de administrador y hace falta que exista el canal transmision en Supabase.
+- Descargar diagnóstico conserva en un JSON local los últimos 2000 eventos de casillas, fotos completas, conexiones y desconexiones, junto con el PGN. Permite revisar un fallo real sin enviar esos datos automáticamente.
+
+Fuentes contrastadas: [DGT Pegasus y calibración](https://www.digitalgametechnology.com/products/home-use-e-boards/dgt-pegasus), [Web Bluetooth de Chrome](https://developer.chrome.com/docs/capabilities/bluetooth), [referencia de comandos Pegasus](https://github.com/EdNekebno/PegasusChessComChromeExtension).
