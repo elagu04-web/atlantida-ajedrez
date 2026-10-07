@@ -16,6 +16,15 @@ export default function PrivacidadPage() {
         archivos, calendario, etc.), ni se comparte tu email con nadie fuera del club.
       </p>
 
+      <h2 className="mt-2 font-semibold">Desafíos diarios y rachas</h2>
+      <p className="text-zinc-400">
+        Podés practicar sin iniciar sesión. Si elegís sumar una resolución a tu racha,
+        guardamos la fecha del problema resuelto asociada a tu cuenta y el nombre o apodo
+        que elegís para la clasificación pública. En esa tabla se muestran ese nombre,
+        tu racha actual, tu mejor racha, el total resuelto y la última fecha de resolución.
+        La clasificación no muestra tu email ni el identificador de tu cuenta.
+      </p>
+
       <h2 className="mt-2 font-semibold">Qué más hay en el sitio</h2>
       <p className="text-zinc-400">
         El resto del sitio (jugadores, torneos, estadísticas) es información pública del club:
