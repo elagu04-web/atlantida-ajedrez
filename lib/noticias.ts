@@ -1,12 +1,24 @@
 export type Noticia = {
   slug: string; titulo: string; bajada: string; categoria: string; fecha: string;
-  imagen: string; imagenAlt: string; imagenPosicion?: string; pieFoto?: string;
+  imagen: string; imagenAlt: string; imagenPosicion?: string; pieFoto?: string; imagenVertical?: boolean;
   parrafos: string[];
   galeria?: {imagen: string; alt: string; pie?: string}[];
 };
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "matias-y-su-viento-a-favor", titulo: "Matias y su viento a favor",
+  bajada: "Campeón de setiembre, imparable y, según él, sin estudiar. Que alguien nos pase la receta.",
+  categoria: "Humor del club", fecha: "2026-10-08",
+  imagen: "/imagenes/matias-viento-a-favor.png",
+  imagenAlt: "Montaje humorístico de Matías frente al tablero de ajedrez, con un celular en la mano",
+  imagenPosicion: "50% 45%", imagenVertical: true,
+  pieFoto: "Imagen editada con humor para esta nota.",
+  parrafos: [
+    "Matías fue el campeón de setiembre y estuvo imparable. Le salían todas: cuando parecía que se complicaba, encontraba la jugada y seguía como si nada. Lo mejor es que dice que no estudia. Yo todavía no entiendo cómo jugó tan bien; si ese es el resultado de no estudiar, capaz que estamos haciendo todo al revés.",
+    "Por ahora vamos a decir que tuvo viento a favor. Mucho viento. Felicitaciones, Matías, pero para el próximo torneo pasanos la receta, que el resto también quiere jugar así."
+  ]
+}, {
   slug: "el-lado-b-del-club", titulo: "El club también tiene su lado B",
   bajada: "Las fotos, las anécdotas y las ocurrencias de Atlántida ahora tienen su propio rincón.",
   categoria: "Vida del club", fecha: "2026-10-08",
