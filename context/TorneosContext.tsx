@@ -69,7 +69,7 @@ type TorneosContextType = {
   convertirASuizo: (torneoId: string) => Promise<void>;
   cambiarIdaYVuelta: (torneoId: string, idaYVuelta: boolean) => Promise<void>;
   cambiarDesempates: (torneoId: string, desempates: string[]) => Promise<void>;
-  alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
+  alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<boolean>;
   alternarAsistencia: (torneoId: string, jugadorId: string, marcado?: boolean) => Promise<boolean>;
   alternarPago: (torneoId: string, jugadorId: string, marcado?: boolean) => Promise<boolean>;
   obtenerTorneo: (id: string) => Torneo | undefined;
@@ -267,13 +267,13 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
    */
   async function alternarInscripcion(torneoId: string, jugadorId: string) {
     const torneo = obtenerTorneo(torneoId);
-    if (!torneo || torneo.estado !== "armado") return;
+    if (!torneo || torneo.estado !== "armado") return false;
     const yaInscripto = torneo.inscriptosIds.includes(jugadorId);
     const nuevosIds = yaInscripto
       ? torneo.inscriptosIds.filter((id) => id !== jugadorId)
       : [...torneo.inscriptosIds, jugadorId];
 
-    if (!(await guardar(torneoId, { inscriptos_ids: nuevosIds }))) return;
+    return guardar(torneoId, { inscriptos_ids: nuevosIds });
   }
 
   /**

@@ -10,6 +10,8 @@ import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
 import { useMiJugador } from "@/context/useMiJugador";
 import { IdentidadJugador } from "@/components/IdentidadJugador";
+import { usePremiosTorneo } from "@/context/usePremiosTorneo";
+import { premioAlInscribirse } from "@/lib/premiosTorneo";
 
 export default function InscribirseTorneoPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +24,8 @@ export default function InscribirseTorneoPage() {
   const [busqueda, setBusqueda] = useState("");
   const [enVuelo, setEnVuelo] = useState<string | null>(null);
   const [liberando, setLiberando] = useState(false);
+  const [avisoInscripcion, setAvisoInscripcion] = useState<string | null>(null);
+  const { torneos, premios, error: errorPremios } = usePremiosTorneo();
 
   const elegibles = useMemo(() => {
     const filtrados = busqueda.trim()
@@ -31,6 +35,10 @@ export default function InscribirseTorneoPage() {
   }, [jugadores, busqueda]);
 
   const { jugador: miJugador, cargando: cargandoJugador, error: errorJugador, ambigua } = useMiJugador();
+  const miPremio = miJugador && torneo && !errorPremios
+    ? premioAlInscribirse(torneos, torneo.id, miJugador.id) : undefined;
+  const otroPremio = miJugador && !miPremio && !errorPremios
+    ? premios.find(p => p.jugadorId === miJugador.id && p.estado === "reservado") : undefined;
 
   if (cargando || cargandoAuth || cargandoJugador) {
     return <p className="text-sm text-zinc-400">Cargando...</p>;
@@ -57,9 +65,15 @@ export default function InscribirseTorneoPage() {
 
   async function alternar(jugadorId: string) {
     if (!miJugador || miJugador.id !== jugadorId || errorJugador || ambigua || enVuelo) return;
+    const estabaAnotado = torneo!.inscriptosIds.includes(jugadorId);
     setEnVuelo(jugadorId);
-    await alternarInscripcion(torneo!.id, jugadorId);
-    setEnVuelo(null);
+    setAvisoInscripcion(null);
+    try {
+      const confirmado = await alternarInscripcion(torneo!.id, jugadorId);
+      setAvisoInscripcion(confirmado
+        ? estabaAnotado ? "Te sacaste de la inscripción." : "Tu inscripción quedó confirmada."
+        : "No se pudo confirmar el cambio. Reintentá.");
+    } finally { setEnVuelo(null); }
   }
 
   async function liberar() {
@@ -82,7 +96,7 @@ export default function InscribirseTorneoPage() {
         <div className="panel p-5"><IdentidadJugador/></div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">
+          <div className="flex flex-col items-start justify-between gap-3 rounded-lg border border-emerald-500/30 sm:flex-row sm:items-center bg-emerald-500/10 p-3 text-sm text-emerald-200">
             <span>
               Sos <strong>{nombreVisible(miJugador)}</strong>. Tocá tu nombre abajo para
               anotarte o sacarte. Este mismo jugador se usa en tus rachas.
@@ -100,6 +114,14 @@ export default function InscribirseTorneoPage() {
               </button>
             </div>
           </div>
+
+          {miPremio && <section aria-label="Premio para esta inscripción" className="rounded-xl border border-amber-300/25 bg-amber-300/5 p-4">
+            <p className="font-semibold text-amber-100">🏆 {torneo.inscriptosIds.includes(miJugador.id) || torneo.jugadoresIds.includes(miJugador.id) ? "Tu inscripción es gratis" : "Este torneo te sale gratis"}</p>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-300">Ganaste <Link href={"/torneos/" + miPremio.origen.id} className="text-amber-200 underline underline-offset-2">{miPremio.origen.nombre}</Link> y tu premio es un torneo sin pagar inscripción.</p>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-400">{torneo.inscriptosIds.includes(miJugador.id) || torneo.jugadoresIds.includes(miJugador.id) ? "Premio reservado. Si te sacás antes de empezar y todavía no estás en la lista de jugadores, vuelve a estar disponible." : "Se reserva al confirmar que te anotaste. Cada premio se usa una sola vez."}</p>
+          </section>}
+          {otroPremio?.destino && <p className="rounded-xl border border-white/10 p-3 text-xs leading-relaxed text-zinc-400">Tu torneo gratis está reservado en <Link href={"/torneos/" + otroPremio.destino.id} className="text-amber-200 underline underline-offset-2">{otroPremio.destino.nombre}</Link>.</p>}
+          {avisoInscripcion && <p role="status" className="text-sm text-zinc-300">{avisoInscripcion}</p>}
 
           <input
             type="text"
@@ -132,7 +154,7 @@ export default function InscribirseTorneoPage() {
                     <span>
                       {nombreVisible(j)} {esVos && <span className="text-xs text-zinc-400">(vos)</span>}
                     </span>
-                    <span>{anotado ? "✓ Anotado" : esVos ? "Anotarme" : ""}</span>
+                    <span className="text-right">{esVos && miPremio && <span className="block text-xs text-amber-200">🏆 Gratis</span>}{anotado ? "✓ Anotado" : esVos ? miPremio ? "Anotarme gratis" : "Anotarme" : ""}</span>
                   </button>
                 );
               })}

@@ -8,6 +8,8 @@ import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useTorneos } from "@/context/TorneosContext";
 import { useAuth } from "@/context/AuthContext";
 import { ELO_MINIMO } from "@/lib/elo";
+import { usePremiosTorneo } from "@/context/usePremiosTorneo";
+import { premioEnTorneo } from "@/lib/premiosTorneo";
 import {
   rondaCompleta,
   puedeEditarJugadores,
@@ -70,6 +72,7 @@ export default function TorneoPage() {
   } = useTorneos();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
+  const { premios, error: errorPremios } = usePremiosTorneo();
 
   const [byeElegido, setByeElegido] = useState("");
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
@@ -387,6 +390,7 @@ export default function TorneoPage() {
                 const j = jugadores.find((x) => x.id === jid);
                 const yaEnLista = torneo.jugadoresIds.includes(jid);
                 const vino = torneo.asistieronIds.includes(jid);
+                const premio = errorPremios ? undefined : premioEnTorneo(premios, torneo.id, jid);
                 return (
                   <li key={jid} className="flex items-center justify-between text-sm">
                     <label className="flex items-center gap-2">
@@ -399,6 +403,7 @@ export default function TorneoPage() {
                       />
                       <span className={vino ? "font-medium text-emerald-300" : ""}>
                         {j ? nombreVisible(j) : "?"}
+                        {puedeEditar && premio && <span className="ml-2 text-xs text-amber-200" title={"Premio por ganar " + premio.origen.nombre}>🏆 Gratis</span>}
                       </span>
                     </label>
                     {puedeEditar &&
@@ -427,6 +432,7 @@ export default function TorneoPage() {
         <ul className="flex flex-col gap-1">
           {inscriptos.map((j) => {
             const pago = torneo.pagaronIds.includes(j!.id);
+            const premio = errorPremios ? undefined : premioEnTorneo(premios, torneo.id, j!.id);
             return (
               <li key={j!.id} className="flex flex-wrap items-center justify-between gap-2 py-1 text-sm">
                 <span className="flex flex-wrap items-center gap-3">
@@ -434,10 +440,11 @@ export default function TorneoPage() {
                     {nombreVisible(j!)}{" "}
                     <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
                   </span>
+                  {puedeEditar && premio && <span className="rounded-md border border-amber-300/20 bg-amber-300/5 px-2 py-1 text-xs text-amber-200" title={"Premio por ganar " + premio.origen.nombre}>🏆 Inscripción gratis</span>}
                   {puedeEditar && (
                     <label
                       className={`flex items-center gap-1 text-xs ${pago ? "text-amber-300" : "text-zinc-500"}`}
-                      title="Marcar si pagó"
+                      title={premio ? "Tiene inscripción gratis. Marcar sólo si realizó un pago real." : "Marcar si pagó"}
                     >
                       <input
                         type="checkbox"
