@@ -1,6 +1,10 @@
-import { NIVELES_PRACTICA, type NivelPractica } from "./partidaPractica";
+import { DATOS_BOTS_PRACTICA, NIVELES_PRACTICA, type NivelPractica } from "./partidaPractica";
+
+export type VarianteMotor={uci:string;tipo:"cp"|"mate";valor:number;profundidad:number};
 
 export class MotorPractica {
+  private variantesActuales=new Map<string,VarianteMotor>();
+  get variantes(){return [...this.variantesActuales.values()];}
   readonly listo:Promise<void>;
   private worker:Worker;
   private cerrado=false;
@@ -30,6 +34,10 @@ export class MotorPractica {
         this.worker.postMessage("isready");
       }
       if(linea.trim()==="readyok"&&!this.preparado){this.preparado=true;clearTimeout(this.cargaTimer);this.resolverCarga();}
+      if(this.busqueda&&!/\b(?:upperbound|lowerbound)\b/u.test(linea)){
+        const info=linea.match(/\bdepth (\d+).*?\bscore (cp|mate) (-?\d+).*?\bpv ([a-h][1-8][a-h][1-8][qrbn]?)(?:\s|$)/u);
+        if(info){const [,depth,tipo,valor,uci]=info;const previa=this.variantesActuales.get(uci);if(!previa||Number(depth)>=previa.profundidad)this.variantesActuales.set(uci,{uci,tipo:tipo as "cp"|"mate",valor:Number(valor),profundidad:Number(depth)});}
+      }
       if(linea.startsWith("bestmove ")&&this.busqueda){
         const solicitud=this.busqueda;this.busqueda=null;clearTimeout(solicitud.timer);
         const uci=linea.trim().split(/\s+/u)[1];
@@ -38,17 +46,19 @@ export class MotorPractica {
       }
     }
   };
-  async buscar(jugadas:string[],nivel:NivelPractica,pista=false,opciones:{elo?:number;searchmoves?:string[]}={}):Promise<string>{
+  async buscar(jugadas:string[],nivel:NivelPractica,pista=false,opciones:{elo?:number;searchmoves?:string[];estiloAtaque?:boolean}={}):Promise<string>{
     await this.listo;
     if(this.cerrado)throw this.errorCierre??new DOMException("Búsqueda cancelada","AbortError");
     if(this.busqueda)throw new Error("El bot ya está pensando.");
     if(!jugadas.every(m=>/^[a-h][1-8][a-h][1-8][qrbn]?$/u.test(m)))throw new Error("Secuencia inválida.");
-    if(opciones.elo!==undefined&&opciones.elo!==1850)throw new Error("Fuerza de práctica inválida.");
+    if(opciones.elo!==undefined&&!Object.values(DATOS_BOTS_PRACTICA).some(b=>b.elo===opciones.elo))throw new Error("Fuerza de práctica inválida.");
     if(opciones.searchmoves&&(!opciones.searchmoves.length||!opciones.searchmoves.every(m=>/^[a-h][1-8][a-h][1-8][qrbn]?$/u.test(m))))throw new Error("Apertura inválida.");
+    this.variantesActuales.clear();
     const limitada=!pista&&opciones.elo!==undefined;
     const dificultad=NIVELES_PRACTICA.find(n=>n.id===nivel)!;
     return new Promise((resolve,reject)=>{
       this.busqueda={resolve,reject,timer:setTimeout(()=>this.fallar(new Error("El bot no respondió. Tu partida está guardada; reintentá.")),this.limiteMs)};
+      this.worker.postMessage(`setoption name MultiPV value ${!pista&&opciones.estiloAtaque?4:1}`);
       this.worker.postMessage(`setoption name UCI_LimitStrength value ${limitada}`);
       if(limitada)this.worker.postMessage(`setoption name UCI_Elo value ${opciones.elo}`);
       this.worker.postMessage(`setoption name Skill Level value ${pista||limitada?20:dificultad.skill}`);

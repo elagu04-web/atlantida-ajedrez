@@ -8,7 +8,12 @@ export const NIVELES_PRACTICA = [
 ] as const;
 export type NivelPractica = typeof NIVELES_PRACTICA[number]["id"];
 export type ColorPractica = "w" | "b";
-export type PerfilBot = "stockfish" | "fonchi";
+export const DATOS_BOTS_PRACTICA = {
+  stockfish:{nombre:"Bot Atlántida",elo:null,imagen:null},
+  fonchi:{nombre:"Fonchi y el Hipopótamo",elo:1850,imagen:"/imagenes/fonchi-hipopotamo-bot.png"},
+  victor:{nombre:"Víctor Terminator",elo:2000,imagen:"/imagenes/victor-terminator-avatar.png"},
+} as const;
+export type PerfilBot = keyof typeof DATOS_BOTS_PRACTICA;
 export type GuardadoPractica = {version:1;color:ColorPractica;nivel:NivelPractica;perfil?:PerfilBot;jugadas:string[];rendida:boolean};
 export const CLAVE_PRACTICA = "atlantida-practica-v1";
 export const sanPractica = (san:string) => san.replace(/^[KQRBN]/u,p=>({K:"R",Q:"D",R:"T",B:"A",N:"C"}[p]??p)).replace(/=([QRBN])/u,(_,p:string)=>`=${({Q:"D",R:"T",B:"A",N:"C"}[p]??p)}`);
@@ -18,7 +23,7 @@ export class PartidaPractica {
   readonly ajedrez = new Chess();
   private rendida = false;
   constructor(readonly color:ColorPractica="w",readonly nivel:NivelPractica="club",readonly perfil:PerfilBot="stockfish"){
-    if(perfil==="fonchi"&&color!=="w")throw new Error("Fonchi siempre juega con negras.");
+    if(perfil!=="stockfish"&&color!=="w")throw new Error("Fonchi y Víctor siempre juegan con negras.");
   }
   get turnoJugador(){return !this.terminada&&this.ajedrez.turn()===this.color;}
   get terminada(){return this.rendida||this.ajedrez.isGameOver();}
@@ -53,7 +58,8 @@ export class PartidaPractica {
   guardar():GuardadoPractica{return {version:1,color:this.color,nivel:this.nivel,perfil:this.perfil,jugadas:this.jugadas,rendida:this.rendida};}
   pgn(){
     const nivel=NIVELES_PRACTICA.find(n=>n.id===this.nivel)!;
-    const nombreBot=this.perfil==="fonchi"?"Fonchi y el Hipopótamo (aprox. 1850)":`Bot Atlántida (${nivel.nombre})`;
+    const bot=DATOS_BOTS_PRACTICA[this.perfil];
+    const nombreBot=this.perfil==="stockfish"?`Bot Atlántida (${nivel.nombre})`:`${bot.nombre} (aprox. ${bot.elo})`;
     const cabeceras:Record<string,string>={Event:"Práctica Atlántida",Site:"Atlántida Ajedrez",White:this.color==="w"?"Jugador":nombreBot,Black:this.color==="b"?"Jugador":nombreBot,Result:this.estado().resultado};
     for(const [clave,valor] of Object.entries(cabeceras))this.ajedrez.setHeader(clave,valor);
     return this.ajedrez.pgn();
@@ -62,7 +68,7 @@ export class PartidaPractica {
     if(!valor||typeof valor!=="object")return null;
     const v=valor as Partial<GuardadoPractica>;
     if(v.version!==1||!['w','b'].includes(v.color??'')||!NIVELES_PRACTICA.some(n=>n.id===v.nivel)||typeof v.rendida!=="boolean"||!Array.isArray(v.jugadas)||v.jugadas.length>1000)return null;
-    if(v.perfil!==undefined&&v.perfil!=="stockfish"&&v.perfil!=="fonchi"||v.perfil==="fonchi"&&v.color!=="w")return null;
+    if(v.perfil!==undefined&&!["stockfish","fonchi","victor"].includes(v.perfil)||(v.perfil==="fonchi"||v.perfil==="victor")&&v.color!=="w")return null;
     const partida=new PartidaPractica(v.color!,v.nivel!,v.perfil??"stockfish");
     try{for(const uci of v.jugadas){if(typeof uci!=="string"||!partida.esLegal(uci)||partida.terminada)return null;partida.ajedrez.move(uci);}partida.rendida=v.rendida;return partida;}catch{return null;}
   }
