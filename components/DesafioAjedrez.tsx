@@ -7,11 +7,14 @@ import { aplicarUci, fechaMontevideo, validarDesafio, type Desafio } from "@/lib
 import reserva from "@/data/desafio-reserva.json";
 import Link from "next/link";
 import { GuardarRacha } from "./GuardarRacha";
+import { useAuth } from "@/context/AuthContext";
+import { claveIntentoDesafio } from "@/lib/identidadJugador";
 
 const nombres:Record<PieceSymbol,string>={k:"rey",q:"dama",r:"torre",b:"alfil",n:"caballo",p:"peón"};
 const notacion:Record<string,string>={K:"R",Q:"D",R:"T",B:"A",N:"C"};
 const sanEsp=(san:string)=>san.replace(/^[KQRBN]/,s=>notacion[s]??s).replace(/=([QRBN])/,(_,s:string)=>`=${notacion[s]??s}`);
 export function DesafioAjedrez() {
+  const {session,cargando}=useAuth();
   const [desafio,setDesafio]=useState<Desafio|null>(null);
   useEffect(()=>{
     let cancelado=false,fechaConsultada="",reintentoEn=0;
@@ -26,7 +29,7 @@ export function DesafioAjedrez() {
     document.addEventListener("visibilitychange",visible);
     return()=>{cancelado=true;abort.abort();clearInterval(intervalo);document.removeEventListener("visibilitychange",visible);};
   },[]);
-  return desafio?<TableroDesafio key={`${desafio.id}:${desafio.fecha}`} desafio={desafio}/>:<section className="puzzle-card"><p className="eyebrow text-amber-200">Desafío del día · ≈1800</p><div className="skeleton mt-4 aspect-square rounded-xl"/><p role="status" className="mt-4 text-xs text-zinc-400">Buscando tu próxima buena jugada…</p></section>;
+  return desafio&&!cargando?<TableroDesafio key={claveIntentoDesafio(session?.user.id,desafio.fecha,desafio.id)} desafio={desafio}/>:<section className="puzzle-card"><p className="eyebrow text-amber-200">Desafío del día · ≈1800</p><div className="skeleton mt-4 aspect-square rounded-xl"/><p role="status" className="mt-4 text-xs text-zinc-400">Buscando tu próxima buena jugada…</p></section>;
 }
 
 function TableroDesafio({desafio}:{desafio:Desafio}) {

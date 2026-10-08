@@ -45,7 +45,7 @@ Supabase debe aplicar RLS: ocultar botones en el navegador no concede ni limita 
 
 La base guarda un problema compartido por fecha y evita repetir IDs. La fuente es la [API pública de problemas de Lichess](https://lichess.org/api); la [base de problemas](https://database.lichess.org/#puzzles) se publica bajo CC0. El rating de táctica no equivale a Elo FIDE.
 
-No se requiere una clave privada en Vercel: las funciones SQL controlan las escrituras y comprueban la identidad con `auth.uid()`. Las tablas de resoluciones no se exponen directamente; la clasificación publica únicamente el nombre elegido y sus contadores. Se registra una resolución por cuenta y día, se conserva el récord y una ausencia de un día o una jugada legal incorrecta corta la racha. Después de un error ese problema no puede sumar, aunque se reinicie el tablero o se resuelva luego. Una resolución ya acreditada no se revoca al practicar de nuevo. No es un sistema de arbitraje ni de control de trampas: las pistas y la solución son públicas.
+No se requiere una clave privada en Vercel: las funciones SQL controlan las escrituras y comprueban la identidad con `auth.uid()`. Las tablas de resoluciones no se exponen directamente; la clasificación publica únicamente el nombre visible del jugador y sus contadores. Se registra una resolución por cuenta y día, se conserva el récord y una ausencia de un día o una jugada legal incorrecta corta la racha. Después de un error ese problema no puede sumar, aunque se reinicie el tablero o se resuelva luego. Una resolución ya acreditada no se revoca al practicar de nuevo. No es un sistema de arbitraje ni de control de trampas: las pistas y la solución son públicas.
 
 Antes de ejecutar la migración, el servidor ofrece práctica con una selección diaria en caché. Si falla la fuente, muestra un problema de reserva identificado como tal y reintenta desde el navegador cada diez minutos. La práctica de reserva no suma rachas. La selección en caché se hace al recibir una visita; la programación independiente y el archivo persistente requieren activar el SQL anterior.
 
@@ -65,6 +65,14 @@ select dia, puzzle_id, rating from public.desafios_diarios order by dia desc lim
 - Las casillas indican Guardando y confirman Pago guardado después de recibir y comprobar la respuesta. Si no hay confirmación, muestran un aviso para reintentar. Pagos y asistencia se cargan desde el registro privado al entrar o recargar.
 - Las marcas que antes no llegaron a la base deben volver a ingresarse después de activar el almacenamiento. La migración no inventa pagos anteriores.
 
+## Cuenta y jugador compartidos en rachas y torneos
+
+- La sesión determina la cuenta dueña de la racha. Sin sesión sólo se practica; entrar, salir o cambiar de cuenta empieza un intento nuevo, sin transferir resoluciones ni errores entre cuentas.
+- El desafío y la inscripción utilizan el mismo vínculo existente entre el correo de la cuenta y un jugador del club. Si falta, ambos ofrecen el mismo selector «Soy yo». Si el correo tiene varios jugadores, bloquean la selección arbitraria y piden corregirla.
+- El desafío muestra «Jugás como» y envía el nombre visible de ese jugador; ya no ofrece un nombre independiente para las rachas.
+- Después de activar los desafíos, ejecutar `supabase/migrations/20261007_identidad_rachas.sql` para que el servidor también obtenga el nombre del vínculo y descarte el nombre enviado por el cliente. La firma de la función se conserva para mantener compatibilidad durante el despliegue.
+- Esta migración permite nombres repetidos y obtiene el nombre actualizado al consultar la clasificación. Sólo expone nombre y contadores. Una cuenta sin vínculo válido no aparece hasta que lo complete; sus resoluciones anteriores se conservan por `auth.uid()`.
+- La migración no modifica los jugadores, torneos, pagos, permisos de inscripción ni la programación del problema diario. Ejecutarla después de la migración de desafíos; no volver a ejecutar la anterior encima de ésta porque restauraría las funciones antiguas.
 ## Registro Pegasus
 
 - Bluetooth recibe un flujo de tramas DGT. El decodificador conserva notificaciones fragmentadas y procesa varias tramas en una notificación, respetando la longitud de cabecera.
