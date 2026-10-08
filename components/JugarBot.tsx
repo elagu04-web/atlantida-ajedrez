@@ -5,6 +5,7 @@ import { Chessboard } from "react-chessboard";
 import Image from "next/image";
 import { RivalEnPartida } from "./RivalEnPartida";
 import { jugadasFrancesa } from "@/lib/francesa";
+import { respuestaFiable, abandonarApertura } from "@/lib/calidadBot";
 import { respuestaAtacante } from "@/lib/estiloBot";
 import type { EmocionBot } from "@/lib/personalidadBot";
 import { jugadasHipopotamo } from "@/lib/hipopotamo";
@@ -51,15 +52,24 @@ export function JugarBot(){
       const actual=motor.current;await actual.listo;if(token!==generacion.current)return;
       if(tipo==="inicio"&&partida.turnoJugador){setAccion(null);return;}
       setAccion(tipo==="pista"?"pista":"bot");
-      const apertura=tipo==="pista"?undefined:partida.perfil==="fonchi"?jugadasHipopotamo(partida.ajedrez):partida.perfil==="victor"?jugadasFrancesa(partida.ajedrez):undefined;
+      let apertura=tipo==="pista"?undefined:partida.perfil==="fonchi"?jugadasHipopotamo(partida.ajedrez):partida.perfil==="victor"?jugadasFrancesa(partida.ajedrez):undefined;
       let uci=await actual.buscar(partida.jugadas,partida.nivel,tipo==="pista",DATOS_BOTS_PRACTICA[partida.perfil].elo!==null?{elo:DATOS_BOTS_PRACTICA[partida.perfil].elo!,searchmoves:apertura,estiloAtaque:partida.perfil==="victor"||partida.perfil==="matias"}:{});
       if(apertura&&!apertura.includes(uci))throw new Error("El bot no respetó la apertura. Reintentá desde esta posición.");
+      let variantes=actual.variantes;
+      if(tipo!=="pista"&&DATOS_BOTS_PRACTICA[partida.perfil].elo!==null){
+        uci=respuestaFiable(partida.ajedrez,uci,variantes,DATOS_BOTS_PRACTICA[partida.perfil].elo!,apertura);
+        if(apertura){
+          const libre=await actual.buscar(partida.jugadas,partida.nivel,true);
+          if(token!==generacion.current||juego.current!==partida||partida.ajedrez.fen()!==fen)return;
+          if(abandonarApertura(partida.ajedrez,uci,variantes,libre,actual.variantes)){uci=libre;variantes=actual.variantes;apertura=undefined;}
+        }
+      }
       if(token!==generacion.current||juego.current!==partida||partida.ajedrez.fen()!==fen)return;
       if(!partida.esLegal(uci))throw new Error("El bot devolvió una jugada inválida. Reintentá desde esta posición.");
       if(tipo==="pista"){
         const muestra=new Chess(fen);const sugerida=muestra.move(uci);setPista(uci);setMensaje(`Pista: ${sanPractica(sugerida.san)} (${uci.slice(0,2)} → ${uci.slice(2,4)}).`);
       }else{
-        uci=(partida.perfil==="victor"||partida.perfil==="matias")?respuestaAtacante(partida.ajedrez,uci,actual.variantes,apertura,partida.perfil==="matias"):respuestaSuave(partida,uci);if(!partida.moverBot(uci))throw new Error("No se pudo aplicar la respuesta del bot. Reintentá.");actualizar();sonar();setSeleccion(null);setPista(null);
+        uci=(partida.perfil==="victor"||partida.perfil==="matias")?respuestaAtacante(partida.ajedrez,uci,variantes,apertura,partida.perfil==="matias"):respuestaSuave(partida,uci);if(!partida.moverBot(uci))throw new Error("No se pudo aplicar la respuesta del bot. Reintentá.");actualizar();sonar();setSeleccion(null);setPista(null);
       }
       setAccion(null);
     }catch(causa){
