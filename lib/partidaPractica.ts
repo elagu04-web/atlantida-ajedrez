@@ -11,8 +11,10 @@ export type ColorPractica = "w" | "b";
 export const DATOS_BOTS_PRACTICA = {
   stockfish:{nombre:"Bot Atlántida",elo:null,imagen:null},
   fonchi:{nombre:"Fonchi y el Hipopótamo",elo:1850,imagen:"/imagenes/fonchi-hipopotamo-bot.png"},
+  matias:{nombre:"Matías y su viento a favor",elo:1950,imagen:"/imagenes/matias-morra-bot.png"},
   victor:{nombre:"Víctor Terminator",elo:2000,imagen:"/imagenes/victor-terminator-avatar.png"},
 } as const;
+export const APERTURA_MORRA = ["e2e4","c7c5","d2d4","c5d4","c2c3","d4c3","b1c3"] as const;
 export type PerfilBot = keyof typeof DATOS_BOTS_PRACTICA;
 export type GuardadoPractica = {version:1;color:ColorPractica;nivel:NivelPractica;perfil?:PerfilBot;jugadas:string[];rendida:boolean};
 export const CLAVE_PRACTICA = "atlantida-practica-v1";
@@ -23,12 +25,15 @@ export class PartidaPractica {
   readonly ajedrez = new Chess();
   private rendida = false;
   constructor(readonly color:ColorPractica="w",readonly nivel:NivelPractica="club",readonly perfil:PerfilBot="stockfish"){
-    if(perfil!=="stockfish"&&color!=="w")throw new Error("Fonchi y Víctor siempre juegan con negras.");
+    if((perfil==="fonchi"||perfil==="victor")&&color!=="w")throw new Error("Fonchi y Víctor siempre juegan con negras.");
+    if(perfil==="matias"&&color!=="b")throw new Error("Matías siempre juega con blancas.");
+    if(perfil==="matias")for(const uci of APERTURA_MORRA)this.ajedrez.move(uci);
   }
   get turnoJugador(){return !this.terminada&&this.ajedrez.turn()===this.color;}
   get terminada(){return this.rendida||this.ajedrez.isGameOver();}
   get jugadas(){return this.ajedrez.history({verbose:true}).map(uciPractica);}
-  get puedeDeshacer(){return this.jugadas.length>=(this.ajedrez.turn()===this.color?2:1);}
+  get jugadasIniciales(){return this.perfil==="matias"?APERTURA_MORRA.length:0;}
+  get puedeDeshacer(){return this.jugadas.length-this.jugadasIniciales>=(this.ajedrez.turn()===this.color?2:1);}
   moverJugador(from:Square,to:Square,promotion?:PieceSymbol){
     if(!this.turnoJugador)return false;
     try{return !!this.ajedrez.move({from,to,promotion});}catch{return false;}
@@ -68,9 +73,10 @@ export class PartidaPractica {
     if(!valor||typeof valor!=="object")return null;
     const v=valor as Partial<GuardadoPractica>;
     if(v.version!==1||!['w','b'].includes(v.color??'')||!NIVELES_PRACTICA.some(n=>n.id===v.nivel)||typeof v.rendida!=="boolean"||!Array.isArray(v.jugadas)||v.jugadas.length>1000)return null;
-    if(v.perfil!==undefined&&!["stockfish","fonchi","victor"].includes(v.perfil)||(v.perfil==="fonchi"||v.perfil==="victor")&&v.color!=="w")return null;
+    if(v.perfil!==undefined&&!["stockfish","fonchi","victor","matias"].includes(v.perfil)||(v.perfil==="fonchi"||v.perfil==="victor")&&v.color!=="w"||v.perfil==="matias"&&v.color!=="b")return null;
     const partida=new PartidaPractica(v.color!,v.nivel!,v.perfil??"stockfish");
-    try{for(const uci of v.jugadas){if(typeof uci!=="string"||!partida.esLegal(uci)||partida.terminada)return null;partida.ajedrez.move(uci);}partida.rendida=v.rendida;return partida;}catch{return null;}
+    if(partida.jugadasIniciales&&(v.jugadas.length<partida.jugadasIniciales||APERTURA_MORRA.some((uci,i)=>v.jugadas![i]!==uci)))return null;
+    try{for(const uci of v.jugadas.slice(partida.jugadasIniciales)){if(typeof uci!=="string"||!partida.esLegal(uci)||partida.terminada)return null;partida.ajedrez.move(uci);}partida.rendida=v.rendida;return partida;}catch{return null;}
   }
 }
 

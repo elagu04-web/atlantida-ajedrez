@@ -638,3 +638,22 @@ button:not(:disabled), summary { cursor: pointer; }
 
 @media(min-width:901px){.play-layout[data-activa="true"] .play-board {width:min(100%,var(--play-board-size));margin-inline:auto;}}
 @media(max-width:900px){.play-layout[data-activa="true"] .play-board {width:min(100%,max(160px,calc(100dvh - 270px)));margin-inline:auto;}}
+/* Los desafíos comparten el tablero y los paneles de Jugar. */
+.puzzle-board {border:0;border-radius:10px;}
+.puzzle-board .square-light {background:#f0e6ce;}.puzzle-board .square-dark {background:#638480;}
+.puzzle-mission h2 {font-size:23px;line-height:1.25;margin:12px 0;}.puzzle-mission h2 span {color:#e5c998;}
+.puzzle-mission>p:not(.eyebrow) {font-size:12px;line-height:1.7;color:#9aabc1;}
+.puzzle-progress {margin-top:18px;}.puzzle-progress>div {display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:#9aabc1;}.puzzle-progress strong {color:#e5c998;font-family:monospace;}
+.puzzle-progress progress {display:block;margin-top:10px;width:100%;height:5px;appearance:none;border:0;border-radius:999px;overflow:hidden;background:#ffffff10;}.puzzle-progress progress::-webkit-progress-bar {background:#ffffff10;}.puzzle-progress progress::-webkit-progress-value {background:#e5c998;}.puzzle-progress progress::-moz-progress-bar {background:#e5c998;}
+.puzzle-layout .play-tools>.eyebrow {margin-bottom:14px;}.puzzle-promotion {display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.puzzle-source {font-size:10px;color:#8192a8;line-height:1.7;}.puzzle-source a {color:#e5c998;}
+.puzzle-leaderboard {margin-top:40px;}.puzzle-card>.play-controls {margin-block:14px;}.puzzle-card>.play-engine-details {margin-block:14px;}
+.racha-identity {margin-top:18px;padding-top:18px;border-top:1px solid #ffffff14;}.racha-identity>div+div {margin-top:14px;}
+@media(max-width:900px){.puzzle-mission h2 {font-size:21px;}.desafio-page .play-heading {margin-bottom:24px;}}
+
+.play-avatar-matias {width:60px;height:60px;flex-shrink:0;overflow:hidden;background:#35558025;}.play-avatar-matias img {width:100%;height:100%;object-fit:contain;}.play-rival-card[data-perfil="matias"] {background:linear-gradient(130deg,#192d4b,#101e31);border-color:#6b98d540;}.play-matias>p:not(.play-muted) {color:#c7dcf8;}
+@media(min-width:901px){.play-layout[data-activa="true"] .play-avatar-matias {width:40px;height:40px;}}
+@media(max-width:420px){.play-avatar-matias {width:48px;height:48px;}}
+.puzzle-board .square-selected {background:#668ed4!important;}.puzzle-board .square-last {box-shadow:inset 0 0 0 3px #e4be71;}
+
+.play-opening-controls {padding:12px 0;border-bottom:1px solid #ffffff14;margin-bottom:14px;}.play-opening-controls p {font-size:12px;line-height:1.6;color:#9aabc1;margin-bottom:10px;}.play-opening-controls button:disabled {opacity:.45;cursor:default;}.play-resign:disabled {opacity:.45;cursor:default;}
