@@ -6,6 +6,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useTorneos } from "@/context/TorneosContext";
 import { nombreVisible } from "@/lib/players";
 import { DesafioAjedrez } from "@/components/DesafioAjedrez";
+import { TablaRachas } from "@/components/TablaRachas";
 import { TarjetaTorneo } from "@/components/TarjetaTorneo";
 import { Icono, type NombreIcono } from "@/components/Icono";
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
       <div className="hero-copy"><p className="eyebrow text-blue-300"><span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />Bienvenido al club</p><h1>El ajedrez<br />nos <span>mueve.</span></h1><p className="hero-description">Cada partida tiene una historia. Seguí la competencia, conocé a los jugadores y encontrá tu próxima buena jugada.</p><div className="mt-7 flex flex-wrap gap-3"><Link href="/torneos" className="button-primary">Explorar torneos<Icono nombre="flecha" className="h-4 w-4" /></Link><Link href="/jugadores" className="button-secondary">Ver el ranking</Link></div><div className="hero-note"><span className="live-dot" /><span>{cargando?"Conectando con el club…":enCurso?`${enCurso} ${enCurso===1?"torneo en curso":"torneos en curso"}`:"Todos los resultados, en un lugar"}</span><span className="hidden sm:inline text-zinc-600">/</span><span className="hidden sm:inline">Resultados actualizados</span></div></div>
       <DesafioAjedrez />
     </section>
+    <TablaRachas compacta />
     {(errorJugadores||errorTorneos)&&<p role="status" className="panel border-amber-500/30 p-4 text-sm text-amber-200">{errorJugadores||errorTorneos}</p>}
     <div className="club-metrics">{[
       {valor:jugadores.length,texto:"Jugadores en el club",icono:"personas"},

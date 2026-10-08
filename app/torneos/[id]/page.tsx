@@ -65,6 +65,8 @@ export default function TorneoPage() {
     alternarPago,
     cargando,
     errorCarga,
+    cargandoControl,
+    errorControl,
   } = useTorneos();
   const { esAdmin } = useAuth();
   const puedeEditar = esAdmin;
@@ -81,6 +83,9 @@ export default function TorneoPage() {
   const arrastrandoRef = useRef<SlotEmparejamiento | null>(null);
   const [sobreSlot, setSobreSlot] = useState<SlotEmparejamiento | null>(null);
   const [mensajeEdicion, setMensajeEdicion] = useState<string | null>(null);
+  const [pagosPendientes, setPagosPendientes] = useState<Set<string>>(new Set());
+  const pagosEnVuelo = useRef(new Set<string>());
+  const [avisosPago, setAvisosPago] = useState<Record<string, {ok: boolean; texto: string}>>({});
 
   const torneo = obtenerTorneo(id);
 
@@ -100,6 +105,17 @@ export default function TorneoPage() {
   function nombreDe(jugadorId: string) {
     const j = jugadores.find((j) => j.id === jugadorId);
     return j ? nombreVisible(j) : "?";
+  }
+
+  async function guardarPago(jugadorId: string, marcado: boolean) {
+    const clavePago = `${id}:${jugadorId}`;
+    if (pagosEnVuelo.current.has(clavePago)) return;
+    pagosEnVuelo.current.add(clavePago);setPagosPendientes(new Set(pagosEnVuelo.current));
+    setAvisosPago(actuales => {const nuevos = {...actuales};delete nuevos[clavePago];return nuevos;});
+    try {
+      const ok = await alternarPago(id, jugadorId, marcado);
+      setAvisosPago(actuales => ({...actuales, [clavePago]: {ok, texto: ok ? (marcado ? "Pago guardado" : "Marca quitada") : "No se confirmó. Reintentá."}}));
+    } finally {pagosEnVuelo.current.delete(clavePago);setPagosPendientes(new Set(pagosEnVuelo.current));}
   }
 
   function toggleDesempate(nombreDesempate: string) {
@@ -377,8 +393,8 @@ export default function TorneoPage() {
                       <input
                         type="checkbox"
                         checked={vino}
-                        onChange={() => alternarAsistencia(torneo.id, jid)}
-                        disabled={!puedeEditar}
+                        onChange={e => void alternarAsistencia(torneo.id, jid, e.target.checked)}
+                        disabled={!puedeEditar || cargandoControl}
                         title="Marcar si vino de verdad"
                       />
                       <span className={vino ? "font-medium text-emerald-300" : ""}>
@@ -407,12 +423,13 @@ export default function TorneoPage() {
       <nav className="section-navigation" aria-label="Secciones del torneo"><a href="#participantes">Participantes</a>{torneo.rondas.length>0&&<><a href="#posiciones">Posiciones</a><a href="#rondas">Rondas y resultados</a></>}</nav>
       <div id="participantes" className="panel p-5">
         <h2 className="mb-3 font-semibold">Jugadores inscriptos ({inscriptos.length})</h2>
+        {puedeEditar && errorControl && <p role="status" className="mb-4 text-xs text-amber-200">No se pudieron cargar pagos y asistencia. Se reintentará automáticamente; los resultados del torneo siguen disponibles.</p>}
         <ul className="flex flex-col gap-1">
           {inscriptos.map((j) => {
             const pago = torneo.pagaronIds.includes(j!.id);
             return (
-              <li key={j!.id} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-3">
+              <li key={j!.id} className="flex flex-wrap items-center justify-between gap-2 py-1 text-sm">
+                <span className="flex flex-wrap items-center gap-3">
                   <span>
                     {nombreVisible(j!)}{" "}
                     <span className="font-mono text-xs text-zinc-400">{j!.eloAtlantida}</span>
@@ -425,11 +442,14 @@ export default function TorneoPage() {
                       <input
                         type="checkbox"
                         checked={pago}
-                        onChange={() => alternarPago(torneo.id, j!.id)}
+                        onChange={e => void guardarPago(j!.id, e.target.checked)}
+                        disabled={cargandoControl || pagosPendientes.has(`${id}:${j!.id}`)}
+                        aria-label={`Pagó ${nombreVisible(j!)}`}
                       />
-                      💰 pagó
+                      {pagosPendientes.has(`${id}:${j!.id}`) ? "Guardando…" : "💰 pagó"}
                     </label>
                   )}
+                  {puedeEditar && avisosPago[`${id}:${j!.id}`] && <span role="status" className={`text-xs ${avisosPago[`${id}:${j!.id}`].ok ? "text-emerald-300" : "text-red-300"}`}>{avisosPago[`${id}:${j!.id}`].texto}</span>}
                 </span>
                 {puedeEditarJugadores(torneo) && puedeEditar && (
                   <button

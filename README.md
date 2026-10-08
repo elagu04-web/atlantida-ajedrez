@@ -56,6 +56,15 @@ select jobname, schedule, active from cron.job where jobname = 'atlantida-desafi
 select dia, puzzle_id, rating from public.desafios_diarios order by dia desc limit 7;
 ```
 
+## Rachas en portada y control del torneo
+
+- La portada muestra hasta cinco jugadores en la tabla de rachas. En racha filtra los días actuales mayores a cero; Récords y Resueltos permiten consultar también el historial. La página /desafios mantiene la clasificación completa. Se actualiza cada 30 segundos y al guardar o fallar el problema.
+- La clasificación requiere la migración de desafíos anterior. Si la función aún no existe, se informa que el registro no está habilitado; una caída de conexión se distingue de ese estado.
+- Ejecutar `supabase/migrations/20261007_control_torneos.sql` en el SQL Editor para activar pagos y asistencia. La tabla `torneos_control` conserva una fila privada por torneo y sólo permite consultar o guardar con la cuenta administradora, mediante RLS. No altera resultados ni Elo.
+- El guardado aplica el valor elegido, consulta el estado actual y compara sólo la lista afectada. Si otra pantalla guardó a la vez, relee y combina el cambio. Una alta simultánea nunca reemplaza un registro existente.
+- Las casillas indican Guardando y confirman Pago guardado después de recibir y comprobar la respuesta. Si no hay confirmación, muestran un aviso para reintentar. Pagos y asistencia se cargan desde el registro privado al entrar o recargar.
+- Las marcas que antes no llegaron a la base deben volver a ingresarse después de activar el almacenamiento. La migración no inventa pagos anteriores.
+
 ## Registro Pegasus
 
 - Bluetooth recibe un flujo de tramas DGT. El decodificador conserva notificaciones fragmentadas y procesa varias tramas en una notificación, respetando la longitud de cabecera.

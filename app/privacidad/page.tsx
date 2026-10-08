@@ -25,6 +25,13 @@ export default function PrivacidadPage() {
         La clasificación no muestra tu email ni el identificador de tu cuenta.
       </p>
 
+      <h2 className="mt-2 font-semibold">Pagos y asistencia a torneos</h2>
+      <p className="text-zinc-400">
+        El administrador puede registrar si una inscripción fue pagada y si el jugador
+        asistió al torneo. Esas marcas se guardan para organizar la actividad del club
+        y están disponibles únicamente para el administrador.
+      </p>
+
       <h2 className="mt-2 font-semibold">Qué más hay en el sitio</h2>
       <p className="text-zinc-400">
         El resto del sitio (jugadores, torneos, estadísticas) es información pública del club:

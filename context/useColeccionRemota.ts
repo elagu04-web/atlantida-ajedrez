@@ -75,7 +75,9 @@ export function useColeccionRemota<Fila extends { id: string }, Modelo>(
   function incorporar(fila: Fila) {
     revision.current++;
     setFilas(actuales => new Map(actuales).set(fila.id, fila as unknown as Record<string, unknown>));
-    setItems(actuales => [...actuales.filter(item => (item as { id: string }).id !== fila.id), convertir(fila)]);
+    setItems(actuales => actuales.some(item => (item as { id: string }).id === fila.id)
+      ? actuales.map(item => (item as { id: string }).id === fila.id ? convertir(fila) : item)
+      : [...actuales, convertir(fila)]);
   }
 
   const eliminar = useCallback(async (id: string) => {

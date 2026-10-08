@@ -27,6 +27,8 @@ import { calcularEloYHistorialEnVivo } from "@/lib/elo";
 import { nombreVisible } from "@/lib/players";
 import { supabase } from "@/lib/supabase";
 import { useColeccionRemota } from "./useColeccionRemota";
+import { useAuth } from "./AuthContext";
+import { establecerMarcaTorneo, type CampoControlTorneo, type ControlTorneo } from "@/lib/controlTorneos";
 
 type FilaTorneo = {
   id: string;
@@ -52,6 +54,8 @@ type TorneosContextType = {
   cargando: boolean;
   errorCarga: string | null;
   ultimaActualizacion: Date | null;
+  cargandoControl: boolean;
+  errorControl: string | null;
   crearTorneo: (
     nombre: string,
     formato: FormatoTorneo,
@@ -66,8 +70,8 @@ type TorneosContextType = {
   cambiarIdaYVuelta: (torneoId: string, idaYVuelta: boolean) => Promise<void>;
   cambiarDesempates: (torneoId: string, desempates: string[]) => Promise<void>;
   alternarInscripcion: (torneoId: string, jugadorId: string) => Promise<void>;
-  alternarAsistencia: (torneoId: string, jugadorId: string) => Promise<void>;
-  alternarPago: (torneoId: string, jugadorId: string) => Promise<void>;
+  alternarAsistencia: (torneoId: string, jugadorId: string, marcado?: boolean) => Promise<boolean>;
+  alternarPago: (torneoId: string, jugadorId: string, marcado?: boolean) => Promise<boolean>;
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
   quitarJugadorDeTorneo: (torneoId: string, jugadorId: string) => Promise<void>;
@@ -124,8 +128,13 @@ function filaATorneo(fila: FilaTorneo): Torneo {
   };
 }
 
+function filaAControl(fila: ControlTorneo) { return fila; }
 export function TorneosProvider({ children }: { children: ReactNode }) {
-  const { items: torneos, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaTorneo, Torneo>("torneos", filaATorneo);
+  const {esAdmin} = useAuth();
+  const { items: torneosBase, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaTorneo, Torneo>("torneos", filaATorneo);
+  const {items: controles, incorporar: incorporarControl, cargando: cargandoControl, errorCarga: errorControl} = useColeccionRemota<ControlTorneo, ControlTorneo>("torneos_control", filaAControl, esAdmin);
+  const controlPorId = new Map(controles.map(c => [c.id, c]));
+  const torneos = torneosBase.map(t => {const c = controlPorId.get(t.id); return c ? {...t, pagaronIds: c.pagaron_ids ?? [], asistieronIds: c.asistieron_ids ?? []} : t;});
   const { jugadores } = useJugadores();
   const { registrar } = useActividad();
 
@@ -272,30 +281,18 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
    * inscribirse, esto es solo para que el admin se organice, no requiere que
    * el torneo siga armado ni afecta nada del torneo en sí.
    */
-  async function alternarAsistencia(torneoId: string, jugadorId: string) {
-    const torneo = obtenerTorneo(torneoId);
-    if (!torneo) return;
-    const yaVino = torneo.asistieronIds.includes(jugadorId);
-    const nuevosIds = yaVino
-      ? torneo.asistieronIds.filter((id) => id !== jugadorId)
-      : [...torneo.asistieronIds, jugadorId];
-
-    if (!(await guardar(torneoId, { asistieron_ids: nuevosIds }))) return;
+  async function guardarMarca(torneoId: string, jugadorId: string, campo: CampoControlTorneo, marcado: boolean) {
+    if (!esAdmin) { avisar("Iniciá sesión como administrador para guardar pagos y asistencia."); return false; }
+    try { const control = await establecerMarcaTorneo(torneoId, campo, jugadorId, marcado); incorporarControl(control); return true; }
+    catch (error) { avisar(error instanceof Error ? error.message : "No se pudo guardar el cambio."); return false; }
   }
-
-  /**
-   * Marca (o desmarca) que un inscripto ya pagó este torneo — igual que
-   * alternarAsistencia, solo para organizarse, no afecta nada del torneo.
-   */
-  async function alternarPago(torneoId: string, jugadorId: string) {
-    const torneo = obtenerTorneo(torneoId);
-    if (!torneo) return;
-    const yaPago = torneo.pagaronIds.includes(jugadorId);
-    const nuevosIds = yaPago
-      ? torneo.pagaronIds.filter((id) => id !== jugadorId)
-      : [...torneo.pagaronIds, jugadorId];
-
-    if (!(await guardar(torneoId, { pagaron_ids: nuevosIds }))) return;
+  async function alternarAsistencia(torneoId: string, jugadorId: string, marcado?: boolean) {
+    const torneo = obtenerTorneo(torneoId); if (!torneo) return false;
+    return guardarMarca(torneoId, jugadorId, "asistieron_ids", marcado ?? !torneo.asistieronIds.includes(jugadorId));
+  }
+  async function alternarPago(torneoId: string, jugadorId: string, marcado?: boolean) {
+    const torneo = obtenerTorneo(torneoId); if (!torneo) return false;
+    return guardarMarca(torneoId, jugadorId, "pagaron_ids", marcado ?? !torneo.pagaronIds.includes(jugadorId));
   }
 
   function obtenerTorneo(id: string) {
@@ -502,7 +499,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
   return (
     <TorneosContext.Provider
       value={{
-        errorCarga, ultimaActualizacion,
+        errorCarga, ultimaActualizacion, cargandoControl, errorControl,
         torneos,
         cargando,
         crearTorneo,
