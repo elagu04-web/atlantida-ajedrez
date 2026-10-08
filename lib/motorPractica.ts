@@ -38,17 +38,22 @@ export class MotorPractica {
       }
     }
   };
-  async buscar(jugadas:string[],nivel:NivelPractica,pista=false):Promise<string>{
+  async buscar(jugadas:string[],nivel:NivelPractica,pista=false,opciones:{elo?:number;searchmoves?:string[]}={}):Promise<string>{
     await this.listo;
     if(this.cerrado)throw this.errorCierre??new DOMException("Búsqueda cancelada","AbortError");
     if(this.busqueda)throw new Error("El bot ya está pensando.");
     if(!jugadas.every(m=>/^[a-h][1-8][a-h][1-8][qrbn]?$/u.test(m)))throw new Error("Secuencia inválida.");
+    if(opciones.elo!==undefined&&opciones.elo!==1850)throw new Error("Fuerza de práctica inválida.");
+    if(opciones.searchmoves&&(!opciones.searchmoves.length||!opciones.searchmoves.every(m=>/^[a-h][1-8][a-h][1-8][qrbn]?$/u.test(m))))throw new Error("Apertura inválida.");
+    const limitada=!pista&&opciones.elo!==undefined;
     const dificultad=NIVELES_PRACTICA.find(n=>n.id===nivel)!;
     return new Promise((resolve,reject)=>{
       this.busqueda={resolve,reject,timer:setTimeout(()=>this.fallar(new Error("El bot no respondió. Tu partida está guardada; reintentá.")),this.limiteMs)};
-      this.worker.postMessage(`setoption name Skill Level value ${pista?20:dificultad.skill}`);
+      this.worker.postMessage(`setoption name UCI_LimitStrength value ${limitada}`);
+      if(limitada)this.worker.postMessage(`setoption name UCI_Elo value ${opciones.elo}`);
+      this.worker.postMessage(`setoption name Skill Level value ${pista||limitada?20:dificultad.skill}`);
       this.worker.postMessage(`position startpos${jugadas.length?` moves ${jugadas.join(" ")}`:""}`);
-      this.worker.postMessage(`go movetime ${pista?1000:dificultad.tiempoMs}`);
+      this.worker.postMessage(`go movetime ${pista||limitada?1000:dificultad.tiempoMs}${!pista&&opciones.searchmoves?` searchmoves ${opciones.searchmoves.join(" ")}`:""}`);
     });
   }
   private fallar(error:Error){

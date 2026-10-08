@@ -1,4 +1,4 @@
 import type { Metadata } from "next";
 import { JugarBot } from "@/components/JugarBot";
-export const metadata:Metadata={title:"Jugar contra el bot · Atlántida Ajedrez",description:"Practicá ajedrez contra el Bot Atlántida: cuatro niveles, pistas y revancha. Elegí blancas o negras y jugá a tu ritmo."};
-export default function JugarPage(){return <div className="play-page"><header className="play-heading"><div><p className="eyebrow text-amber-200">El rival siempre está</p><h1>Una partida.<br/><span>Mil posibilidades.</span></h1></div><p>Jugá contra el Bot Atlántida. Sin reloj, con pistas cuando las necesites y todas las revanchas que quieras.</p></header><JugarBot/></div>;}
+export const metadata:Metadata={title:"Jugar contra el bot · Atlántida Ajedrez",description:"Desafiá a Fonchi y su Hipopótamo: un bot con negras y fuerza aproximada de 1850 Elo. También tenés práctica libre, pistas y revancha."};
+export default function JugarPage(){return <div className="play-page"><header className="play-heading"><div><p className="eyebrow text-amber-200">El rival siempre está</p><h1>Una partida.<br/><span>Mil posibilidades.</span></h1></div><p>Fonchi llegó con su Hipopótamo. Desafialo con blancas o elegí práctica libre. Sin reloj, con pistas y todas las revanchas que quieras.</p></header><JugarBot/></div>;}
