@@ -1,0 +1,14 @@
+Stockfish.js 18.0.8 - lite single-thread
+Copyright 2026 Chess.com, LLC. Port de Nathan Rugg.
+Motor Stockfish de T. Romstad, M. Costalba, J. Kiiski, G. Linscott y colaboradores.
+Distribución sin modificaciones bajo GNU GPL versión 3. Licencia: Copying.txt.
+
+Código fuente de esta versión y herramientas para compilar:
+https://github.com/nmrugg/stockfish.js/tree/v18.0.8
+https://github.com/nmrugg/stockfish.js/blob/v18.0.8/build.js
+Paquete original: https://registry.npmjs.org/stockfish/-/stockfish-18.0.8.tgz
+Red NNUE: https://tests.stockfishchess.org/nns?network_name=nn-9067e33176e
+
+Verificación de archivos:
+stockfish-18-lite-single.js SHA256 5243FD9B276CAB7DFE3AD1D43AB9EAD73568FAC76468C614242977A210C4A391
+stockfish-18-lite-single.wasm SHA256 A8FBC05EC6920B56D7485826DCB02C5FFD2826BCBF751CF973046F237A9096F1

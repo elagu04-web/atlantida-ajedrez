@@ -115,3 +115,21 @@ su título, bajada, categoría, fecha y párrafos al arreglo de noticias. Las ga
 pueden incluir más fotos con sus pies. Publicar el cambio mediante el despliegue habitual.
 No requiere una migración nueva de Supabase. La nota de bienvenida utiliza una foto
 ya incluida en el sitio; las noticias con humor se incorporan con el material del club.
+
+## Jugar contra el bot
+
+`/jugar` ofrece práctica libre contra Bot Atlántida con cuatro niveles, elección de
+color, pistas, deshacer, revancha, coronación a las cuatro piezas y exportación PGN.
+Stockfish 18.0.8 lite single-thread se carga sólo al empezar o retomar una partida;
+el cálculo ocurre en un Web Worker del navegador. El modo suave combina Skill Level 0
+con algunas jugadas legales alternativas para dejar oportunidades; los niveles son
+orientativos y no representan Elo certificado. Las partidas no modifican el Elo del club.
+
+`lib/partidaPractica.ts` conserva el historial completo: enroque, captura al paso,
+repetición y regla de 50 jugadas se resuelven con chess.js. Un borrador local en
+`atlantida-practica-v1` permite retomar al recargar, sin sesión ni base de datos.
+El borrador pertenece a ese navegador, no se sincroniza entre dispositivos.
+`lib/motorPractica.ts` espera uciok/readyok y bestmove, aplica límites de espera y
+cancela el Worker al deshacer, cambiar partida, salir o fallar. Así no se aplican
+respuestas atrasadas a una posición distinta. El análisis existente sigue usando
+su propio motor. Licencia y fuente verificable del motor: `public/stockfish/`.
