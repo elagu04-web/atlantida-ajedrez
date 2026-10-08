@@ -7,6 +7,17 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "sumate-a-nuestro-grupo-de-estudio", titulo: "Sumate a nuestro grupo de estudio",
+  bajada: "¡Todos los jueves nos juntamos a estudiar un poco y divertirnos!",
+  categoria: "Vida del club", fecha: "2026-10-08",
+  imagen: "/imagenes/grupo-estudio-jueves.png",
+  imagenAlt: "Foto editada del grupo de estudio de ajedrez, rodeado de pilas de libros, cuadernos y anotaciones",
+  imagenPosicion: "50% 50%", pieFoto: "Imagen editada para la invitación al grupo de estudio.",
+  parrafos: [
+    "Todos los jueves nos juntamos a estudiar un poco y divertirnos. Entre tableros, libros y alguna que otra discusión sobre cuál era la mejor jugada, siempre hay algo para aprender y un buen rato para compartir.",
+    "Traé tus dudas, tus ideas y las ganas de pasarla bien. Libros y anotaciones, como verás, no nos faltan… ¡Sumate a nuestro grupo de estudio!"
+  ]
+}, {
   slug: "matias-y-su-viento-a-favor", titulo: "Matias y su viento a favor",
   bajada: "Campeón de setiembre, imparable y, según él, sin estudiar. Que alguien nos pase la receta.",
   categoria: "Humor del club", fecha: "2026-10-08",
