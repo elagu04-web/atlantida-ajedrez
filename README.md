@@ -102,3 +102,16 @@ simula un registro local ni sustituye la validación del servidor.
 - Descargar diagnóstico conserva en un JSON local los últimos 2000 eventos de casillas, fotos completas, conexiones y desconexiones, junto con el PGN. Permite revisar un fallo real sin enviar esos datos automáticamente.
 
 Fuentes contrastadas: [DGT Pegasus y calibración](https://www.digitalgametechnology.com/products/home-use-e-boards/dgt-pegasus), [Web Bluetooth de Chrome](https://developer.chrome.com/docs/capabilities/bluetooth), [referencia de comandos Pegasus](https://github.com/EdNekebno/PegasusChessComChromeExtension).
+
+## Noticias del club
+
+La portada ofrece Fuera del tablero, con tarjetas de fotos, flechas, indicadores,
+arrastre con mouse y desplazamiento táctil. Cada foto abre la noticia completa.
+`/noticias` reúne las historias; `/noticias/[slug]` incluye foto, texto, galería opcional,
+metadatos para compartir y botón de compartir/copiar enlace. Respeta movimiento reducido.
+
+El contenido editorial está en `lib/noticias.ts`. Añadir la foto a `public/imagenes`,
+su título, bajada, categoría, fecha y párrafos al arreglo de noticias. Las galerías
+pueden incluir más fotos con sus pies. Publicar el cambio mediante el despliegue habitual.
+No requiere una migración nueva de Supabase. La nota de bienvenida utiliza una foto
+ya incluida en el sitio; las noticias con humor se incorporan con el material del club.
