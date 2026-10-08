@@ -2,6 +2,8 @@
 
 import { createContext, useContext, ReactNode } from "react";
 import { Jugador } from "@/lib/players";
+import { registrarMiJugador } from "@/lib/registroJugador";
+import { useAuth } from "./AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useColeccionRemota } from "./useColeccionRemota";
 import { useActividad } from "@/context/ActividadContext";
@@ -22,6 +24,7 @@ type JugadoresContextType = {
   cargando: boolean;
   errorCarga: string | null;
   ultimaActualizacion: Date | null;
+  crearMiJugador: (nombre: string) => Promise<{ok: boolean; error: string | null}>;
   agregarJugador: (nombre: string, eloInicial: number, apodo?: string) => Promise<string>;
   eliminarJugador: (id: string) => Promise<void>;
   actualizarApodo: (id: string, apodo: string) => Promise<boolean>;
@@ -51,11 +54,22 @@ function filaAJugador(fila: FilaJugador): Jugador {
 }
 
 export function JugadoresProvider({ children }: { children: ReactNode }) {
-  const { items: jugadores, setItems: setJugadores, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaJugador, Jugador>("jugadores", filaAJugador);
+  const { items: jugadores, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaJugador, Jugador>("jugadores", filaAJugador);
   const { registrar } = useActividad();
+  const { session } = useAuth();
 
 
 
+  async function crearMiJugador(nombre: string) {
+    if (!session?.user.email) return {ok:false,error:"Iniciá sesión para crear tu jugador."};
+    try {
+      const perfil = await registrarMiJugador(nombre, session.user.email);
+      incorporar(perfil);
+      return {ok:true,error:null};
+    } catch (error) {
+      return {ok:false,error:error instanceof Error ? error.message : "No se pudo crear tu jugador. Volvé a intentar."};
+    }
+  }
   async function agregarJugador(nombre: string, eloInicial: number, apodo?: string) {
     const { data, error } = await supabase
       .from("jugadores")
@@ -129,19 +143,15 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
    * todavía está vacío, así que si dos personas intentan reclamarlo, la base acepta solo la primera.
    */
   async function reclamarJugador(id: string, email: string) {
-    const { data, error } = await supabase
-      .from("jugadores")
-      .update({ email })
-      .eq("id", id)
-      .is("email", null)
-      .select()
-      .single();
-    if (error) return { ok: false, error: error.message };
-    if (!data) return { ok: false, error: null };
-    setJugadores((actuales) => actuales.map((j) => (j.id === id ? { ...j, email } : j)));
-    return { ok: true, error: null };
+    const respuesta = await supabase.rpc("vincular_mi_jugador", {p_jugador_id:id}).abortSignal(AbortSignal.timeout(10000));
+    if (!respuesta.error && respuesta.data) { incorporar(respuesta.data); return {ok:true,error:null}; }
+    if (respuesta.error?.code !== "PGRST202") return {ok:false,error:respuesta.error?.message ?? "Sin confirmación del vínculo."};
+    // Compatibilidad mientras se aplica la migración; no se amplían permisos.
+    const { data, error } = await supabase.from("jugadores").update({email}).eq("id",id).is("email",null).select().single();
+    if (error || !data) return {ok:false,error:error?.message ?? "Sin confirmación del vínculo."};
+    incorporar(data);
+    return {ok:true,error:null};
   }
-
   /**
    * Si alguien reclamó el jugador equivocado por error, puede soltarlo
    * (vuelve a quedar email null) para elegir de nuevo — solo puede soltar
@@ -149,25 +159,21 @@ export function JugadoresProvider({ children }: { children: ReactNode }) {
    * Supabase, no solo este chequeo del lado del cliente.
    */
   async function liberarJugador(id: string, email: string) {
-    const { data, error } = await supabase
-      .from("jugadores")
-      .update({ email: null })
-      .eq("id", id)
-      .eq("email", email)
-      .select()
-      .single();
-    if (error) return { ok: false, error: error.message };
-    if (!data) return { ok: false, error: null };
-    setJugadores((actuales) => actuales.map((j) => (j.id === id ? { ...j, email: null } : j)));
-    return { ok: true, error: null };
+    const respuesta = await supabase.rpc("desvincular_mi_jugador", {p_jugador_id:id}).abortSignal(AbortSignal.timeout(10000));
+    if (!respuesta.error && respuesta.data) { incorporar(respuesta.data); return {ok:true,error:null}; }
+    if (respuesta.error?.code !== "PGRST202") return {ok:false,error:respuesta.error?.message ?? "Sin confirmación del cambio."};
+    const {data,error}=await supabase.from("jugadores").update({email:null}).eq("id",id).eq("email",email).select().single();
+    if (error || !data) return {ok:false,error:error?.message ?? "Sin confirmación del cambio."};
+    incorporar(data);
+    return {ok:true,error:null};
   }
-
   return (
     <JugadoresContext.Provider
       value={{
         errorCarga, ultimaActualizacion,
         jugadores,
         cargando,
+        crearMiJugador,
         agregarJugador,
         eliminarJugador,
         actualizarApodo,

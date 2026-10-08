@@ -73,6 +73,21 @@ select dia, puzzle_id, rating from public.desafios_diarios order by dia desc lim
 - Después de activar los desafíos, ejecutar `supabase/migrations/20261007_identidad_rachas.sql` para que el servidor también obtenga el nombre del vínculo y descarte el nombre enviado por el cliente. La firma de la función se conserva para mantener compatibilidad durante el despliegue.
 - Esta migración permite nombres repetidos y obtiene el nombre actualizado al consultar la clasificación. Sólo expone nombre y contadores. Una cuenta sin vínculo válido no aparece hasta que lo complete; sus resoluciones anteriores se conservan por `auth.uid()`.
 - La migración no modifica los jugadores, torneos, pagos, permisos de inscripción ni la programación del problema diario. Ejecutarla después de la migración de desafíos; no volver a ejecutar la anterior encima de ésta porque restauraría las funciones antiguas.
+## Jugadores nuevos desde su cuenta
+
+El selector compartido ofrece «Soy nuevo · Crear mi perfil» y pide nombre y apellido.
+La función `crear_mi_jugador` obtiene el correo confirmado de la cuenta, crea el jugador
+con Elo inicial 1500 y devuelve su registro confirmado. El usuario no envía un correo
+ajeno ni el Elo. Si la cuenta ya tiene un jugador, devuelve ese perfil sin duplicarlo.
+Elegir un jugador existente conserva su historial; los nombres iguales de personas
+distintas no se usan para vincular automáticamente sus cuentas.
+
+Ejecutar `supabase/migrations/20261008_registro_jugadores.sql` en Supabase para habilitar
+el alta. Las funciones de alta, vínculo y desvinculación comparten un bloqueo por
+cuenta y no conceden permisos de escritura directa sobre jugadores a los socios.
+Mientras se aplica la migración, elegir jugadores existentes conserva compatibilidad
+con las políticas anteriores. El alta nueva requiere la función del servidor; no
+simula un registro local ni sustituye la validación del servidor.
 ## Registro Pegasus
 
 - Bluetooth recibe un flujo de tramas DGT. El decodificador conserva notificaciones fragmentadas y procesa varias tramas en una notificación, respetando la longitud de cabecera.
