@@ -10,9 +10,9 @@ export type NivelPractica = typeof NIVELES_PRACTICA[number]["id"];
 export type ColorPractica = "w" | "b";
 export const DATOS_BOTS_PRACTICA = {
   stockfish:{nombre:"Bot Atlántida",elo:null,imagen:null},
-  fonchi:{nombre:"Fonchi y el Hipopótamo",elo:1850,imagen:"/imagenes/fonchi-hipopotamo-bot.png"},
-  matias:{nombre:"Matías y su viento a favor",elo:1950,imagen:"/imagenes/matias-morra-bot.png"},
-  victor:{nombre:"Víctor Terminator",elo:2000,imagen:"/imagenes/victor-terminator-avatar.png"},
+  fonchi:{nombre:"Fonchi y el Hipopótamo",elo:2150,imagen:"/imagenes/fonchi-hipopotamo-bot.png"},
+  matias:{nombre:"Matías y su viento a favor",elo:2250,imagen:"/imagenes/matias-morra-bot.png"},
+  victor:{nombre:"Víctor Terminator",elo:2300,imagen:"/imagenes/victor-terminator-avatar.png"},
 } as const;
 export const APERTURA_MORRA = ["e2e4","c7c5","d2d4","c5d4","c2c3","d4c3","b1c3"] as const;
 export type PerfilBot = keyof typeof DATOS_BOTS_PRACTICA;

@@ -3,7 +3,7 @@ import { uciPractica } from "./partidaPractica";
 import type { VarianteMotor } from "./motorPractica";
 
 // Tendencia atacante entre alternativas evaluadas muy próximas a la respuesta
-// del motor limitado a 2000. No reemplaza una combinación de mate por una captura.
+// del motor con fuerza limitada. No reemplaza una combinación de mate por una captura.
 export function respuestaAtacante(ajedrez:Chess,original:string,variantes:readonly VarianteMotor[],permitidas?:readonly string[],sacrificarPeones=false):string{
   const base=variantes.find(v=>v.uci===original);
   if(!base||base.tipo!=="cp")return original;
