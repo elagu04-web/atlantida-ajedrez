@@ -569,7 +569,7 @@ button:not(:disabled), summary { cursor: pointer; }
 .play-volume input {width:100%;min-width:0;cursor:pointer;}
 .play-volume input:disabled {opacity:.4;cursor:default;}
 
-/* Víctor Terminator: rival de 2300 Elo estimado. */
+/* Víctor Terminator: rival de 2150 Elo estimado. */
 .play-bots .play-bot-victor[data-elegido="true"] {border-color:#ef6c6580;background:linear-gradient(120deg,#b02d3518,#4f88f014);}
 .play-max-level {display:inline-block!important;font-size:9px;font-weight:800;letter-spacing:.06em;color:#ff9690;padding:3px 5px;margin-left:4px;background:#ff626212;border:1px solid #ff626230;border-radius:4px;vertical-align:middle;white-space:nowrap;}
 .play-victor {text-align:center;margin:18px 0;}
