@@ -19,12 +19,12 @@ export function respuestaFiable(ajedrez:Chess,original:string,variantes:readonly
 }
 // El libro conserva su personalidad salvo una pérdida táctica importante.
 // Las dos búsquedas pertenecen a la misma posición, antes de aplicar la jugada.
-export function abandonarApertura(ajedrez:Chess,uciLibro:string,libro:readonly VarianteMotor[],uciLibre:string,libre:readonly VarianteMotor[]):boolean{
+export function abandonarApertura(ajedrez:Chess,uciLibro:string,libro:readonly VarianteMotor[],uciLibre:string,libre:readonly VarianteMotor[],opciones:{margenCp?:number;exigirEvaluacion?:boolean}={}):boolean{
   if(uciLibro===uciLibre)return false;
   const jugada=ajedrez.moves({verbose:true}).find(m=>uciPractica(m)===uciLibre);
   if(!jugada)return false;
   if(jugada.san.endsWith("#"))return true;
   const antes=coherentes(ajedrez,libro).find(v=>v.uci===uciLibro),despues=coherentes(ajedrez,libre).find(v=>v.uci===uciLibre);
-  if(!antes||!despues||Math.min(antes.profundidad,despues.profundidad)<8)return false;
-  return puntuacion(despues)-puntuacion(antes)>200;
+  if(!antes||!despues||Math.min(antes.profundidad,despues.profundidad)<8)return opciones.exigirEvaluacion===true;
+  return puntuacion(despues)-puntuacion(antes)>(opciones.margenCp??200);
 }

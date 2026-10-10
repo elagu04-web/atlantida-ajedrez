@@ -53,7 +53,8 @@ export function JugarBot(){
       if(tipo==="inicio"&&partida.turnoJugador){setAccion(null);return;}
       setAccion(tipo==="pista"?"pista":"bot");
       let apertura=tipo==="pista"?undefined:partida.perfil==="fonchi"?jugadasHipopotamo(partida.ajedrez):partida.perfil==="victor"?jugadasFrancesa(partida.ajedrez):undefined;
-      let uci=await actual.buscar(partida.jugadas,partida.nivel,tipo==="pista",DATOS_BOTS_PRACTICA[partida.perfil].elo!==null?{elo:DATOS_BOTS_PRACTICA[partida.perfil].elo!,searchmoves:apertura,estiloAtaque:partida.perfil==="victor"||partida.perfil==="matias"}:{});
+      let uci=await actual.buscar(partida.jugadas,partida.nivel,tipo==="pista",DATOS_BOTS_PRACTICA[partida.perfil].elo!==null?{elo:DATOS_BOTS_PRACTICA[partida.perfil].elo!,searchmoves:apertura,evaluar:partida.perfil==="fonchi"&&!!apertura,estiloAtaque:partida.perfil==="victor"||partida.perfil==="matias"}:{});
+      if(token!==generacion.current||juego.current!==partida||partida.ajedrez.fen()!==fen)return;
       if(apertura&&!apertura.includes(uci))throw new Error("El bot no respetó la apertura. Reintentá desde esta posición.");
       let variantes=actual.variantes;
       if(tipo!=="pista"&&DATOS_BOTS_PRACTICA[partida.perfil].elo!==null){
@@ -61,7 +62,7 @@ export function JugarBot(){
         if(apertura){
           const libre=await actual.buscar(partida.jugadas,partida.nivel,true);
           if(token!==generacion.current||juego.current!==partida||partida.ajedrez.fen()!==fen)return;
-          if(abandonarApertura(partida.ajedrez,uci,variantes,libre,actual.variantes)){uci=libre;variantes=actual.variantes;apertura=undefined;}
+          if(abandonarApertura(partida.ajedrez,uci,variantes,libre,actual.variantes,partida.perfil==="fonchi"?{margenCp:80,exigirEvaluacion:true}:{})){uci=libre;variantes=actual.variantes;apertura=undefined;}
         }
       }
       if(token!==generacion.current||juego.current!==partida||partida.ajedrez.fen()!==fen)return;

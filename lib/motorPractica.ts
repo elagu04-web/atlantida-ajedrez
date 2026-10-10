@@ -46,7 +46,7 @@ export class MotorPractica {
       }
     }
   };
-  async buscar(jugadas:string[],nivel:NivelPractica,pista=false,opciones:{elo?:number;searchmoves?:string[];estiloAtaque?:boolean}={}):Promise<string>{
+  async buscar(jugadas:string[],nivel:NivelPractica,pista=false,opciones:{elo?:number;searchmoves?:string[];estiloAtaque?:boolean;evaluar?:boolean}={}):Promise<string>{
     await this.listo;
     if(this.cerrado)throw this.errorCierre??new DOMException("Búsqueda cancelada","AbortError");
     if(this.busqueda)throw new Error("El bot ya está pensando.");
@@ -54,16 +54,17 @@ export class MotorPractica {
     if(opciones.elo!==undefined&&!Object.values(DATOS_BOTS_PRACTICA).some(b=>b.elo===opciones.elo))throw new Error("Fuerza de práctica inválida.");
     if(opciones.searchmoves&&(!opciones.searchmoves.length||!opciones.searchmoves.every(m=>/^[a-h][1-8][a-h][1-8][qrbn]?$/u.test(m))))throw new Error("Apertura inválida.");
     this.variantesActuales.clear();
-    const limitada=!pista&&opciones.elo!==undefined;
+    // La evaluación de una apertura usa toda la fuerza; la partida conserva su Elo.
+    const limitada=!pista&&!opciones.evaluar&&opciones.elo!==undefined;
     const dificultad=NIVELES_PRACTICA.find(n=>n.id===nivel)!;
     return new Promise((resolve,reject)=>{
       this.busqueda={resolve,reject,timer:setTimeout(()=>this.fallar(new Error("El bot no respondió. Tu partida está guardada; reintentá.")),this.limiteMs)};
-      this.worker.postMessage(`setoption name MultiPV value ${!pista&&opciones.estiloAtaque?4:1}`);
+      this.worker.postMessage(`setoption name MultiPV value ${!pista&&!opciones.evaluar&&opciones.estiloAtaque?4:1}`);
       this.worker.postMessage(`setoption name UCI_LimitStrength value ${limitada}`);
       if(limitada)this.worker.postMessage(`setoption name UCI_Elo value ${opciones.elo}`);
-      this.worker.postMessage(`setoption name Skill Level value ${pista||limitada?20:dificultad.skill}`);
+      this.worker.postMessage(`setoption name Skill Level value ${pista||opciones.evaluar||limitada?20:dificultad.skill}`);
       this.worker.postMessage(`position startpos${jugadas.length?` moves ${jugadas.join(" ")}`:""}`);
-      this.worker.postMessage(`go movetime ${pista||limitada?1000:dificultad.tiempoMs}${!pista&&opciones.searchmoves?` searchmoves ${opciones.searchmoves.join(" ")}`:""}`);
+      this.worker.postMessage(`go movetime ${pista||opciones.evaluar||limitada?1000:dificultad.tiempoMs}${!pista&&opciones.searchmoves?` searchmoves ${opciones.searchmoves.join(" ")}`:""}`);
     });
   }
   private fallar(error:Error){
