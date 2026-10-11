@@ -4,7 +4,7 @@ export type BloqueNoticia =
 
 export type Noticia = {
   slug: string; titulo: string; tituloTarjeta?: string; bajada: string; categoria: string; fecha: string;
-  imagen: string; imagenAlt: string; imagenPosicion?: string; pieFoto?: string; imagenVertical?: boolean; imagenAspecto?: string; imagenAncho?: number; imagenCalidad?: 75 | 90;
+  imagen: string; imagenAlt: string; imagenPosicion?: string; pieFoto?: string; imagenVertical?: boolean; imagenAspecto?: string; imagenAncho?: number; imagenCalidad?: 75 | 90; imagenSinCompresion?: boolean;
   parrafos: string[]; bloques?: BloqueNoticia[];
   galeria?: {imagen: string; alt: string; pie?: string; ancho?: number; alto?: number; maxAncho?: number}[];
 };
@@ -17,19 +17,20 @@ export const noticias: Noticia[] = [{
   "bajada": "La jugadora de Atlántida Ajedrez terminó invicta, con 5 puntos en 6 rondas, y consiguió uno de los dos cupos femeninos para los Juegos Sudamericanos Escolares.",
   "categoria": "Orgullo del club",
   "fecha": "2026-10-11",
-  "imagen": "/imagenes/lara-escaris-vicecampeona-v2.jpg",
+  "imagen": "/imagenes/lara-escaris-vicecampeona-hd.png",
   "imagenAlt": "Lara Escaris sonríe junto a un tablero de ajedrez durante el torneo",
   "imagenPosicion": "50% 36%",
   "imagenVertical": true,
-  "imagenAspecto": "730 / 1068",
-  "imagenAncho": 540,
+  "imagenAspecto": "1037 / 1517",
+  "imagenAncho": 640,
   "imagenCalidad": 90,
+  "imagenSinCompresion": true,
   "pieFoto": "Lara Escaris, integrante de Atlántida Ajedrez y vicecampeona nacional.",
   "parrafos": [
     "Una gran alegría para Atlántida Ajedrez: Lara Escaris, jugadora de nuestro club, obtuvo el vicecampeonato en la primera serie femenina de los Juegos Deportivos Nacionales y clasificó a los Juegos Sudamericanos Escolares en Ecuador. Lara participó representando al Colegio Imagine de El Pinar.",
     "Solo clasificaban dos chicas y Lara consiguió uno de esos lugares. Terminó invicta, con cuatro victorias y dos tablas: 5 puntos en 6 rondas, entre 33 jugadoras.",
     "La final se jugó el 9 y 10 de octubre en Montevideo. Lara ganó sus primeras cuatro partidas y después hizo tablas con Silvana Araque, quien fue la campeona, y con Sofía Muñoz. Quedó igualada en puntos con Sofía Osorio y el desempate le dio el segundo puesto.",
-    "Nos pone muy contentos verla dar este paso. Esta vez la clasificación llegó jugando por su colegio, pero acá en el club la sentimos bien nuestra. Felicitaciones, Lara, por el vicecampeonato y por el lugar en Ecuador. Vamos a estar acompañándote en lo que viene."
+    "En Atlántida estamos muy contentos por Lara y compartimos esta alegría con su familia y su colegio Imagine. Felicitaciones, Lara, por el vicecampeonato y por el lugar en Ecuador. Vamos a estar acompañándote en lo que viene."
   ],
   "bloques": [
     {
@@ -46,7 +47,7 @@ export const noticias: Noticia[] = [{
     },
     {
       "tipo": "parrafo",
-      "texto": "Nos pone muy contentos verla dar este paso. Esta vez la clasificación llegó jugando por su colegio, pero acá en el club la sentimos bien nuestra. Felicitaciones, Lara, por el vicecampeonato y por el lugar en Ecuador. Vamos a estar acompañándote en lo que viene."
+      "texto": "En Atlántida estamos muy contentos por Lara y compartimos esta alegría con su familia y su colegio Imagine. Felicitaciones, Lara, por el vicecampeonato y por el lugar en Ecuador. Vamos a estar acompañándote en lo que viene."
     },
     {
       "tipo": "parrafo",
@@ -55,12 +56,12 @@ export const noticias: Noticia[] = [{
   ],
   "galeria": [
     {
-      "imagen": "/imagenes/lara-escaris-en-partida-v2.jpg",
+      "imagen": "/imagenes/lara-escaris-en-partida-hd.png",
       "alt": "Lara Escaris anota una jugada junto al tablero; el rostro del jugador del fondo está suavemente desenfocado",
       "pie": "Lara, concentrada en una de sus partidas.",
-      "ancho": 844,
-      "alto": 994,
-      "maxAncho": 440
+      "ancho": 1156,
+      "alto": 1361,
+      "maxAncho": 560
     }
   ]
 }, {
