@@ -12,7 +12,7 @@ const buscar = unstable_cache(async (fecha:string) => {
   const datos: {puzzles:PuzzleLichess[]}=await respuesta.json();
   const candidatos=[...(datos.puzzles??[])].sort((a,b)=>Math.abs(a.puzzle.rating-1800)-Math.abs(b.puzzle.rating-1800));
   for(const candidato of candidatos) {
-    if(candidato.puzzle.id===reserva.id) continue;
+    if(candidato.puzzle.id===reserva.id||candidato.puzzle.rating<1700||candidato.puzzle.rating>1900) continue;
     try { return convertirPuzzle(candidato,fecha); } catch { /* Ignorar una posición o dificultad no válida. */ }
   }
   throw new Error("No llegó un problema dentro del rango de dificultad");
@@ -25,7 +25,10 @@ export async function GET() {
   try {
     const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
     const {data,error}=await db.rpc("obtener_desafio_diario").abortSignal(AbortSignal.timeout(12000));
-    if (!error && data?.datos && data.fecha===fecha) return Response.json({...convertirPuzzle(data.datos,data.fecha),registrable:true},{headers:{"Cache-Control":"private, no-cache"}});
+    if (!error && data?.datos && data.fecha===fecha) {
+      const progresivo=Number.isInteger(data.objetivo)&&data.objetivo>=1800&&Number.isInteger(data.racha_base)&&data.racha_base>=0;
+      return Response.json({...convertirPuzzle(data.datos,data.fecha),registrable:true,...(progresivo?{objetivo:data.objetivo,rachaBase:data.racha_base}:{})},{headers:{"Cache-Control":"private, no-cache"}});
+    }
   } catch { /* La práctica sigue disponible mientras se activa o recupera la base. */ }
   try { return Response.json(await buscar(fecha),{headers:{"Cache-Control":"private, no-cache"}}); }
   catch { return Response.json({...reserva,reserva:true},{headers:{"Cache-Control":"private, no-cache"}}); }

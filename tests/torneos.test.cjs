@@ -50,7 +50,7 @@ test('Desafío de reserva tiene rating comprobado y una secuencia legal completa
   const puzzle=require('../data/desafio-reserva.json');validarDesafio(puzzle);
   const chess=new Chess(puzzle.fen);const color=chess.turn();for(const uci of puzzle.solution)aplicarUci(chess,uci);
   assert.notEqual(chess.turn(),color);assert.ok(puzzle.rating>=1700&&puzzle.rating<=1900);
-  assert.throws(()=>validarDesafio({...puzzle,rating:2400}));
+  assert.throws(()=>validarDesafio({...puzzle,rating:5000}));
   assert.throws(()=>validarDesafio({...puzzle,solution:['a1a8']}));
 });
 test('Importación Lichess presenta la posición después del movimiento del rival',()=>{
@@ -58,7 +58,7 @@ test('Importación Lichess presenta la posición después del movimiento del riv
   const puzzle=convertirPuzzle(api,'2026-10-07');assert.equal(new Chess(puzzle.fen).history().length,0);
   assert.equal(new Chess(puzzle.fen).get('e5').type,'p');assert.equal(new Chess(puzzle.fen).turn(),'w');
   assert.throws(()=>convertirPuzzle({...api,puzzle:{...api.puzzle,initialPly:2}},'2026-10-07'));
-  assert.throws(()=>convertirPuzzle({...api,puzzle:{...api.puzzle,rating:2300}},'2026-10-07'));
+  assert.throws(()=>convertirPuzzle({...api,puzzle:{...api.puzzle,rating:5000}},'2026-10-07'));
 });
 test('La fecha diaria cambia a medianoche en Uruguay, no a medianoche UTC',()=>{
   assert.equal(fechaMontevideo(new Date('2026-10-08T02:59:00Z')),'2026-10-07');
