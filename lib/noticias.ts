@@ -29,7 +29,7 @@ export const noticias: Noticia[] = [{
   "parrafos": [
     "Una gran alegría para Atlántida Ajedrez: Lara Escaris, jugadora de nuestro club, obtuvo el vicecampeonato en la primera serie femenina de los Juegos Deportivos Nacionales y clasificó a los Juegos Sudamericanos Escolares en Ecuador. Lara participó representando al Colegio Imagine de El Pinar.",
     "Solo clasificaban dos chicas y Lara consiguió uno de esos lugares. Terminó invicta, con cuatro victorias y dos tablas: 5 puntos en 6 rondas, entre 33 jugadoras.",
-    "La final se jugó el 9 y 10 de octubre en Montevideo. Lara ganó sus primeras cuatro partidas y después hizo tablas con Silvana Araque, quien fue la campeona, y con Sofía Muñoz. Quedó igualada en puntos con Sofía Osorio y el desempate le dio el segundo puesto.",
+    "La final se jugó el 9 y 10 de octubre en Montevideo. Lara ganó sus primeras cuatro partidas y después hizo tablas con Silvana Araque, quien fue la campeona, y con Sofía Muñoz.",
     "En Atlántida estamos muy contentos por Lara y compartimos esta alegría con su familia y su colegio Imagine. Felicitaciones, Lara, por el vicecampeonato y por el lugar en Ecuador. Vamos a estar acompañándote en lo que viene."
   ],
   "bloques": [
@@ -43,7 +43,7 @@ export const noticias: Noticia[] = [{
     },
     {
       "tipo": "parrafo",
-      "texto": "La final se jugó el 9 y 10 de octubre en Montevideo. Lara ganó sus primeras cuatro partidas y después hizo tablas con Silvana Araque, quien fue la campeona, y con Sofía Muñoz. Quedó igualada en puntos con Sofía Osorio y el desempate le dio el segundo puesto."
+      "texto": "La final se jugó el 9 y 10 de octubre en Montevideo. Lara ganó sus primeras cuatro partidas y después hizo tablas con Silvana Araque, quien fue la campeona, y con Sofía Muñoz."
     },
     {
       "tipo": "parrafo",
