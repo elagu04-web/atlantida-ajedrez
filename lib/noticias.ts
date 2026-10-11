@@ -4,9 +4,9 @@ export type BloqueNoticia =
 
 export type Noticia = {
   slug: string; titulo: string; tituloTarjeta?: string; bajada: string; categoria: string; fecha: string;
-  imagen: string; imagenAlt: string; imagenPosicion?: string; pieFoto?: string; imagenVertical?: boolean; imagenAspecto?: string;
+  imagen: string; imagenAlt: string; imagenPosicion?: string; pieFoto?: string; imagenVertical?: boolean; imagenAspecto?: string; imagenAncho?: number; imagenCalidad?: 75 | 90;
   parrafos: string[]; bloques?: BloqueNoticia[];
-  galeria?: {imagen: string; alt: string; pie?: string; ancho?: number; alto?: number}[];
+  galeria?: {imagen: string; alt: string; pie?: string; ancho?: number; alto?: number; maxAncho?: number}[];
 };
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
@@ -17,11 +17,13 @@ export const noticias: Noticia[] = [{
   "bajada": "La jugadora de Atlántida Ajedrez terminó invicta, con 5 puntos en 6 rondas, y consiguió uno de los dos cupos femeninos para los Juegos Sudamericanos Escolares.",
   "categoria": "Orgullo del club",
   "fecha": "2026-10-11",
-  "imagen": "/imagenes/lara-escaris-vicecampeona.jpg",
+  "imagen": "/imagenes/lara-escaris-vicecampeona-v2.jpg",
   "imagenAlt": "Lara Escaris sonríe junto a un tablero de ajedrez durante el torneo",
   "imagenPosicion": "50% 36%",
   "imagenVertical": true,
   "imagenAspecto": "730 / 1068",
+  "imagenAncho": 540,
+  "imagenCalidad": 90,
   "pieFoto": "Lara Escaris, integrante de Atlántida Ajedrez y vicecampeona nacional.",
   "parrafos": [
     "Una gran alegría para Atlántida Ajedrez: Lara Escaris, jugadora de nuestro club, obtuvo el vicecampeonato en la primera serie femenina de los Juegos Deportivos Nacionales y clasificó a los Juegos Sudamericanos Escolares en Ecuador. Lara participó representando al Colegio Imagine de El Pinar.",
@@ -53,11 +55,12 @@ export const noticias: Noticia[] = [{
   ],
   "galeria": [
     {
-      "imagen": "/imagenes/lara-escaris-en-partida.jpg",
+      "imagen": "/imagenes/lara-escaris-en-partida-v2.jpg",
       "alt": "Lara Escaris anota una jugada junto al tablero; el rostro del jugador del fondo está suavemente desenfocado",
       "pie": "Lara, concentrada en una de sus partidas.",
       "ancho": 844,
-      "alto": 994
+      "alto": 994,
+      "maxAncho": 440
     }
   ]
 }, {
