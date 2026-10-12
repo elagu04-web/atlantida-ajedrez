@@ -814,3 +814,9 @@ button:not(:disabled), summary { cursor: pointer; }
 @media(max-width:600px){.training-bot-games {padding:16px;}.training-bot-game-list article {align-items:flex-start;flex-direction:column;}.training-bot-game-list .button-secondary {width:100%;justify-content:center;}}
 @media(prefers-reduced-motion:reduce){.ale-montana-personaje {transition:none;}}
 .ale-montana-compacta svg {max-height:180px;}.ale-ajuste-detalle {font-size:11px;line-height:1.7;color:#b6cadd;text-align:left;margin:8px 0;}.ale-ajuste-detalle summary {cursor:pointer;color:#e5c998;}.ale-ajuste-detalle p {margin-top:8px;}
+.training-bot-export {display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:18px;}
+.training-bot-export .button-secondary,.training-bot-export .text-link {font-size:12px;}
+.training-bot-export span {flex-basis:100%;font-size:11px;color:#b4c8df;}
+.training-bot-game-actions {display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;flex-shrink:0;}
+.training-bot-game-actions .text-link {font-size:12px;white-space:nowrap;}
+@media(max-width:600px){.training-bot-game-actions {width:100%;justify-content:flex-start;}.training-bot-game-actions .button-secondary {width:auto;}}

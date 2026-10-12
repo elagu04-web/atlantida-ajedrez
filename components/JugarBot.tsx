@@ -20,7 +20,7 @@ import { SonidoTablero } from "@/lib/sonidoTablero";
 import { useAuth } from "@/context/AuthContext";
 import { clavePartidaAle, claveProgresoAle, eloDeAle, leerProgresoAle, mezclarProgresoAle, sumarPartidaAle, pasoAjusteAle } from "@/lib/progresoAle";
 import { MotorPractica } from "@/lib/motorPractica";
-import { APERTURA_MORRA, CLAVE_PRACTICA, DATOS_BOTS_PRACTICA, NIVELES_PRACTICA, PartidaPractica, colorAleatorioPractica, respuestaSuave, sanPractica, type ColorPractica, type NivelPractica, type PerfilBot } from "@/lib/partidaPractica";
+import { APERTURA_MORRA, clavePartidaPractica, DATOS_BOTS_PRACTICA, NIVELES_PRACTICA, PartidaPractica, colorAleatorioPractica, respuestaSuave, sanPractica, type ColorPractica, type NivelPractica, type PerfilBot } from "@/lib/partidaPractica";
 
 const RECORRIDO_MORRA=(()=>{const partida=new Chess();return [{fen:partida.fen(),san:"",uci:"",captura:false},...APERTURA_MORRA.map(uci=>{const m=partida.move(uci);return {fen:partida.fen(),san:sanPractica(m.san),uci,captura:!!m.captured};})];})();
 const nombres:Record<PieceSymbol,string>={p:"peón",n:"caballo",b:"alfil",r:"torre",q:"dama",k:"rey"};
@@ -36,7 +36,7 @@ export function JugarBot(){
 }
 function MesaBot({cuenta}:{cuenta:string}){
   const [perfil,setPerfil]=useState<PerfilBot>("ale");
-  const claveGuardado=perfil==="ale"?clavePartidaAle(cuenta):CLAVE_PRACTICA;
+  const claveGuardado=perfil==="ale"?clavePartidaAle(cuenta):clavePartidaPractica(cuenta);
   const guardada=useSyncExternalStore(escucharGuardado,()=>leerClave(claveGuardado),()=>null);
   const cuentaBots=useCuentaBots(cuenta);
   const progresoAle=cuentaBots.progreso,eloAle=eloDeAle(progresoAle);
@@ -65,7 +65,7 @@ function MesaBot({cuenta}:{cuenta:string}){
   function actualizar(){
     const partida=juego.current;if(!partida)return;setVista(vistaDe(partida));
     try{
-      localStorage.setItem(partida.perfil==="ale"?clavePartidaAle(cuenta):CLAVE_PRACTICA,JSON.stringify(partida.guardar()));
+      localStorage.setItem(partida.perfil==="ale"?clavePartidaAle(cuenta):clavePartidaPractica(cuenta),JSON.stringify(partida.guardar()));
       setGuarda(true);window.dispatchEvent(new Event("ale-guardado"));
       if(partida.perfil==="ale"&&partida.terminada)void guardarSubida(partida);
     }catch{setGuarda(false);if(partida.perfil==="ale")setAvisoAle("No se pudo guardar la subida. No cierres esta partida: probá guardar de nuevo.");}

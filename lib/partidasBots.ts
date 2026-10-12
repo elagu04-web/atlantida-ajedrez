@@ -2,6 +2,7 @@ import { Chess } from "chess.js";
 import { DATOS_BOTS_PRACTICA, NIVELES_PRACTICA, type PartidaPractica, type PerfilBot, type ColorPractica } from "./partidaPractica";
 export type PartidaBotRegistrada={id:string;fecha:string;perfil:PerfilBot;color:ColorPractica;elo:number|null;nivel:string;resultado:string;pgn:string;jugadas:number;sincronizada:boolean};
 export const claveArchivoBots=(cuenta:string)=>`atlantida-partidas-bots-v1:${cuenta}`;
+export function pgnDePartidasBots(partidas:PartidaBotRegistrada[]){return [...partidas].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.id.localeCompare(b.id)).map(p=>p.pgn.trim()).join("\n\n")+"\n";}
 export function registroDePartidaBot(partida:PartidaPractica,previa?:PartidaBotRegistrada):PartidaBotRegistrada|null{
   if(!partida.terminada||partida.jugadas.length<=partida.jugadasIniciales)return null;
   const pgn=partida.pgn();

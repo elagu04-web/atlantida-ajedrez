@@ -20,6 +20,7 @@ export type PerfilBot = keyof typeof DATOS_BOTS_PRACTICA;
 export type DatosPartidaAle = {id:string;elo:number};
 export type GuardadoPractica = {version:1;id?:string;color:ColorPractica;nivel:NivelPractica;perfil?:PerfilBot;jugadas:string[];rendida:boolean;progresoAle?:DatosPartidaAle};
 export const CLAVE_PRACTICA = "atlantida-practica-v1";
+export const clavePartidaPractica=(cuenta:string)=>cuenta==="invitado"?CLAVE_PRACTICA:`${CLAVE_PRACTICA}:${cuenta}`;
 export const sanPractica = (san:string) => san.replace(/^[KQRBN]/u,p=>({K:"R",Q:"D",R:"T",B:"A",N:"C"}[p]??p)).replace(/=([QRBN])/u,(_,p:string)=>`=${({Q:"D",R:"T",B:"A",N:"C"}[p]??p)}`);
 export const uciPractica = (m:{from:string;to:string;promotion?:string})=>`${m.from}${m.to}${m.promotion??""}`;
 
