@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { URL_SITIO, NOMBRE_SITIO, DESCRIPCION_SITIO, IMAGEN_SITIO } from "@/lib/seo";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { JugadoresProvider } from "@/context/JugadoresContext";
@@ -23,8 +24,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Atlántida Ajedrez",
-  description: "Torneos, jugadores y estadísticas del club de ajedrez Atlántida",
+  metadataBase: new URL(URL_SITIO),
+  title: NOMBRE_SITIO,
+  description: DESCRIPCION_SITIO,
+  openGraph: { type:"website",siteName:NOMBRE_SITIO,locale:"es_UY",title:NOMBRE_SITIO,description:DESCRIPCION_SITIO,images:[{url:IMAGEN_SITIO,alt:NOMBRE_SITIO}] },
+  verification: {google:process.env.GOOGLE_SITE_VERIFICATION || "jE79xHEiUAKsw4MQ2Bqe8_zhs6gpsifkaeGIdr4WqGs"},
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
