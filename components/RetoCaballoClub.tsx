@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useMiJugador } from "@/context/useMiJugador";
 import { supabase } from "@/lib/supabase";
 import { nombreVisible } from "@/lib/players";
 import { casillaCaballo, claveCaballo, destinosCaballo, retoCaballoLocal, validarRecorridoCaballo, validarRetoCaballo, type MarcaCaballo, type RetoCaballo } from "@/lib/caballoClub";
-import { PiezaAjedrez } from "./PiezaAjedrez";
+import { Chessboard } from "react-chessboard";
 import { Icono } from "./Icono";
 import { IdentidadJugador } from "./IdentidadJugador";
 import { SonidoTablero } from "@/lib/sonidoTablero";
@@ -31,7 +31,7 @@ function JuegoCaballo({reto,filas,estado,actualizar}:{reto:RetoCaballo;filas:Mar
  const {session}=useAuth();const {jugador,ambigua,error,cargando}=useMiJugador();const clave=claveCaballo(session?.user.id,reto);
  const [inicial]=useState(()=>leerIntento(clave,reto.inicial));const [recorrido,setRecorrido]=useState(inicial.recorrido),[mejorLocal,setMejorLocal]=useState(inicial.mejor),[marcaConfirmada,setMarcaConfirmada]=useState(0);
  const camino=useRef(recorrido),guardando=useRef(false);const [enviando,setEnviando]=useState(false),[mensaje,setMensaje]=useState(""),[objetivo,setObjetivo]=useState<{nombre:string;casillas:number}|null>(null),[compartirManual,setCompartirManual]=useState("");
- const [audio,setAudio]=useState(true),[foco,setFoco]=useState(reto.inicial);const sonido=useRef<SonidoTablero|null>(null);const mesa=useRef<HTMLElement>(null);const celdas=useRef<(HTMLButtonElement|null)[]>([]);const gesto=useRef<{x:number;y:number;desde:number;movido:boolean}|null>(null),ignorarClick=useRef(false);
+ const [audio,setAudio]=useState(true),[foco,setFoco]=useState(reto.inicial);const sonido=useRef<SonidoTablero|null>(null);const mesa=useRef<HTMLElement>(null);const celdas=useRef<(HTMLButtonElement|null)[]>([]);
  const visitadas=new Set(recorrido),pos=recorrido[recorrido.length-1],legales=destinosCaballo(recorrido),terminado=recorrido.length===64||!legales.length;
  const marca=Math.max(reto.marca,marcaConfirmada),mejor=Math.max(mejorLocal,marca),superado=objetivo&&recorrido.length>objetivo.casillas;
  useEffect(()=>{try{localStorage.setItem(clave,JSON.stringify({recorrido,mejor:Math.max(mejorLocal,recorrido.length)}));}catch{/* La partida sigue sin almacenamiento local. */}},[clave,recorrido,mejorLocal]);
@@ -48,26 +48,33 @@ function JuegoCaballo({reto,filas,estado,actualizar}:{reto:RetoCaballo;filas:Mar
   catch{setMensaje("No se pudo confirmar tu marca. El recorrido sigue acá; podés reintentar guardarlo.");return false;}
   finally{guardando.current=false;setEnviando(false);}
  }
- function mover(i:number){const actual=camino.current;if(i===actual[actual.length-1])return;if(!destinosCaballo(actual).includes(i)){setMensaje(actual.includes(i)?"Esa casilla ya cuenta. Buscá una nueva.":"El caballo salta en L: dos casillas y una al costado.");return;}
-  const nuevo=[...actual,i];camino.current=nuevo;setRecorrido(nuevo);setMejorLocal(n=>Math.max(n,nuevo.length));setMensaje("");reproducir();if(nuevo.length===64||!destinosCaballo(nuevo).length)void guardar(nuevo);
+ function mover(i:number){const actual=camino.current;if(i===actual[actual.length-1])return false;if(!destinosCaballo(actual).includes(i)){setMensaje(actual.includes(i)?"Esa casilla ya cuenta. Buscá una nueva.":"El caballo salta en L: dos casillas y una al costado.");return false;}
+  const nuevo=[...actual,i];camino.current=nuevo;setRecorrido(nuevo);setMejorLocal(n=>Math.max(n,nuevo.length));setMensaje("");reproducir();if(nuevo.length===64||!destinosCaballo(nuevo).length)void guardar(nuevo);return true;
  }
  async function reiniciar(){if(enviando)return;if(!await guardar())return;camino.current=[reto.inicial];setRecorrido([reto.inicial]);setFoco(reto.inicial);setCompartirManual("");reproducir();}
- function empezarArrastre(e:PointerEvent<HTMLButtonElement>,i:number){if(i!==pos||terminado||e.button!==0)return;gesto.current={x:e.clientX,y:e.clientY,desde:i,movido:false};e.currentTarget.setPointerCapture(e.pointerId);}
- function acabarArrastre(e:PointerEvent<HTMLButtonElement>){const g=gesto.current;gesto.current=null;if(!g?.movido)return;ignorarClick.current=true;const celda=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLButtonElement>("[data-knight-square]");if(celda)mover(Number(celda.dataset.knightSquare));}
  async function compartir(){const puntos=Math.max(mejor,recorrido.length);const texto=`Recorrí ${puntos} de las 64 casillas en el desafío del caballo de Atlántida. ¿Llegás más lejos?`;const url=new URL("/jugar/caballo",window.location.origin).href;
   try{if(navigator.share)await navigator.share({title:"Desafío del caballo · Atlántida",text:texto,url});else{await navigator.clipboard.writeText(`${texto}\n${url}`);setMensaje("Invitación copiada. Pegala en WhatsApp o mandásela a un compañero.");}}
   catch(e){if((e as Error).name!=="AbortError"){setCompartirManual(`${texto}\n${url}`);setMensaje("Copiá esta invitación y compartila.");}}
  }
+ const indiceCasilla=(s:string)=>(8-Number(s[1]))*8+"abcdefgh".indexOf(s[0]);
+ const estilos:Record<string,CSSProperties>={};
+ for(const i of recorrido)estilos[casillaCaballo(i)]={backgroundColor:(Math.floor(i/8)+i%8)%2?"#7d789a":"#c9c4d9"};
+ estilos[casillaCaballo(pos)]={backgroundColor:"#d6b779"};
+ for(const i of legales)estilos[casillaCaballo(i)]={backgroundImage:"radial-gradient(circle, #184d3b88 0 15%, transparent 17%)"};
  const titulo=recorrido.length===64?"¡Las 64!":terminado?"Hasta acá llegaste.":superado?`¡Superaste a ${objetivo!.nombre}!`:"¿Cuál es tu próximo salto?";
  return <div className="knight-club"><div className="knight-stage"><section ref={mesa} className="knight-table" aria-label="Recorrido del caballo">
   <div className="knight-score-strip"><div><span className="eyebrow">Tu recorrido</span><strong aria-live="polite">{recorrido.length}<small>/64</small></strong></div><div className="knight-best"><span>{session?"Marca guardada":"Mejor acá"}</span><strong>{session?marca:mejor}<small>/64</small></strong></div></div>
   {!objetivo&&filas[0]&&<div className="knight-challenge-line"><span title={`Marca del club: ${filas[0].nombre} · ${filas[0].casillas}/64`}><span className="knight-leader-name">{filas[0].nombre}</span><strong>{filas[0].casillas}/64</strong></span>{filas[0].casillas<64&&!filas[0].es_mio&&<button type="button" onClick={()=>setObjetivo({nombre:filas[0].nombre,casillas:filas[0].casillas})}>Superar ↗</button>}</div>}
   {objetivo&&<div className="knight-target" role="status">{superado?"✓":"⚑"} Tu reto: superar a <strong>{objetivo.nombre}</strong> · {objetivo.casillas}/64<button type="button" aria-label="Quitar rival objetivo" onClick={()=>setObjetivo(null)}>×</button></div>}
-  <div className="knight-board-frame"><div className="knight-ranks" aria-hidden="true">{[8,7,6,5,4,3,2,1].map(n=><span key={n}>{n}</span>)}</div><div className="knight-board" role="group" aria-label="64 casillas. Usá las flechas para recorrer y Enter para saltar.">
-   {Array.from({length:64},(_,i)=>{const paso=recorrido.indexOf(i)+1;return <button type="button" key={i} ref={el=>{celdas.current[i]=el;}} data-knight-square={i} tabIndex={foco===i?0:-1} onFocus={()=>setFoco(i)} aria-label={`${casillaCaballo(i)}${i===pos?", caballo":""}${paso?`, visitada, paso ${paso}`:", sin visitar"}${legales.includes(i)?", salto permitido":""}`} className={`knight-cell ${(Math.floor(i/8)+i%8)%2?"dark":"light"} ${visitadas.has(i)?"visited":""} ${i===pos?"current":""} ${legales.includes(i)?"available":""}`} onClick={()=>{if(ignorarClick.current){ignorarClick.current=false;return;}mover(i);}} onPointerDown={e=>empezarArrastre(e,i)} onPointerMove={e=>{const g=gesto.current;if(g&&Math.hypot(e.clientX-g.x,e.clientY-g.y)>6)g.movido=true;}} onPointerUp={acabarArrastre} onPointerCancel={()=>{gesto.current=null;}} onKeyDown={e=>{const r=Math.floor(i/8),c=i%8;const destino:Record<string,number>={ArrowLeft:c?i-1:i,ArrowRight:c<7?i+1:i,ArrowUp:r?i-8:i,ArrowDown:r<7?i+8:i};if(e.key in destino){e.preventDefault();setFoco(destino[e.key]);celdas.current[destino[e.key]]?.focus();}}}>
-    {paso>0&&<span className="knight-step" aria-hidden="true">{paso}</span>}{i===pos&&<span className="knight-piece" key={recorrido.length}><PiezaAjedrez tipo="n" color="w"/></span>}{legales.includes(i)&&<span className="knight-destination" aria-hidden="true"/>}
-   </button>;})}
-  </div><div className="knight-files" aria-hidden="true">{"abcdefgh".split("").map(l=><span key={l}>{l}</span>)}</div></div>
+  <div className="knight-board play-board"><Chessboard options={{
+   id:"reto-caballo",position:{[casillaCaballo(pos)]:{pieceType:"wN"}},boardOrientation:"white",
+   allowDragging:!terminado,allowDragOffBoard:false,allowAutoScroll:false,allowDrawingArrows:false,
+   showNotation:true,animationDurationInMs:180,lightSquareStyle:{backgroundColor:"#f0e6ce"},darkSquareStyle:{backgroundColor:"#638480"},squareStyles:estilos,
+   canDragPiece:({square})=>!terminado&&square===casillaCaballo(pos),
+   onPieceDrop:({sourceSquare,targetSquare})=>sourceSquare===casillaCaballo(camino.current.at(-1)!)&&targetSquare?mover(indiceCasilla(targetSquare)):false,
+   onSquareClick:({square})=>mover(indiceCasilla(square)),
+   squareRenderer:({square,children})=>{const i=indiceCasilla(square),paso=recorrido.indexOf(i)+1;return <button type="button" ref={el=>{celdas.current[i]=el;}} data-knight-square={i} style={estilos[square]} tabIndex={foco===i?0:-1} onFocus={()=>setFoco(i)} aria-label={`${square}${i===pos?", caballo":""}${paso?`, visitada, paso ${paso}`: ", sin visitar"}${legales.includes(i)?", salto permitido":""}`} className={`play-square knight-cell ${visitadas.has(i)?"visited":""} ${i===pos?"current":""}`} onKeyDown={e=>{const r=Math.floor(i/8),c=i%8;const destino:Record<string,number>={ArrowLeft:c?i-1:i,ArrowRight:c<7?i+1:i,ArrowUp:r?i-8:i,ArrowDown:r<7?i+8:i};if(e.key in destino){e.preventDefault();setFoco(destino[e.key]);celdas.current[destino[e.key]]?.focus();}}}>{children}{paso>0&&<span className="knight-step" aria-hidden="true">{paso}</span>}</button>;}
+  }}/></div>
   <div className={`knight-status ${terminado?"finished":""}`} role="status" aria-live="polite"><strong>{titulo}</strong><span>{recorrido.length===64?"Un recorrido completo. Compartí tu hazaña.":terminado?`${recorrido.length} casillas distintas. Probá otra ruta y mejorá tu marca.`:"Tocá un destino marcado o arrastrá el caballo. No se puede repetir."}</span></div>
   <div className="knight-controls"><button type="button" className="button-primary" disabled={enviando} onClick={()=>void reiniciar()}><Icono nombre="reiniciar" className="h-4 w-4"/>Otro intento</button><button type="button" className="button-secondary" disabled={enviando||recorrido.length<2} onClick={()=>void guardar()}>{enviando?"Guardando…":"Guardar marca"}</button><button type="button" className="button-secondary" onClick={()=>void compartir()}>Desafiar a alguien ↗</button></div>
   {mensaje&&<p className="knight-save-status" role="status">{mensaje}</p>}{compartirManual&&<textarea aria-label="Invitación para copiar" readOnly value={compartirManual} onFocus={e=>e.currentTarget.select()} className="knight-share-text"/>}
