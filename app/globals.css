@@ -752,3 +752,5 @@ button:not(:disabled), summary { cursor: pointer; }
 @media(max-width:1000px){.home-main-grid{grid-template-columns:minmax(0,1fr) 310px;gap:22px}.home-knight .knight-invite h2{font-size:23px}}
 @media(max-width:767px){.home-main-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"competition" "daily" "knight";grid-template-rows:auto;gap:28px}.home-daily{width:min(100%,380px);margin-inline:auto}.home-welcome-actions a{font-size:11px;padding-inline:12px}.home-knight .knight-invite{padding:20px}.home-knight .knight-invite>div:nth-child(2){min-width:170px}}
 @media(max-width:380px){.home-knight .knight-invite-art{width:44px;height:44px}.home-knight .knight-invite-art svg{width:40px;height:40px}.home-knight .knight-invite>div:nth-child(2){min-width:145px}.home-knight .knight-invite h2{font-size:22px}.home-knight .knight-invite-action{margin-left:60px}}
+
+.knight-ranking-tabs{margin:0 24px 18px}.knight-ranking-tabs button{font-size:12px}@media(max-width:767px){.knight-ranking-tabs{margin-inline:20px}}
