@@ -801,3 +801,16 @@ button:not(:disabled), summary { cursor: pointer; }
 
 .training-beta-notice {display:flex;align-items:center;flex-wrap:wrap;gap:5px 14px;border:1px solid #e4be7145;border-radius:14px;background:#dfb9750b;color:#dce4ef;padding:14px 18px;font-size:13px;line-height:1.6;}
 .training-beta-notice strong {color:#e4be71;}
+
+.ale-montana {text-align:left;background:linear-gradient(155deg,#1c373e70,#19223670);border:1px solid #dfb97525;border-radius:18px;padding:12px;margin:12px 0;}
+.ale-montana-heading {display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#e9d2a5;}.ale-montana-heading strong {color:#fff2d0;}
+.ale-montana svg {display:block;width:100%;height:auto;overflow:visible;margin-top:6px;}.ale-montana svg text {fill:#afc2ca;font-size:12px;font-family:inherit;}
+.ale-montana-personaje {transition:transform .8s ease-in-out;}
+.ale-montana-controls label {display:grid;gap:6px;font-size:11px;color:#c6d7df;}.ale-montana-controls input {width:100%;accent-color:#dfb975;}.ale-montana-controls button {margin-top:8px;font-size:11px;}
+.ale-montana-live {margin-top:8px;border-top:1px solid #ffffff12;padding-top:7px;}.ale-montana-live summary {cursor:pointer;font-size:11px;color:#e5c998;}.ale-montana-compacta {margin-bottom:0;}
+.play-rival-card[data-perfil="ale"] .play-rival-float img {object-fit:contain;}.play-avatar-ale img {object-fit:contain;}.play-rival-card[data-perfil="ale"] .play-rival-art {background:transparent;}
+.play-account-sync {border:1px solid #ffffff14;border-radius:12px;padding:12px;margin-top:12px;font-size:11px;line-height:1.6;color:#b6cadd;}.play-account-sync p+p,.play-account-sync button {margin-top:8px;}.play-account-sync button {font-size:11px;}
+.training-bot-games {border:1px solid #ffffff1a;border-radius:18px;background:#142438;padding:24px;}.training-bot-games h3 {font-size:20px;font-weight:700;}.training-bot-game-list {display:grid;gap:10px;margin:18px 0;}.training-bot-game-list article {display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid #ffffff16;border-radius:12px;padding:15px;background:#ffffff03;}.training-bot-game-list strong {font-size:14px;}.training-bot-game-list p,.training-bot-game-list span {font-size:11px;color:#b4c8df;line-height:1.7;}.training-bot-game-list .button-secondary {white-space:nowrap;font-size:12px;}
+@media(max-width:600px){.training-bot-games {padding:16px;}.training-bot-game-list article {align-items:flex-start;flex-direction:column;}.training-bot-game-list .button-secondary {width:100%;justify-content:center;}}
+@media(prefers-reduced-motion:reduce){.ale-montana-personaje {transition:none;}}
+.ale-montana-compacta svg {max-height:180px;}.ale-ajuste-detalle {font-size:11px;line-height:1.7;color:#b6cadd;text-align:left;margin:8px 0;}.ale-ajuste-detalle summary {cursor:pointer;color:#e5c998;}.ale-ajuste-detalle p {margin-top:8px;}
