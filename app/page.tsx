@@ -6,6 +6,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useTorneos } from "@/context/TorneosContext";
 import { nombreVisible } from "@/lib/players";
 import { DesafioAjedrez } from "@/components/DesafioAjedrez";
+import { TarjetaRetoCaballo } from "@/components/TarjetaRetoCaballo";
 import { TablaRachas } from "@/components/TablaRachas";
 import { CarruselNoticias } from "@/components/CarruselNoticias";
 import { noticiasRecientes } from "@/lib/noticias";
@@ -29,6 +30,7 @@ export default function Home() {
       <DesafioAjedrez />
     </section>
     <TablaRachas compacta />
+    <TarjetaRetoCaballo/>
     <CarruselNoticias noticias={noticiasRecientes()} portada/>
     {(errorJugadores||errorTorneos)&&<p role="status" className="panel border-amber-500/30 p-4 text-sm text-amber-200">{errorJugadores||errorTorneos}</p>}
     <div className="club-metrics">{[
