@@ -787,3 +787,17 @@ button:not(:disabled), summary { cursor: pointer; }
 @media(max-width:767px){.training-club{gap:20px}.training-hero{grid-template-columns:minmax(0,1fr);padding:23px}.training-hero h1{font-size:33px}.training-account{align-items:flex-start;flex-wrap:wrap;gap:12px}.training-metrics{gap:8px}.training-metrics>div{padding:14px 11px}.training-metrics strong{font-size:24px}.training-metrics span{font-size:9px;line-height:1.6}.training-tabs{width:100%}.training-tabs button{flex:1 1 40%;font-size:11px}.training-plan,.training-import,.training-practice,.training-library{padding:21px}.training-section-heading{flex-direction:column;gap:14px}.training-section-heading h2,.training-import h2{font-size:25px}.training-focus{max-width:100%;margin:0}.training-weeks{grid-template-columns:repeat(2,minmax(0,1fr))}.training-weeks button{padding:13px}.training-weeks button>strong{font-size:12px}.training-import-grid,.training-practice-grid{grid-template-columns:minmax(0,1fr);gap:27px}.training-online{padding:22px 0 0;border-left:0;border-top:1px solid #ffffff12}.training-board{width:min(100%,max(224px,calc(100dvh - 290px)))}.training-analysis-progress{padding:16px;gap:12px}.training-analysis-progress button{font-size:11px;padding:9px 12px}.training-library-list article{align-items:flex-start;flex-wrap:wrap;gap:14px}.training-week-detail li{font-size:12px}}
 .training-exercise-note{margin-top:18px;border-top:1px solid #ffffff10;padding-top:5px}.training-exercise-note .training-field textarea{height:85px;font-family:inherit;font-size:11px}.training-exercise-note>button{font-size:11px;margin-top:10px}.training-exercise-note>span{display:block;color:#a8cbb9;font-size:10px;margin-top:7px}
 .training-practice{scroll-margin-top:95px}@media(max-width:767px){.training-practice .training-section-heading{gap:10px;margin-bottom:17px}.training-practice .training-section-heading h2{font-size:22px}.training-practice .training-section-heading p:not(.eyebrow){font-size:11px;margin-top:8px}.training-practice .training-focus{font-size:10px;padding-left:10px}}
+
+.play-ale>img {border-radius:20px;aspect-ratio:1;object-fit:cover;object-position:center top;}
+.play-ale-progress {width:100%;height:8px;accent-color:#dfb975;margin:0 0 12px;}
+.play-avatar-ale {width:60px;height:60px;overflow:hidden;border-color:#dfb97570;}
+.play-avatar-ale img {width:100%;height:100%;object-fit:cover;object-position:50% 23%;}
+.play-rival-card[data-perfil="ale"] {background:linear-gradient(130deg,#243629,#132338);border-color:#e4be7140;}
+.play-rival-card[data-perfil="ale"] .play-rival-art {border-radius:14px;}
+.play-rival-card[data-perfil="ale"] .play-rival-float img {object-fit:cover;object-position:center top;}
+.play-ale-finish {color:#c3e6bb;font-weight:600;line-height:1.6;}
+@media(min-width:901px){.play-layout[data-activa="true"] .play-avatar-ale {width:40px;height:40px;}}
+@media(max-width:420px){.play-avatar-ale {width:48px;height:48px;}}
+
+.training-beta-notice {display:flex;align-items:center;flex-wrap:wrap;gap:5px 14px;border:1px solid #e4be7145;border-radius:14px;background:#dfb9750b;color:#dce4ef;padding:14px 18px;font-size:13px;line-height:1.6;}
+.training-beta-notice strong {color:#e4be71;}

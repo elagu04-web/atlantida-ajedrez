@@ -1,4 +1,4 @@
-import { DATOS_BOTS_PRACTICA, NIVELES_PRACTICA, type NivelPractica } from "./partidaPractica";
+import { NIVELES_PRACTICA, type NivelPractica } from "./partidaPractica";
 
 export type VarianteMotor={uci:string;tipo:"cp"|"mate";valor:number;profundidad:number};
 
@@ -51,7 +51,7 @@ export class MotorPractica {
     if(this.cerrado)throw this.errorCierre??new DOMException("Búsqueda cancelada","AbortError");
     if(this.busqueda)throw new Error("El bot ya está pensando.");
     if(!jugadas.every(m=>/^[a-h][1-8][a-h][1-8][qrbn]?$/u.test(m)))throw new Error("Secuencia inválida.");
-    if(opciones.elo!==undefined&&!Object.values(DATOS_BOTS_PRACTICA).some(b=>b.elo===opciones.elo))throw new Error("Fuerza de práctica inválida.");
+    if(opciones.elo!==undefined&&(!Number.isInteger(opciones.elo)||opciones.elo<1320||opciones.elo>3190))throw new Error("Fuerza de práctica inválida.");
     if(opciones.searchmoves&&(!opciones.searchmoves.length||!opciones.searchmoves.every(m=>/^[a-h][1-8][a-h][1-8][qrbn]?$/u.test(m))))throw new Error("Apertura inválida.");
     this.variantesActuales.clear();
     // La evaluación de una apertura usa toda la fuerza; la partida conserva su Elo.
