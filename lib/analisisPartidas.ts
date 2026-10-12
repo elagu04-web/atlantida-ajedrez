@@ -22,11 +22,11 @@ function campoPgn(pgn: string, nombre: string): string {
 }
 
 /** Trae las últimas partidas de un usuario de Lichess (API pública, sin login). */
-export async function obtenerPartidasLichess(usuario: string, cantidad = 10): Promise<PartidaExterna[]> {
+export async function obtenerPartidasLichess(usuario: string, cantidad = 10, signal = AbortSignal.timeout(20000)): Promise<PartidaExterna[]> {
   const url = `https://lichess.org/api/games/user/${encodeURIComponent(
     usuario.trim()
   )}?max=${cantidad}&moves=true&opening=true&clocks=false&evals=false`;
-  const res = await fetch(url, { headers: { Accept: "application/x-chess-pgn" } });
+  const res = await fetch(url, { headers: { Accept: "application/x-chess-pgn" }, signal });
   if (res.status === 404) {
     throw new Error(`No existe ningún usuario "${usuario}" en Lichess.`);
   }
@@ -60,9 +60,9 @@ type ArchivoChessCom = { games: { pgn?: string; time_control?: string }[] };
  * "archivos" mensuales y después ir bajando los meses más recientes hasta
  * juntar suficientes partidas.
  */
-export async function obtenerPartidasChessCom(usuario: string, cantidad = 10): Promise<PartidaExterna[]> {
+export async function obtenerPartidasChessCom(usuario: string, cantidad = 10, signal = AbortSignal.timeout(20000)): Promise<PartidaExterna[]> {
   const usuarioLimpio = usuario.trim().toLowerCase();
-  const resArchivos = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(usuarioLimpio)}/games/archives`);
+  const resArchivos = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(usuarioLimpio)}/games/archives`, { signal });
   if (resArchivos.status === 404) {
     throw new Error(`No existe ningún usuario "${usuario}" en Chess.com.`);
   }
@@ -74,7 +74,9 @@ export async function obtenerPartidasChessCom(usuario: string, cantidad = 10): P
 
   const partidas: PartidaExterna[] = [];
   for (let i = archives.length - 1; i >= 0 && partidas.length < cantidad; i--) {
-    const resMes = await fetch(archives[i]);
+    const archivo = new URL(archives[i]);
+    if (archivo.origin !== "https://api.chess.com") throw new Error("Chess.com devolvió un archivo de partidas inválido.");
+    const resMes = await fetch(archivo.href, { signal });
     if (!resMes.ok) continue;
     const { games } = (await resMes.json()) as ArchivoChessCom;
     for (let j = games.length - 1; j >= 0 && partidas.length < cantidad; j--) {
@@ -227,10 +229,11 @@ type EvaluacionMotor = {
  */
 export async function analizarPartida(
   pgn: string,
-  motor: { analizar: (fen: string, turno: "w" | "b", tiempoMs?: number) => Promise<void> },
+  motor: { analizar: (fen: string, turno: "w" | "b", tiempoMs?: number) => Promise<void>; evaluarPosicion?: (fen: string, turno: "w" | "b", tiempoMs?: number) => Promise<EvaluacionMotor> },
   onProgreso: (hechas: number, total: number) => void,
   ultimaEvaluacion: () => EvaluacionMotor,
-  tiempoMs = 250
+  tiempoMs = 250,
+  signal?: AbortSignal
 ): Promise<ResultadoAnalisis> {
   const chess = new Chess();
   chess.loadPgn(pgn);
@@ -244,15 +247,21 @@ export async function analizarPartida(
 
   const valores: number[] = [];
   const variantes: (string[] | null)[] = [];
-  const esMate: boolean[] = [];
+  const mates: (number | null)[] = [];
   for (let i = 0; i < posiciones.length; i++) {
     const turno = posiciones[i].split(" ")[1] === "b" ? "b" : "w";
-    await motor.analizar(posiciones[i], turno, tiempoMs);
-    await new Promise((r) => setTimeout(r, tiempoMs + 150));
-    const evaluacion = ultimaEvaluacion();
+    signal?.throwIfAborted();
+    let evaluacion: EvaluacionMotor;
+    if (motor.evaluarPosicion) evaluacion = await motor.evaluarPosicion(posiciones[i], turno, tiempoMs);
+    else {
+      await motor.analizar(posiciones[i], turno, tiempoMs);
+      await new Promise((r) => setTimeout(r, tiempoMs + 150));
+      evaluacion = ultimaEvaluacion();
+    }
+    signal?.throwIfAborted();
     valores.push(valorNumerico(evaluacion));
     variantes.push(evaluacion.variantePrincipal);
-    esMate.push(evaluacion.mateEn !== null);
+    mates.push(evaluacion.mateEn);
     onProgreso(i + 1, posiciones.length);
   }
 
@@ -262,13 +271,13 @@ export async function analizarPartida(
     const perdidaCruda = m.color === "w" ? Math.max(0, antes - despues) : Math.max(0, despues - antes);
     const perdida = Math.min(perdidaCruda, TOPE_PERDIDA_MOSTRADA);
     const esError = perdida >= 50;
-    const llevaAMate = esMate[i] || esMate[i + 1];
+    const llevaAMate = perdida > 0 && mates[i + 1] !== null && (m.color === "w" ? mates[i + 1]! < 0 : mates[i + 1]! > 0);
     const varianteSan = esError ? variantASan(posiciones[i], variantes[i]) : null;
     // Si el motor sugería exactamente la jugada que se hizo, no hay nada
     // mejor que mostrar.
     const mejorJugadaSan = varianteSan && varianteSan[0] !== m.san ? varianteSan[0] : null;
     return {
-      numero: Math.floor(i / 2) + 1,
+      numero: Number(m.before.split(" ")[5]),
       color: m.color,
       san: m.san,
       perdidaCentipeones: Math.round(perdida),

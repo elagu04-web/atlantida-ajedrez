@@ -7,8 +7,8 @@ import { useAuth } from "@/context/AuthContext";
 import { LogoClub } from "./LogoClub";
 import { BusquedaRapida } from "./BusquedaRapida";
 import { Icono } from "./Icono";
-const navLinks = [{href:"/",label:"Inicio"},{href:"/jugar",label:"Jugar"},{href:"/noticias",label:"Noticias"},{href:"/torneos",label:"Torneos"},{href:"/jugadores",label:"Ranking"},{href:"/estadisticas",label:"Estadísticas"},{href:"/desafios",label:"Desafíos"},{href:"/transmision",label:"En directo"},{href:"/actividad",label:"Actividad"}];
-const gestion = [{href:"/colegio",label:"Colegio Pinares"},{href:"/epico",label:"Épico"},{href:"/entrenamiento",label:"Entrenamiento"}];
+const navLinks = [{href:"/",label:"Inicio"},{href:"/jugar",label:"Jugar"},{href:"/entrenamiento",label:"Entrenar"},{href:"/noticias",label:"Noticias"},{href:"/torneos",label:"Torneos"},{href:"/jugadores",label:"Ranking"},{href:"/estadisticas",label:"Estadísticas"},{href:"/desafios",label:"Desafíos"},{href:"/transmision",label:"En directo"},{href:"/actividad",label:"Actividad"}];
+const gestion = [{href:"/colegio",label:"Colegio Pinares"},{href:"/epico",label:"Épico"},{href:"/entrenamiento/entrenador",label:"Herramientas del profe"}];
 export function HeaderNav() {
   const [abierto,setAbierto]=useState(false);const pathname=usePathname();const {esAdmin}=useAuth();
   const activo=(href:string)=>href==="/"?pathname==="/":pathname===href||pathname.startsWith(`${href}/`);

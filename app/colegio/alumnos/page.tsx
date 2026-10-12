@@ -185,7 +185,7 @@ export default function ColegioAlumnosPage() {
                     <LichessCelda jugadorId={j.id} usuarioActual={j.lichessUsuario} onGuardar={actualizarLichess} />
                     {j.lichessUsuario && (
                       <Link
-                        href={`/entrenamiento?usuario=${encodeURIComponent(j.lichessUsuario)}`}
+                        href={`/entrenamiento/entrenador?usuario=${encodeURIComponent(j.lichessUsuario)}`}
                         className="ml-1 text-xs text-blue-400 hover:underline"
                       >
                         Analizar
