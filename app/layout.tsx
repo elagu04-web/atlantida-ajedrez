@@ -25,6 +25,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(URL_SITIO),
+  applicationName: NOMBRE_SITIO,
   title: NOMBRE_SITIO,
   description: DESCRIPCION_SITIO,
   openGraph: { type:"website",siteName:NOMBRE_SITIO,locale:"es_UY",title:NOMBRE_SITIO,description:DESCRIPCION_SITIO,images:[{url:IMAGEN_SITIO,alt:NOMBRE_SITIO}] },

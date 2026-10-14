@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 export const URL_SITIO = "https://atlantida-ajedrez.vercel.app";
 export const NOMBRE_SITIO = "Atlántida Ajedrez";
-export const DESCRIPCION_SITIO = "Club Atlántida Ajedrez: torneos, ranking, noticias y desafíos diarios. Jugá contra nuestros bots y participá del desafío del caballo.";
+export const DESCRIPCION_SITIO = "Sumate al Club Ajedrez Atlántida, en Uruguay. Anotate a torneos, resolvé el desafío diario y practicá contra los bots. Nos vemos en el tablero.";
 export const IMAGEN_SITIO = "/imagenes/logo-club.png";
 export function metadatosPagina(ruta:string, titulo:string, descripcion:string):Metadata {
  const url=new URL(ruta,URL_SITIO).href;
@@ -11,7 +11,7 @@ export function serializarDatosEstructurados(datos:unknown){return JSON.stringif
 export const datosSitio = {
  "@context":"https://schema.org",
  "@graph":[
-  {"@type":"Organization","@id":URL_SITIO+"/#club",name:NOMBRE_SITIO,alternateName:"Ajedrez Atlántida",url:URL_SITIO+"/",logo:URL_SITIO+IMAGEN_SITIO,description:DESCRIPCION_SITIO},
-  {"@type":"WebSite","@id":URL_SITIO+"/#sitio",name:NOMBRE_SITIO,alternateName:"Ajedrez Atlántida",url:URL_SITIO+"/",inLanguage:"es-UY",publisher:{"@id":URL_SITIO+"/#club"}}
+  {"@type":"SportsOrganization","@id":URL_SITIO+"/#club",name:NOMBRE_SITIO,alternateName:["Club Ajedrez Atlántida","Ajedrez Atlántida"],url:URL_SITIO+"/",logo:URL_SITIO+IMAGEN_SITIO,description:DESCRIPCION_SITIO,sport:"Chess",telephone:"+59899861116"},
+  {"@type":"WebSite","@id":URL_SITIO+"/#sitio",name:NOMBRE_SITIO,alternateName:["Club Ajedrez Atlántida","Ajedrez Atlántida"],url:URL_SITIO+"/",description:DESCRIPCION_SITIO,inLanguage:"es-UY",publisher:{"@id":URL_SITIO+"/#club"}}
  ]
 };
