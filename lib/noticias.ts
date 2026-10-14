@@ -11,6 +11,23 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "conocias-el-torneo-del-mate",
+  titulo: "¿Conocías el Torneo del Mate?",
+  bajada: "Cuatro amigos, un tablero y un cinturón que nadie quiere soltar. El mate se comparte; las ganas de ganarle al otro, también.",
+  categoria: "Humor del club", fecha: "2026-10-14",
+  imagen: "/imagenes/torneo-del-mate-gauchos.png",
+  imagenAlt: "Dos jugadores vestidos de gauchos, con ponchos, sombreros y mates, concentrados frente al tablero de ajedrez",
+  imagenPosicion: "50% 40%", imagenVertical: true, imagenAspecto: "3 / 4", imagenAncho: 720, imagenCalidad: 90,
+  pieFoto: "El mate se comparte. El cinturón se disputa.",
+  parrafos: [
+    "En Atlántida tenemos el Torneo del Mate: una competencia paralela entre Fernando Torterolo, Camilo La Rosa, Jorge Franquez y Juan Diego Montenegro. Cuatro habituales del club que se juntan a jugar, tomar mate y pasarla bien. Bueno… pasarla bien hasta que el otro te gana.",
+    "La idea es divertirnos entre amigos y seguir esa rivalidad que se va armando partida a partida. Ahora también tiene su lugar en la página: podés ver los puntos, los mano a mano y cómo vienen jugando. Así las discusiones sobre quién le gana a quién por lo menos tienen números. Las excusas todavía no las estamos registrando.",
+    "La tabla permite mirar solo los duelos entre ellos o todas sus partidas contra los demás jugadores del club. Una victoria suma un punto y las tablas, medio. Todo sale de los resultados que ya tenemos cargados en los torneos.",
+    "Pero lo mejor es **el cinturón**, como en el boxeo. Se estrena con la primera victoria registrada entre ellos y después hay que defenderlo: si otro de los cuatro le gana al que lo tiene, se lo lleva. Si el campeón gana o hace tablas, lo conserva. Acá se pelea sentado y el único golpe permitido es una buena jugada.",
+    "El dueño puede cambiar, las cargadas siguen y el mate va dando vueltas. Es una forma de sumar un poco de picante a las partidas de siempre, sin perder lo que más nos gusta: juntarnos y compartir un buen rato. Aunque alguno mire la tabla antes de saludar.",
+    "[Mirá la tabla y el recorrido del cinturón en las estadísticas del club](https://atlantida-ajedrez.vercel.app/estadisticas#torneo-del-mate). Después nos contás quién es tu favorito. Eso sí: **cebá tranquilo, pero no te cuelgues la dama.**"
+  ]
+}, {
   "slug": "ultimo-momento-fonchi-jugo-la-siciliana",
   "titulo": "Último momento: ¡Fonchi jugó la Siciliana!",
   "bajada": "Ganó la final 3+2 frente a Coronel Gabriel y se quedó con el torneo. Pero el Hipopótamo tuvo que mirar desde el banco.",
