@@ -1,0 +1,1 @@
+Catálogo de nombres y posiciones de aperturas: https://github.com/lichess-org/chess-openings (CC0). Archivos a.tsv a e.tsv consultados el 14/10/2026. 3865 secuencias verificadas con chess.js. Reconocimiento por posición hasta las primeras 20 jugadas; las secuencias del catálogo no son un repertorio exhaustivo ni una recomendación del motor.
