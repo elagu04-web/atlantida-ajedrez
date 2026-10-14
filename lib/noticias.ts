@@ -11,6 +11,30 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  "slug": "ultimo-momento-fonchi-jugo-la-siciliana",
+  "titulo": "Último momento: ¡Fonchi jugó la Siciliana!",
+  "bajada": "Ganó la final 3+2 frente a Coronel Gabriel y se quedó con el torneo. Pero el Hipopótamo tuvo que mirar desde el banco.",
+  "categoria": "Humor del club",
+  "fecha": "2026-10-13",
+  "imagen": "/imagenes/fonchi-siciliana-final-13-octubre.jpg",
+  "imagenAlt": "Fonchi con lentes de sol frente al tablero, moviendo una pieza negra durante la jornada de ajedrez del club",
+  "imagenPosicion": "50% 38%",
+  "imagenVertical": true,
+  "imagenAspecto": "3 / 4",
+  "imagenAncho": 720,
+  "imagenCalidad": 90,
+  "imagenSinCompresion": true,
+  "pieFoto": "Fonchi, campeón del torneo del 13 de octubre.",
+  "parrafos": [
+    "Hoy pasó algo que todavía estamos tratando de procesar en Atlántida. Fonchi ganó el torneo, sí. Pero lo verdaderamente grave es cómo lo ganó: **en la final 3+2 dejó al Hipopótamo y jugó la Siciliana.**",
+    "El torneo del 13 de octubre reunió a ocho jugadores en cinco rondas por sistema suizo. Fonchi y Coronel Gabriel llegaron a la definición con 4½ puntos cada uno. Hasta ahí, una noche de ajedrez perfectamente normal.",
+    "Entonces llegó la final. Todos esperábamos los peoncitos acomodados, los alfiles escondidos y al hipopótamo durmiendo atrás de la reja. Pero Fonchi decidió sacar el peón a c5. **A c5. Sin pedir permiso.**",
+    "No sabemos si fue preparación secreta, un arranque de rebeldía o si el hipopótamo se había ido a comprar algo. Lo que sabemos es que la Siciliana funcionó: Fonchi ganó el 3+2 y se quedó con el torneo.",
+    "El hipopótamo, después de tantos años de servicio, quedó mirando desde el banco. Ni un mensaje, ni una explicación. Fonchi lo cambió por la Defensa Siciliana justo en la final. Una traición a plena vista.",
+    "Felicitaciones al campeón. Pero ahora que sabemos que conoce otra defensa, **se terminó la excusa de “yo juego siempre lo mismo”.**"
+  ]
+},
+{
   "slug": "lara-escaris-vicecampeona-nacional-ecuador",
   "titulo": "Lara Escaris, vicecampeona nacional y clasificada a Ecuador",
   "tituloTarjeta": "Lara, vicecampeona nacional",
