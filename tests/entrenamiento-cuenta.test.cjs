@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
-require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
+require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,f);
 const {EntrenamientoCuenta,clavesEntrenamiento,combinarSesionCuenta}=require('../lib/entrenamientoCuenta.ts');
 const {progresoGuiadoInicial,prepararSesionGuiada,razonamientoInicial}=require('../lib/entrenamientoGuiado.ts');
 const {crearSesionEntrenamiento,PGN_EJEMPLO,registrarPractica}=require('../lib/entrenamientoPersonal.ts');

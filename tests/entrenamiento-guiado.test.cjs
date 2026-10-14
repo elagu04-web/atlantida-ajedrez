@@ -1,13 +1,14 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const ts=require('typescript');
-require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
+require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,f);
 const{Chess}=require('chess.js');
 const{BANCO_ENTRENAMIENTO,TEMAS_TACTICOS,progresoGuiadoInicial,leerProgresoGuiado,combinarProgresoGuiado,prepararSesionGuiada,registrarResultadoGuiado,razonamientoInicial,interpretarJugada,validarCandidatas,puntuarEvaluacion,sugerirTemas}=require('../lib/entrenamientoGuiado.ts');
 const{registrarPractica,normalizarPractica,ayudaEnDia}=require('../lib/entrenamientoPersonal.ts');
 const dia1=new Date('2026-10-14T15:00:00Z'),dia2=new Date('2026-10-15T15:00:00Z');
 test('Banco original:12FENlegales,6tácticosverificables ysoluciones noilegales',()=>{
- assert.equal(BANCO_ENTRENAMIENTO.length,12);assert.equal(new Set(BANCO_ENTRENAMIENTO.map(e=>e.id)).size,12);
- assert.deepEqual(['tactica','candidatas','evaluacion'].map(a=>BANCO_ENTRENAMIENTO.filter(e=>e.actividad===a).length),[6,3,3]);
- for(const e of BANCO_ENTRENAMIENTO){const c=new Chess(e.fen);assert.ok(!c.isGameOver());assert.ok(!c.isCheck());for(const m of e.solucion){const legal=interpretarJugada(c.fen(),m);assert.ok(legal,e.id);c.load(legal.fen);}if(e.temas.includes('mateIn1'))assert.ok(c.isCheckmate(),e.id);for(const t of e.temas)assert.ok(TEMAS_TACTICOS.some(x=>x.id===t));}
+ const originales=BANCO_ENTRENAMIENTO.filter(e=>!e.fuente);
+ assert.equal(originales.length,12);assert.equal(new Set(BANCO_ENTRENAMIENTO.map(e=>e.id)).size,BANCO_ENTRENAMIENTO.length);
+ assert.deepEqual(['tactica','candidatas','evaluacion'].map(a=>originales.filter(e=>e.actividad===a).length),[6,3,3]);
+ for(const e of originales){const c=new Chess(e.fen);assert.ok(!c.isGameOver());assert.ok(!c.isCheck());for(const m of e.solucion){const legal=interpretarJugada(c.fen(),m);assert.ok(legal,e.id);c.load(legal.fen);}if(e.temas.includes('mateIn1'))assert.ok(c.isCheckmate(),e.id);for(const t of e.temas)assert.ok(TEMAS_TACTICOS.some(x=>x.id===t));}
  const primer=new Chess(BANCO_ENTRENAMIENTO[0].fen);const sol=interpretarJugada(primer.fen(),'d1d5');assert.equal(sol.san,'Rxd5');
 });
 test('Autocompletebusca españolconacentosy aliascompatiblesLichess',()=>{assert.ok(sugerirTemas('coronacion').some(x=>x.id==='promotion'));assert.ok(sugerirTemas('doble').some(x=>x.id==='fork'));assert.ok(sugerirTemas('clavá').some(x=>x.id==='pin'));assert.ok(sugerirTemas('pieza colgada').some(x=>x.id==='hangingPiece'));assert.ok(sugerirTemas('').length<=8);assert.equal(sugerirTemas('zzzz').length,0);});
