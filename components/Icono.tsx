@@ -1,7 +1,8 @@
 import type { SVGProps } from "react";
 
-export type NombreIcono = "flecha" | "buscar" | "trofeo" | "personas" | "grafico" | "directo" | "reloj" | "menu" | "cerrar" | "reiniciar" | "idea" | "check" | "actividad";
+export type NombreIcono = "flecha" | "buscar" | "trofeo" | "personas" | "grafico" | "directo" | "reloj" | "menu" | "cerrar" | "reiniciar" | "idea" | "check" | "actividad" | "whatsapp";
 const trazos: Record<NombreIcono, string> = {
+  whatsapp: "M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3 21l2.1-4.8A8.5 8.5 0 1 1 20.5 11.5Z M8.4 7.2c.2-.2.5-.2.7.1l1.2 2c.1.2.1.5-.1.7l-.8.8c.5 1.1 1.4 2 2.5 2.5l.8-.8c.2-.2.5-.2.7-.1l2 1.2c.3.2.3.5.1.7l-.8 1c-.5.5-1.2.7-1.9.4-3-1.1-5.3-3.4-6.4-6.4-.3-.7-.1-1.4.4-1.9l1.6-1.2Z",
   flecha: "M4 12h16m-6-6 6 6-6 6",
   buscar: "M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
   trofeo: "M8 3h8v5a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4M12 12v6m-4 3h8m-6-3h4v3",
