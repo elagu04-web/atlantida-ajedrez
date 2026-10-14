@@ -13,6 +13,7 @@ import { nombreVisible } from "@/lib/players";
 import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 import { GraficoMultiLinea, colorDeSerie } from "@/components/GraficoMultiLinea";
 import { GraficoBarras } from "@/components/GraficoBarras";
+import { TorneoDelMate } from "@/components/TorneoDelMate";
 
 const porcentaje = (valor: number | null) => valor === null ? "—" : `${valor.toFixed(1)}%`;
 const delta = (valor: number) => `${valor>0?"+":""}${valor}`;
@@ -55,6 +56,7 @@ export default function EstadisticasPage() {
   return <div className="flex flex-col gap-6">
     <EncabezadoPagina titulo="Estadísticas que cuentan" subtitulo="Actividad, resultados y progreso. Elegí un período para ver qué pasó en el club." />
     {(errorCarga||errorJugadores)&&<p role="status" className="panel p-4 text-sm text-amber-300">{errorCarga||errorJugadores}</p>}
+    <TorneoDelMate torneos={torneos} jugadores={bases} cargando={cargando} error={Boolean(errorCarga || errorJugadores)} />
     <div className="panel flex flex-wrap items-center justify-between gap-4 p-4">
       <div className="flex flex-wrap items-center gap-3"><div className="segmented-control" aria-label="Agrupar estadísticas" role="group">{(["mes","anio"] as const).map(m=><button key={m} aria-pressed={modo===m} onClick={()=>{setModo(m);setPeriodo(null);}}>{m==="mes"?"Por mes":"Por año"}</button>)}</div><select aria-label="Período de estadísticas" value={activo??""} onChange={e=>setPeriodo(e.target.value)} disabled={!periodos.length}>{!periodos.length&&<option value="">Sin resultados</option>}{periodos.map(p=><option key={p} value={p}>{etiquetaPeriodo(p)}</option>)}</select></div>
       <button className="button-secondary" disabled={!filas.length} onClick={exportar}>Descargar CSV</button>
