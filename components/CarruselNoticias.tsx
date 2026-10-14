@@ -1,5 +1,5 @@
 "use client";
-import { useId, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Icono } from "./Icono";
@@ -8,19 +8,39 @@ import { fechaNoticia, minutosNoticia, type Noticia } from "@/lib/noticias";
 export function CarruselNoticias({noticias,portada=false}:{noticias:Noticia[];portada?:boolean}) {
   const id=useId();
   const pista=useRef<HTMLDivElement>(null);
-  const arrastre=useRef<{id:number;x:number;y:number;distancia:number;activo:boolean;paso:number;ultimoX:number;tiempo:number;velocidad:number}|null>(null);
+  const arrastre=useRef<{id:number;tipo:"pointer"|"touch";x:number;y:number;distancia:number;activo:boolean;paso:number;ultimoX:number;tiempo:number;velocidad:number}|null>(null);
   const bloquearClickHasta=useRef(0);
   const [elegida,setElegida]=useState(0);
   const cantidad=noticias.length,actual=cantidad?elegida%cantidad:0;
-  function irA(indice:number){
+  const irA=useCallback((indice:number)=>{
     if(cantidad)setElegida((indice%cantidad+cantidad)%cantidad);
-  }
+  },[cantidad]);
   function distancia(indice:number){
     let d=(indice-actual+cantidad)%cantidad;
     if(d>cantidad/2)d-=cantidad;
     return d;
   }
-  function terminar(cancelado=false){
+  const iniciar=useCallback((id:number,x:number,y:number,tipo:"pointer"|"touch")=>{
+    const elemento=pista.current;if(!elemento||arrastre.current)return;
+    const tarjeta=elemento.querySelector<HTMLElement>('.news-card[data-offset="0"]');
+    arrastre.current={id,tipo,x,y,distancia:0,activo:false,paso:Math.max(80,(tarjeta?.offsetWidth??300)*.44),ultimoX:x,tiempo:performance.now(),velocidad:0};
+  },[]);
+  const mover=useCallback((x:number,y:number)=>{
+    const m=arrastre.current,elemento=pista.current;if(!m||!elemento)return false;
+    const dx=x-m.x,dy=y-m.y;
+    if(!m.activo){
+      if(Math.abs(dy)>12&&Math.abs(dy)>Math.abs(dx)*1.35){arrastre.current=null;return false;}
+      if(Math.abs(dx)<7||Math.abs(dx)<Math.abs(dy)*.85)return false;
+      m.activo=true;elemento.dataset.arrastrando="true";
+    }
+    const ahora=performance.now(),intervalo=ahora-m.tiempo;
+    if(intervalo>0)m.velocidad=(x-m.ultimoX)/intervalo;
+    m.ultimoX=x;m.tiempo=ahora;m.distancia=dx;
+    elemento.dataset.direccion=dx<0?"siguiente":"anterior";
+    elemento.style.setProperty("--news-progress",`${Math.max(-1.12,Math.min(1.12,-dx/m.paso))}`);
+    return true;
+  },[]);
+  const terminar=useCallback((cancelado=false)=>{
     const movimiento=arrastre.current,elemento=pista.current;
     arrastre.current=null;
     if(!movimiento||!elemento)return;
@@ -28,13 +48,44 @@ export function CarruselNoticias({noticias,portada=false}:{noticias:Noticia[];po
     delete elemento.dataset.arrastrando;
     delete elemento.dataset.direccion;
     if(movimiento.activo){
-      bloquearClickHasta.current=Date.now()+300;
+      bloquearClickHasta.current=Date.now()+500;
       const recorrido=Math.abs(movimiento.distancia),rapido=Math.abs(movimiento.velocidad)>.45&&performance.now()-movimiento.tiempo<120;
       if(!cancelado&&(recorrido>=movimiento.paso*.3||(rapido&&recorrido>=16)))
         irA(actual+(movimiento.distancia<0?1:-1));
     }
-    if(elemento.hasPointerCapture(movimiento.id))elemento.releasePointerCapture(movimiento.id);
-  }
+    if(movimiento.tipo==="pointer"&&elemento.hasPointerCapture(movimiento.id))elemento.releasePointerCapture(movimiento.id);
+  },[actual,irA]);
+  useEffect(()=>{
+    const elemento=pista.current;if(!elemento||cantidad<2)return;
+    // Touch events keep following the finger even when the browser cancels its
+    // pointer stream. Only a horizontal gesture blocks native page scrolling.
+    const empezar=(e:TouchEvent)=>{
+      if(e.touches.length!==1){terminar(true);return;}
+      const t=e.touches[0];iniciar(t.identifier,t.clientX,t.clientY,"touch");
+    };
+    const desplazar=(e:TouchEvent)=>{
+      const m=arrastre.current;if(!m||m.tipo!=="touch")return;
+      if(e.touches.length!==1){terminar(true);return;}
+      const t=Array.from(e.touches).find(t=>t.identifier===m.id);if(!t)return;
+      if(mover(t.clientX,t.clientY)&&e.cancelable)e.preventDefault();
+    };
+    const soltar=(e:TouchEvent)=>{
+      const m=arrastre.current;if(!m||m.tipo!=="touch")return;
+      const t=Array.from(e.changedTouches).find(t=>t.identifier===m.id);if(!t)return;
+      if(t.clientX!==m.ultimoX)mover(t.clientX,t.clientY);terminar();
+    };
+    const cancelar=()=>terminar(true);
+    elemento.addEventListener("touchstart",empezar,{passive:true});
+    elemento.addEventListener("touchmove",desplazar,{passive:false});
+    elemento.addEventListener("touchend",soltar);
+    elemento.addEventListener("touchcancel",cancelar);
+    return()=>{
+      elemento.removeEventListener("touchstart",empezar);
+      elemento.removeEventListener("touchmove",desplazar);
+      elemento.removeEventListener("touchend",soltar);
+      elemento.removeEventListener("touchcancel",cancelar);
+    };
+  },[cantidad,iniciar,mover,terminar]);
   if(!cantidad)return null;
   return <section id={portada?"noticias":undefined} className="news-carousel" data-unica={cantidad===1} aria-labelledby={`${id}-titulo`}>
     <div className="news-heading">
@@ -48,25 +99,17 @@ export function CarruselNoticias({noticias,portada=false}:{noticias:Noticia[];po
         if(destino!==null){e.preventDefault();e.currentTarget.focus({preventScroll:true});irA(destino);}
       }}
       onDragStart={e=>e.preventDefault()}
-      onPointerDown={e=>{if(cantidad<2||!e.isPrimary||(e.pointerType==="mouse"&&e.button!==0)||arrastre.current)return;const tarjeta=e.currentTarget.querySelector<HTMLElement>('.news-card[data-offset="0"]');arrastre.current={id:e.pointerId,x:e.clientX,y:e.clientY,distancia:0,activo:false,paso:Math.max(80,(tarjeta?.offsetWidth??300)*.44),ultimoX:e.clientX,tiempo:performance.now(),velocidad:0};}}
+      onPointerDown={e=>{if(cantidad<2||e.pointerType==="touch"||!e.isPrimary||(e.pointerType==="mouse"&&e.button!==0))return;iniciar(e.pointerId,e.clientX,e.clientY,"pointer");}}
       onPointerMove={e=>{
-        const m=arrastre.current;if(!m||m.id!==e.pointerId)return;
+        const m=arrastre.current;if(!m||m.tipo!=="pointer"||m.id!==e.pointerId)return;
         if(e.pointerType==="mouse"&&e.buttons===0){terminar(true);return;}
-        const dx=e.clientX-m.x,dy=e.clientY-m.y;
-        if(!m.activo){
-          if(Math.abs(dy)>12&&Math.abs(dy)>Math.abs(dx)*1.25){arrastre.current=null;return;}
-          if(Math.abs(dx)<7||Math.abs(dx)<Math.abs(dy))return;
-          m.activo=true;e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.dataset.arrastrando="true";
+        if(mover(e.clientX,e.clientY)){
+          if(!e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.setPointerCapture(e.pointerId);
+          e.preventDefault();
         }
-        const ahora=performance.now(),intervalo=ahora-m.tiempo;
-        if(intervalo>0)m.velocidad=(e.clientX-m.ultimoX)/intervalo;
-        m.ultimoX=e.clientX;m.tiempo=ahora;
-        m.distancia=dx;e.preventDefault();
-        e.currentTarget.dataset.direccion=dx<0?"siguiente":"anterior";
-        e.currentTarget.style.setProperty("--news-progress",`${Math.max(-1.12,Math.min(1.12,-dx/m.paso))}`);
       }}
-      onPointerUp={()=>terminar()} onPointerCancel={()=>terminar(true)} onLostPointerCapture={e=>{if(e.target===e.currentTarget)terminar(true);}}
-      onPointerLeave={()=>{if(!arrastre.current?.activo)arrastre.current=null;}}
+      onPointerUp={e=>{const m=arrastre.current;if(m?.tipo==="pointer"&&m.id===e.pointerId){if(e.clientX!==m.ultimoX)mover(e.clientX,e.clientY);terminar();}}} onPointerCancel={e=>{if(arrastre.current?.tipo==="pointer"&&arrastre.current.id===e.pointerId)terminar(true);}} onLostPointerCapture={e=>{if(e.target===e.currentTarget&&arrastre.current?.tipo==="pointer")terminar(true);}}
+      onPointerLeave={()=>{if(arrastre.current?.tipo==="pointer"&&!arrastre.current.activo)arrastre.current=null;}}
       onClickCapture={e=>{if(e.detail>0&&Date.now()<bloquearClickHasta.current){e.preventDefault();e.stopPropagation();}}}>
       {noticias.map((noticia,indice)=>{
         const offset=distancia(indice),activa=indice===actual;

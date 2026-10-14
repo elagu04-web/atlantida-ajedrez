@@ -352,7 +352,7 @@ button:not(:disabled), summary { cursor: pointer; }
   .news-arrows { display: flex; gap: 8px; }
   .news-arrows button { border-radius: 50%; width: 40px; height: 40px; }
   .news-arrows button:disabled { opacity: .3; cursor: default; }
-  .news-track { --news-card-width: min(45%,460px); --news-card-height: clamp(410px,48vw,550px); --news-near-scale: .1; --news-far-scale: .12; --news-near-down: 48px; --news-far-down: 42px; position: relative; height: calc(var(--news-card-height) + 84px); overflow: hidden; perspective: 1400px; isolation: isolate; touch-action: pan-y pinch-zoom; user-select: none; cursor: grab; border-radius: 24px; }
+  .news-track { --news-card-width: min(45%,460px); --news-card-height: clamp(410px,48vw,550px); --news-near-scale: .1; --news-far-scale: .12; --news-near-down: 48px; --news-far-down: 42px; position: relative; height: calc(var(--news-card-height) + 84px); overflow: hidden; perspective: 1400px; isolation: isolate; touch-action: auto; user-select: none; cursor: grab; border-radius: 24px; }
   .news-track::before { position: absolute; content: ""; width: 75%; height: 60%; bottom: 0; left: 12.5%; background: radial-gradient(ellipse,#dfba7614,transparent 65%); pointer-events: none; }
   .news-track[data-arrastrando=true], .news-track[data-arrastrando=true] a, .news-track[data-arrastrando=true] button { cursor: grabbing; }
   .news-track[data-arrastrando=true] .news-card,.news-track[data-arrastrando=true] .news-card-meta,.news-track[data-arrastrando=true] .news-card-copy > p,.news-track[data-arrastrando=true] .news-read { transition: none; }
