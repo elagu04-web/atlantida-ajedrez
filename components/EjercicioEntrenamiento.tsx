@@ -5,6 +5,7 @@ import { Chessboard } from "react-chessboard";
 import { MotorEntrenamiento } from "@/lib/motorEntrenamiento";
 import type { AnalisisPosicion } from "@/lib/stockfish";
 import type { EjercicioPersonal, PracticaError } from "@/lib/entrenamientoPersonal";
+import { ayudaEnDia } from "@/lib/entrenamientoPersonal";
 import { sanPractica } from "@/lib/partidaPractica";
 
 const nombrePieza: Record<string, string> = { p: "peón", n: "caballo", b: "alfil", r: "torre", q: "dama", k: "rey" };
@@ -36,8 +37,9 @@ export function EjercicioEntrenamiento({ ejercicio, practica, alIntentar, nota =
         acertado = perdida <= 40;
       }
       if (!activo.current) return;
-      alIntentar(acertado, revelado || pista);
-      if (acertado) { setFen(ajedrez.fen()); setResuelto(true); setMensaje(revelado || pista ? "Bien. Volvé otro día para resolverla sin ayuda." : "¡Bien encontrada! El repaso quedará pendiente para otro día."); }
+      const conAyuda = revelado || pista || ayudaEnDia(practica);
+      alIntentar(acertado, conAyuda);
+      if (acertado) { setFen(ajedrez.fen()); setResuelto(true); setMensaje(conAyuda ? "Bien. Volvé otro día para resolverla sin ayuda." : "¡Bien encontrada! El repaso quedará pendiente para otro día."); }
       else setMensaje("Hay una alternativa mejor. Volvé a mirar las amenazas de ambos lados y probá otro candidato.");
     } catch (e) {
       if (activo.current && (e as Error).name !== "AbortError") { motor.current?.destruir(); motor.current = null; setMensaje("No pudimos comprobar esa alternativa. Reintentá; este intento no cuenta como error."); }
@@ -69,7 +71,7 @@ export function EjercicioEntrenamiento({ ejercicio, practica, alIntentar, nota =
     <div className="training-exercise-feedback" role="status">{evaluando ? "Comprobando tu alternativa con el motor…" : mensaje || "Antes de mover: ¿qué amenaza el rival? Elegí dos candidatos y calculá su respuesta."}</div>
     {pista && !revelado && <p className="training-hint">Buscá una alternativa a <strong>{sanPractica(j.san)}</strong>. {j.piezaColgada ? `Revisá la seguridad del ${j.piezaColgada.nombrePieza} en ${j.piezaColgada.casilla}.` : j.llevaAMate ? "Prestá atención a los jaques y a la seguridad del rey." : "Revisá jaques, capturas y amenazas para ambos lados."}</p>}
     {(resuelto || revelado) && <div className="training-solution"><strong>La idea para comparar</strong><p>{j.varianteSan?.map(sanPractica).join(" · ")}</p><p>En la partida se jugó {j.numero}{j.color === "w" ? "." : "…"} {sanPractica(j.san)}. {j.llevaAMate ? "Quedó un mate forzado a favor del rival." : `La pérdida estimada fue de ${(j.perdidaCentipeones / 100).toLocaleString("es-UY", { maximumFractionDigits: 2 })} peones.`}</p></div>}
-    {!resuelto && <div className="training-exercise-actions"><button type="button" className="button-secondary" disabled={evaluando || revelado} onClick={() => setPista(true)}>Una pista</button><button type="button" className="text-link" disabled={evaluando || revelado} onClick={() => { setRevelado(true); alIntentar(false, true); }}>Ver la idea</button></div>}
+    {!resuelto && <div className="training-exercise-actions"><button type="button" className="button-secondary" disabled={evaluando || revelado || pista} onClick={() => { setPista(true); alIntentar(false, true); }}>Una pista</button><button type="button" className="text-link" disabled={evaluando || revelado} onClick={() => { setRevelado(true); alIntentar(false, true); }}>Ver la idea</button></div>}
     {practica?.proxima && <p className="training-next-review">Próximo repaso: {new Intl.DateTimeFormat("es-UY", { day: "numeric", month: "short" }).format(new Date(practica.proxima + "T12:00:00Z"))} · Las ayudas no suman un acierto independiente.</p>}
     <div className="training-exercise-note"><label className="training-field">¿Qué te llevás de esta posición?<textarea value={borrador} maxLength={800} onChange={e => { setBorrador(e.target.value); setNotaGuardada(false); }} placeholder="La amenaza que no vi, el candidato que faltó…"/></label><button type="button" className="text-link" onClick={() => { alGuardarNota(borrador.trim()); setNotaGuardada(true); }}>Guardar mi idea</button><span role="status">{notaGuardada ? "Idea guardada junto a esta posición." : ""}</span></div>
   </div>;

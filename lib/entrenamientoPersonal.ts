@@ -2,8 +2,8 @@ import { Chess } from "chess.js";
 import type { ResultadoAnalisis, JugadaAnalizada } from "./analisisPartidas";
 import { fechaMontevideo } from "./desafios";
 
-export type PracticaError = { aciertos: number; fallos: number; proxima: string | null; ultimoDia: string | null; ayudado: boolean };
-export type SesionEntrenamiento = { id: string; actualizada: string; creada: string; titulo: string; pgn: string; color: "w" | "b"; resultado: ResultadoAnalisis; practicas: Record<string, PracticaError>; notas?: Record<string, string> };
+export type PracticaError = { aciertos: number; fallos: number; proxima: string | null; ultimoDia: string | null; ayudado: boolean; etapa?: number; diaAyuda?: string | null; actualizada?: string };
+export type SesionEntrenamiento = { id: string; actualizada: string; creada: string; titulo: string; pgn: string; color: "w" | "b"; resultado: ResultadoAnalisis; practicas: Record<string, PracticaError>; notas?: Record<string, string>; practicasActualizadas?: Record<string, string>; notasActualizadas?: Record<string, string> };
 export type EjercicioPersonal = { id: string; jugada: JugadaAnalizada; tema: string };
 export const PGN_EJEMPLO = '[Event "Ejemplo de entrenamiento"]\n[White "Blancas"]\n[Black "Negras"]\n[Result "0-1"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 export const PLAN_ENTRENAMIENTO = [
@@ -34,15 +34,35 @@ export function crearSesionEntrenamiento(biblioteca: SesionEntrenamiento[], pgn:
   const entrada = validarPgnEntrenamiento(pgn);
   const previa = biblioteca.find(s => s.pgn === entrada.pgn && s.color === color);
   const practicas = Object.fromEntries(Object.entries(previa?.practicas ?? {}).filter(([i]) => resultado.jugadas[Number(i)]?.fenAntes === previa?.resultado.jugadas[Number(i)]?.fenAntes && resultado.jugadas[Number(i)]?.mejorJugadaSan === previa?.resultado.jugadas[Number(i)]?.mejorJugadaSan));
-  return { id: previa?.id ?? id, creada: previa?.creada ?? ahora.toISOString(), actualizada: ahora.toISOString(), pgn: entrada.pgn, titulo: entrada.titulo, color, resultado, practicas, notas: previa?.notas ?? {} };
+  return { id: previa?.id ?? id, creada: previa?.creada ?? ahora.toISOString(), actualizada: ahora.toISOString(), pgn: entrada.pgn, titulo: entrada.titulo, color, resultado, practicas, notas: previa?.notas ?? {}, practicasActualizadas: previa?.practicasActualizadas ?? {}, notasActualizadas: previa?.notasActualizadas ?? {} };
+}
+export const INTERVALOS_REPASO = [1, 3, 7, 14, 30] as const;
+export function normalizarPractica(actual?: PracticaError): PracticaError {
+  const p = actual ?? { aciertos: 0, fallos: 0, proxima: null, ultimoDia: null, ayudado: false };
+  return { ...p, etapa: p.etapa ?? (p.ayudado ? 0 : Math.min(p.aciertos, 5)), diaAyuda: p.diaAyuda ?? (p.ayudado ? p.ultimoDia : null) };
+}
+export function ayudaEnDia(actual?: PracticaError, ahora = new Date()): boolean {
+  const p = normalizarPractica(actual), dia = fechaMontevideo(ahora);
+  return p.diaAyuda === dia || (p.ayudado && p.ultimoDia === dia);
 }
 export function registrarPractica(actual: PracticaError | undefined, acertado: boolean, ayudado: boolean, ahora = new Date()): PracticaError {
-  const dia = fechaMontevideo(ahora);
-  const previa = actual ?? { aciertos: 0, fallos: 0, proxima: null, ultimoDia: null, ayudado: false };
-  const aciertos = previa.aciertos + (acertado && !ayudado && previa.ultimoDia !== dia ? 1 : 0);
-  const dias = ayudado ? 1 : acertado ? [1, 3, 7, 14][Math.min(Math.max(aciertos - 1, 0), 3)] : 0;
-  const proxima = new Date(Date.parse(dia + "T12:00:00Z") + dias * 86400000).toISOString().slice(0, 10);
-  return { aciertos, fallos: previa.fallos + (!acertado && !ayudado ? 1 : 0), proxima, ultimoDia: acertado || ayudado ? dia : previa.ultimoDia, ayudado };
+  const dia = fechaMontevideo(ahora), previa = normalizarPractica(actual);
+  const fechaSiguiente = (dias: number) => new Date(Date.parse(dia + "T12:00:00Z") + dias * 86400000).toISOString().slice(0, 10);
+  // La primera respuesta y las ayudas quedan registradas aunque se recargue o cambie de dispositivo.
+  if (!acertado || ayudado || ayudaEnDia(previa, ahora)) return {
+    ...previa, etapa: 0, fallos: previa.fallos + (!acertado && !ayudado ? 1 : 0),
+    proxima: fechaSiguiente(1), ultimoDia: dia, ayudado: true, diaAyuda: dia, actualizada: ahora.toISOString(),
+  };
+  // Repetir hoy o adelantarse a un repaso sirve para practicar, pero no acelera la etapa.
+  if (previa.ultimoDia === dia || (previa.proxima !== null && previa.proxima > dia)) return previa;
+  const etapa = Math.min((previa.etapa ?? 0) + 1, INTERVALOS_REPASO.length);
+  return { ...previa, aciertos: previa.aciertos + 1, etapa, proxima: fechaSiguiente(INTERVALOS_REPASO[etapa - 1]), ultimoDia: dia, ayudado: false, diaAyuda: null, actualizada: ahora.toISOString() };
+}
+export function practicaValida(p: unknown): p is PracticaError {
+  if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+  const v = p as PracticaError;
+  const fecha = (d: unknown) => d === null || (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d) && new Date(d + "T12:00:00Z").toISOString().slice(0, 10) === d);
+  try { return Number.isInteger(v.aciertos) && v.aciertos >= 0 && Number.isInteger(v.fallos) && v.fallos >= 0 && typeof v.ayudado === "boolean" && fecha(v.proxima) && fecha(v.ultimoDia) && (v.etapa === undefined || (Number.isInteger(v.etapa) && v.etapa >= 0 && v.etapa <= 5)) && (v.diaAyuda === undefined || fecha(v.diaAyuda)) && (v.actualizada === undefined || (typeof v.actualizada === "string" && Number.isFinite(Date.parse(v.actualizada)))); } catch { return false; }
 }
 export function leerBibliotecaEntrenamiento(texto: string): SesionEntrenamiento[] {
   try {
@@ -58,8 +78,10 @@ export function leerBibliotecaEntrenamiento(texto: string): SesionEntrenamiento[
           if (j.mejorJugadaSan) posicion.move(j.mejorJugadaSan);
           if (j.varianteSan !== null && (!Array.isArray(j.varianteSan) || j.varianteSan.some((m: string) => typeof m !== "string"))) return false;
         }
-        for (const p of Object.values(s.practicas) as PracticaError[]) if (!p || !Number.isInteger(p.aciertos) || p.aciertos < 0 || !Number.isInteger(p.fallos) || p.fallos < 0 || typeof p.ayudado !== "boolean" || [p.proxima, p.ultimoDia].some(d => d !== null && (typeof d !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(d) || !Number.isFinite(Date.parse(d))))) return false;
+        for (const p of Object.values(s.practicas)) if (!practicaValida(p)) return false;
+        s.practicas = Object.fromEntries(Object.entries(s.practicas as Record<string, PracticaError>).map(([id, p]) => [id, normalizarPractica(p)]));
         if (s.notas !== undefined && (!s.notas || typeof s.notas !== "object" || Array.isArray(s.notas) || Object.values(s.notas).some(n => typeof n !== "string" || n.length > 800))) return false;
+        for (const reloj of [s.practicasActualizadas, s.notasActualizadas]) if (reloj !== undefined && (!reloj || typeof reloj !== "object" || Array.isArray(reloj) || Object.values(reloj).some(t => typeof t !== "string" || !Number.isFinite(Date.parse(t))))) return false;
         return true;
       } catch { return false; }
     });
