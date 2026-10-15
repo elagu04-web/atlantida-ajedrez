@@ -17,7 +17,7 @@ test('3865 aperturas del catálogo son legales y el reconocimiento incluye la si
  assert.match(a.reconocerApertura('1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 *').nombre,/Sicilian/);assert.ok(a.buscarAperturas('francesa').some(x=>x.nombre.includes('French')));
 });
 test('Notas, archivo, progreso y variantes offline se unen sin borrar el repertorio anterior',()=>{
- const [l]=a.importarRepertorio('1. e4 e6 2. d4 d5 *','b');let p=a.agregarLineas(a.repertorioInicial(),[l]);const q=structuredClone(p);q.lineas[l.id]={...l,notas:'Romper con c5',activa:false,actualizada:'2026-10-14T21:00:00Z'};
+ const [l]=a.importarRepertorio('1. e4 e6 2. d4 d5 *','b');l.actualizada=fecha.toISOString();let p=a.agregarLineas(a.repertorioInicial(),[l]);const q=structuredClone(p);q.lineas[l.id]={...l,notas:'Romper con c5',activa:false,actualizada:'2026-10-14T21:00:00Z'};
  p.lineas[l.id].practica=registrarPractica(undefined,true,false,fecha);p.lineas[l.id].practicaActualizada=fecha.toISOString();const [otra]=a.importarRepertorio('1. d4 d5 2. c4 e6 *','b');p=a.agregarLineas(p,[otra]);
  const unido=a.combinarRepertorios(p,q);assert.equal(Object.keys(unido.lineas).length,2);assert.equal(unido.lineas[l.id].notas,'Romper con c5');assert.equal(unido.lineas[l.id].activa,false);assert.equal(unido.lineas[l.id].practica.aciertos,1);
  const guiado=g.leerProgresoGuiado(JSON.stringify({...g.progresoGuiadoInicial(),aperturas:unido}));assert.deepEqual(guiado.aperturas,unido);assert.deepEqual(g.combinarProgresoGuiado(guiado,g.progresoGuiadoInicial()).aperturas,unido);
