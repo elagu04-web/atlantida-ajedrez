@@ -4,6 +4,7 @@ import { fechaMontevideo } from "./desafios";
 import { normalizarPractica, practicaValida, registrarPractica, type PracticaError } from "./entrenamientoPersonal";
 import type { AnalisisPosicion } from "./stockfish";
 import { TEMAS_TACTICOS } from "./temasTacticos";
+import { analizarTemas, elegirNuevosTematicos, observarTema, perfilTemaAnterior, perfilTemaValido, combinarPerfilTema, type PerfilTemaEjercicio, type OrigenIntentoTactico } from "./entrenamientoTemas";
 import bancoLichess from "../data/entrenamiento-lichess.json";
 import bancoDecisiones from "../data/entrenamiento-decisiones.json";
 
@@ -40,7 +41,7 @@ export type RazonamientoGuiado = {
 export function razonamientoInicial(): RazonamientoGuiado { return { etapa: "preparar", temas: [], consultaTema: "", candidata1: "", candidata2: "", respuesta1: "", respuesta2: "", conclusion: "", debilidad: "", peorPieza: "", ideaRival: "", valoracion: "", colorVentaja: "=", movimientos: [], resuelto: false, revelado: false, ayudado: false, mensaje: "" }; }
 export type PrimerResultado = {fecha:string;acierto:boolean};
 export type NivelInicial = {elo:number;jugadorId:string|null;fecha:string};
-export type AvanceGuiado = { practica?: PracticaError; actualizada?: string; nota?: string; notaActualizada?: string; razonamiento?: RazonamientoGuiado; razonamientoActualizada?: string; primerResultado?:PrimerResultado };
+export type AvanceGuiado = { perfilTema?:PerfilTemaEjercicio; practica?: PracticaError; actualizada?: string; nota?: string; notaActualizada?: string; razonamiento?: RazonamientoGuiado; razonamientoActualizada?: string; primerResultado?:PrimerResultado };
 export type SesionGuiada = { id: string; dia: string; ruta: RutaGuiada; items: string[]; indice: number; terminada: boolean; actualizada: string };
 export type ProgresoGuiado = { version: 1; ruta: RutaGuiada; rutaActualizada: string; actividad: ActividadGuiada; actividadActualizada: string; ejercicios: Record<string, AvanceGuiado>; sesionEnCurso: SesionGuiada | null; sesionActualizada: string; nivelInicial?:NivelInicial; aperturas?:RepertorioAperturas };
 export const FECHA_INICIAL_GUIADO = "1970-01-01T00:00:00.000Z";
@@ -76,6 +77,10 @@ export function leerProgresoGuiado(texto: string): ProgresoGuiado {
       if (practicaValida(a.practica) && isoValida(a.actualizada)) { entrada.practica = normalizarPractica(a.practica); entrada.actualizada = a.actualizada; }
       if (typeof a.nota === "string" && a.nota.length <= 800 && isoValida(a.notaActualizada)) { entrada.nota = a.nota; entrada.notaActualizada = a.notaActualizada; }
       if (razonamientoValido(a.razonamiento, e) && isoValida(a.razonamientoActualizada)) { entrada.razonamiento = a.razonamiento; entrada.razonamientoActualizada = a.razonamientoActualizada; }
+      if(e.actividad==="tactica"){
+        if(perfilTemaValido(a.perfilTema))entrada.perfilTema=a.perfilTema;
+        else if(a.perfilTema===undefined){const perfil=perfilTemaAnterior(e,entrada);if(perfil)entrada.perfilTema=perfil;}
+      }
       inicial.ejercicios[e.id] = entrada;
     }
     const s = v.sesionEnCurso;
@@ -108,6 +113,7 @@ export function combinarProgresoGuiado(a: ProgresoGuiado, b: ProgresoGuiado): Pr
       const ayuda = [x.practica, y.practica].find(p => p?.diaAyuda && p.diaAyuda === z.practica?.ultimoDia);
       if (ayuda) z.practica = { ...z.practica, etapa: 0, ayudado: true, diaAyuda: ayuda.diaAyuda, proxima: ayuda.proxima };
     }
+    const perfil=combinarPerfilTema(x.perfilTema,y.perfilTema);if(perfil)z.perfilTema=perfil;
     resultado.ejercicios[id] = z;
   }
   const ruta = masReciente(pa, pa.rutaActualizada, pb, pb.rutaActualizada), actividad = masReciente(pa, pa.actividadActualizada, pb, pb.actividadActualizada), sesion = masReciente(pa, pa.sesionActualizada, pb, pb.sesionActualizada);
@@ -126,17 +132,23 @@ export function prepararSesionGuiada(p: ProgresoGuiado, ahora = new Date()): Pro
   const repasos = banco.filter(e => { const practica = p.ejercicios[e.id]?.practica; return (!p.nivelInicial||!!e.fuente)&&!!practica?.proxima && practica.proxima <= dia; }).sort((a, b) => (p.ejercicios[a.id]?.practica?.proxima ?? "").localeCompare(p.ejercicios[b.id]?.practica?.proxima ?? ""));
   const nivel=nivelEntrenamiento(p);
   const nuevos = banco.filter(e => !p.ejercicios[e.id]?.practica && (p.nivelInicial ? !!e.fuente : !e.fuente)).sort((a, b) => p.nivelInicial ? Math.abs((a.rating??nivel)-nivel)-Math.abs((b.rating??nivel)-nivel)||a.orden-b.orden : a.orden-b.orden);
-  const items = [...repasos.slice(0, 5), ...nuevos.slice(0, 2)].map(e => e.id);
+  const elegidos=p.actividad==="tactica"?elegirNuevosTematicos(nuevos,resumenTemasGuiado(p),nivel,Math.floor(Object.values(p.ejercicios).filter(a=>a.primerResultado).length/2)):nuevos.slice(0,2);
+  const items = [...repasos.slice(0, 5), ...elegidos].map(e => e.id);
   if (!items.length) return { ...p, sesionEnCurso: null, sesionActualizada: reloj };
   const ejercicios = { ...p.ejercicios };
-  for (const id of items) ejercicios[id] = { ...ejercicios[id], razonamiento: razonamientoInicial(), razonamientoActualizada: reloj };
+  for (const id of items) {
+    const anterior=ejercicios[id]??{},perfil=perfilTemaAnterior(ejercicioGuiado(id)!,anterior);
+    ejercicios[id] = { ...anterior,...(perfil?{perfilTema:perfil}:{}), razonamiento: razonamientoInicial(), razonamientoActualizada: reloj };
+  }
   return { ...p, ejercicios, sesionActualizada: reloj, sesionEnCurso: { id: `${dia}-${p.actividad}-${reloj}`, dia, ruta: p.ruta, items, indice: 0, terminada: false, actualizada: reloj } };
 }
-export function registrarResultadoGuiado(p: ProgresoGuiado, id: string, acertado: boolean, ayudado: boolean, ahora = new Date()): ProgresoGuiado {
+export function resumenTemasGuiado(p:ProgresoGuiado){return analizarTemas(p,BANCO_ENTRENAMIENTO);}
+export function registrarResultadoGuiado(p: ProgresoGuiado, id: string, acertado: boolean, ayudado: boolean, ahora = new Date(), origen?:OrigenIntentoTactico): ProgresoGuiado {
   if (!ejercicioGuiado(id)) return p;
   const e = p.ejercicios[id] ?? {}, practica = registrarPractica(e.practica, acertado, ayudado, ahora);
   const primerResultado=e.primerResultado??(ejercicioGuiado(id)?.rating?{fecha:ahora.toISOString(),acierto:acertado&&!ayudado}:undefined);
-  return { ...p, ejercicios: { ...p.ejercicios, [id]: { ...e, practica, primerResultado, actualizada: practica.actualizada ?? ahora.toISOString() } } };
+  const perfilTema=observarTema(ejercicioGuiado(id)!,e,acertado,ayudado,fechaMontevideo(ahora),ahora.toISOString(),origen);
+  return { ...p, ejercicios: { ...p.ejercicios, [id]: { ...e, practica, primerResultado,...(perfilTema?{perfilTema}:{}), actualizada: practica.actualizada ?? ahora.toISOString() } } };
 }
 export function iniciarNivel(p:ProgresoGuiado,elo:number|null,jugadorId:string|null,ahora=new Date()):ProgresoGuiado{
   if(p.nivelInicial)return p;
