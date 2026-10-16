@@ -38,7 +38,15 @@ export function combinarSesionCuenta(a:SesionEntrenamiento,b:SesionEntrenamiento
     const elegida=(b.notasActualizadas?.[k]??"")>=(a.notasActualizadas?.[k]??"")?b:a;
     notas[k]=elegida.notas?.[k]??"";nt[k]=elegida.notasActualizadas?.[k]??elegida.actualizada;
   }
-  return {...nueva,creada:a.creada<b.creada?a.creada:b.creada,practicas,notas,practicasActualizadas:pt,notasActualizadas:nt};
+  const finales: NonNullable<SesionEntrenamiento["finales"]> = {};
+  for (const k of new Set([...Object.keys(a.finales ?? {}), ...Object.keys(b.finales ?? {})])) {
+    const fen = nueva.resultado.jugadas[Number(k)]?.fenAntes;
+    const ea = a.finales?.[k]?.fen === fen ? a.finales[k] : undefined;
+    const eb = b.finales?.[k]?.fen === fen ? b.finales[k] : undefined;
+    const elegida = !ea ? eb : !eb ? ea : eb.actualizada >= ea.actualizada ? eb : ea;
+    if (elegida) finales[k] = elegida;
+  }
+  return {...nueva,creada:a.creada<b.creada?a.creada:b.creada,practicas,notas,practicasActualizadas:pt,notasActualizadas:nt,...(a.finales || b.finales ? {finales} : {})};
 }
 export function unirSesionesCuenta(...listas:SesionEntrenamiento[][]){
   const mapa=new Map<string,SesionEntrenamiento>();

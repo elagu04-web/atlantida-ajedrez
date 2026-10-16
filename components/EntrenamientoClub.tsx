@@ -5,6 +5,7 @@ import styles from "./EntrenamientoClub.module.css";
 import {useAnalisisServidor} from "@/context/useAnalisisServidor";
 import {ColaAnalisisEntrenamiento} from "./ColaAnalisisEntrenamiento";
 import { TallerAperturas } from "./TallerAperturas";
+import { FinalesPersonales } from "./FinalesPersonales";
 import {EntrenarHoy} from "./EntrenarHoy";
 import {useEntrenamientoCuenta} from "@/context/useEntrenamientoCuenta";
 import {useMiJugador} from "@/context/useMiJugador";
@@ -48,7 +49,7 @@ function TallerEntrenamiento({ cuenta, conCuenta, esAdmin, solicitada, modo }: {
   const resueltosGuiados = practicasGuiadas.filter(p => p.aciertos > 0).length;
   const pendientesGuiados = practicasGuiadas.filter(p => !p.proxima || p.proxima <= fechaMontevideo(new Date())).length;
   const [enSesion,setEnSesion]=useState(false);
-  const [semana, setSemana] = useState(0), [vista, setVista] = useState<"hoy" | "plan" | "analizar" | "practicar" | "biblioteca" | "aperturas">(solicitada?"analizar":modo==="aperturas"?"aperturas":"hoy");
+  const [semana, setSemana] = useState(0), [vista, setVista] = useState<"hoy" | "plan" | "analizar" | "practicar" | "biblioteca" | "aperturas" | "finales">(solicitada?"analizar":modo==="aperturas"?"aperturas":modo==="finales"?"finales":"hoy");
   const [pgn, setPgn] = useState(""), [color, setColor] = useState<"w" | "b">("w"), [error, setError] = useState("");
   const [fuente, setFuente] = useState<FuentePartida>("lichess"), [usuario, setUsuario] = useState(""), [partidas, setPartidas] = useState<PartidaExterna[]>([]), [buscando, setBuscando] = useState(false);
   const [usuarioConsultado, setUsuarioConsultado] = useState("");
@@ -171,6 +172,7 @@ function TallerEntrenamiento({ cuenta, conCuenta, esAdmin, solicitada, modo }: {
     {id:"hoy",texto:"Entrenar hoy",detalle:"Táctica, cálculo y evaluación",icono:"idea"},
     {id:"analizar",texto:"Revisar partida",detalle:"Aprendé de lo que jugaste",icono:"buscar"},
     {id:"aperturas",texto:"Mis aperturas",detalle:"Prepará tu repertorio",icono:"actividad"},
+    {id:"finales",texto:"Mis finales",detalle:"Volvé a jugarlos contra el motor",icono:"idea"},
     {id:"practicar",texto:"Practicar errores",detalle:"Otra oportunidad para decidir",icono:"reiniciar"},
     {id:"biblioteca",texto:"Mi biblioteca",detalle:"Partidas y progreso guardados",icono:"grafico"},
     {id:"plan",texto:"Mi plan",detalle:"Una rutina para mejorar",icono:"reloj"},
@@ -192,6 +194,7 @@ function TallerEntrenamiento({ cuenta, conCuenta, esAdmin, solicitada, modo }: {
     {analizando && <div className="training-analysis-progress panel" role="status"><div><strong>{lote?"Revisando tus partidas con Stockfish":"Revisando tu partida con Stockfish"}</strong>{lote&&<p>{lote.hechas} de {lote.total} partidas terminadas · {lote.titulo}</p>}<p>{progreso.total ? `${progreso.hechas} de ${progreso.total} posiciones` : "Cargando el motor…"} · Podés recorrer el plan mientras termina.</p><progress value={progreso.hechas} max={progreso.total || 1}/></div><button type="button" className="button-secondary" onClick={cancelar}>Detener</button></div>}
     {error && <p role="alert" className="training-message">{error}</p>}{aviso && <p role="status" className="training-message">{aviso}</p>}
     {vista === "hoy" && <div aria-label="Elegir mi entrenamiento"><EntrenarHoy alCambiarSesion={setEnSesion} sesiones={sesiones} progreso={guiado} eloClub={eloClub} jugadorId={conCuenta?identidad.jugador?.id??null:null} esperandoNivel={esperandoNivel} alGuardarProgreso={guardarGuiado} alRevisarPartida={empezar} alPracticarPersonal={practicar}/></div>}
+    {vista === "finales" && <FinalesPersonales sesiones={sesiones} alGuardar={guardarSesion} alCargar={()=>navegar("analizar")} alRevisar={s=>{setActiva(s);navegar("practicar");}}/>}
     {vista === "aperturas" && <TallerAperturas key={abrirAnalisis} conCuenta={conCuenta} servidorDisponible={servidor.disponible} alAnalizarLote={(partidas,enServidor)=>{if(enServidor){void enviarAnalisis(partidas);}else void analizarLote(partidas);}} cuenta={cuenta} repertorio={guiado.aperturas} sesiones={sesiones} analizando={analizando||servidor.enviando} alGuardar={aperturas=>guardarGuiado({...guiado,aperturas})} alAnalizar={(entrada,c,enServidor)=>{if(enServidor){void enviarAnalisis([{pgn:entrada,color:c}]);return;}setPgn(entrada);setColor(c);void analizar(entrada,c,true);requestAnimationFrame(()=>eleccionRef.current?.scrollIntoView({block:"start",behavior:"instant"}));}} alRegistrarIntento={(s,i,acierto,ayudado)=>{const ultima=sesiones.find(x=>x.id===s.id)??s;const ahora=new Date().toISOString();guardarSesion({...ultima,actualizada:ahora,practicas:{...ultima.practicas,[String(i)]:registrarPractica(ultima.practicas[String(i)],acierto,ayudado)},practicasActualizadas:{...ultima.practicasActualizadas,[String(i)]:ahora}});}}/>}
     {vista === "plan" && <section className="training-plan panel"><div className="training-section-heading"><div><p className="eyebrow">Un primer mes con dirección</p><h2>Revisar. Pensar. Volver a probar.</h2><p>Tres sesiones por semana de unos 15 minutos. Reservá la primera para analizar una partida; las siguientes, para practicar y repasar.</p></div><span className="training-focus">{resumen.foco ? <>Tu foco actual: <strong>{resumen.foco}</strong></> : "Tu primera partida nos dará un punto de partida."}</span></div><div className="training-weeks" role="group" aria-label="Semanas del plan">{PLAN_ENTRENAMIENTO.map((s, i) => <button type="button" key={s.titulo} aria-pressed={semana === i} onClick={() => setSemana(i)}><span>Semana {i + 1}</span><strong>{s.titulo}</strong></button>)}</div><div className="training-week-detail"><h3>{PLAN_ENTRENAMIENTO[semana].objetivo}</h3><ol>{PLAN_ENTRENAMIENTO[semana].pasos.map((p, i) => <li key={p}><span>{String(i + 1).padStart(2, "0")}</span>{p}</li>)}</ol></div><div className="training-plan-actions"><button type="button" className="button-primary" onClick={empezar}>Revisar mi partida →</button><Link href="/jugar" className="button-secondary">Practicar contra un bot</Link><Link href="/noticias/sumate-a-nuestro-grupo-de-estudio" className="text-link">Estudio con el club · jueves 18:30 ↗</Link></div><p className="training-plan-note">El motor ayuda a comparar jugadas. Las posiciones difíciles también merecen una conversación con el profe: no todas se explican con un número.</p></section>}
     {vista === "analizar" && <PartidasBotsEntrenamiento cuenta={cuenta} elegir={elegirBot} disabled={analizando} solicitada={solicitada}/>}

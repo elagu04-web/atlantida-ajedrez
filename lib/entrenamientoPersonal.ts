@@ -1,9 +1,10 @@
 import { Chess } from "chess.js";
 import type { ResultadoAnalisis, JugadaAnalizada } from "./analisisPartidas";
 import { fechaMontevideo } from "./desafios";
+import { estadoFinalValido, type EstadoFinalPersonal } from "./finalesPersonales";
 
 export type PracticaError = { aciertos: number; fallos: number; proxima: string | null; ultimoDia: string | null; ayudado: boolean; etapa?: number; diaAyuda?: string | null; actualizada?: string };
-export type SesionEntrenamiento = { id: string; actualizada: string; creada: string; titulo: string; pgn: string; color: "w" | "b"; resultado: ResultadoAnalisis; practicas: Record<string, PracticaError>; notas?: Record<string, string>; practicasActualizadas?: Record<string, string>; notasActualizadas?: Record<string, string> };
+export type SesionEntrenamiento = { id: string; actualizada: string; creada: string; titulo: string; pgn: string; color: "w" | "b"; resultado: ResultadoAnalisis; practicas: Record<string, PracticaError>; notas?: Record<string, string>; practicasActualizadas?: Record<string, string>; notasActualizadas?: Record<string, string>; finales?: Record<string, EstadoFinalPersonal> };
 export type EjercicioPersonal = { id: string; jugada: JugadaAnalizada; tema: string };
 export const PGN_EJEMPLO = '[Event "Ejemplo de entrenamiento"]\n[White "Blancas"]\n[Black "Negras"]\n[Result "0-1"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 export const PLAN_ENTRENAMIENTO = [
@@ -34,7 +35,8 @@ export function crearSesionEntrenamiento(biblioteca: SesionEntrenamiento[], pgn:
   const entrada = validarPgnEntrenamiento(pgn);
   const previa = biblioteca.find(s => s.pgn === entrada.pgn && s.color === color);
   const practicas = Object.fromEntries(Object.entries(previa?.practicas ?? {}).filter(([i]) => resultado.jugadas[Number(i)]?.fenAntes === previa?.resultado.jugadas[Number(i)]?.fenAntes && resultado.jugadas[Number(i)]?.mejorJugadaSan === previa?.resultado.jugadas[Number(i)]?.mejorJugadaSan));
-  return { id: previa?.id ?? id, creada: previa?.creada ?? ahora.toISOString(), actualizada: ahora.toISOString(), pgn: entrada.pgn, titulo: entrada.titulo, color, resultado, practicas, notas: previa?.notas ?? {}, practicasActualizadas: previa?.practicasActualizadas ?? {}, notasActualizadas: previa?.notasActualizadas ?? {} };
+  const finales = previa?.finales ? Object.fromEntries(Object.entries(previa.finales).filter(([i, e]) => resultado.jugadas[Number(i)]?.fenAntes === e.fen)) : undefined;
+  return { id: previa?.id ?? id, creada: previa?.creada ?? ahora.toISOString(), actualizada: ahora.toISOString(), pgn: entrada.pgn, titulo: entrada.titulo, color, resultado, practicas, notas: previa?.notas ?? {}, practicasActualizadas: previa?.practicasActualizadas ?? {}, notasActualizadas: previa?.notasActualizadas ?? {}, ...(finales ? { finales } : {}) };
 }
 export const INTERVALOS_REPASO = [1, 3, 7, 14, 30] as const;
 export function normalizarPractica(actual?: PracticaError): PracticaError {
@@ -79,6 +81,13 @@ export function leerBibliotecaEntrenamiento(texto: string): SesionEntrenamiento[
           if (j.varianteSan !== null && (!Array.isArray(j.varianteSan) || j.varianteSan.some((m: string) => typeof m !== "string"))) return false;
         }
         for (const p of Object.values(s.practicas)) if (!practicaValida(p)) return false;
+        if (s.finales !== undefined) {
+          if (!s.finales || typeof s.finales !== "object" || Array.isArray(s.finales)) return false;
+          for (const [i, e] of Object.entries(s.finales)) {
+            const j = s.resultado.jugadas[Number(i)];
+            if (!/^\d+$/.test(i) || !j || j.color !== s.color || !estadoFinalValido(e, j.fenAntes, s.color) || (e.practica !== undefined && !practicaValida(e.practica))) return false;
+          }
+        }
         s.practicas = Object.fromEntries(Object.entries(s.practicas as Record<string, PracticaError>).map(([id, p]) => [id, normalizarPractica(p)]));
         if (s.notas !== undefined && (!s.notas || typeof s.notas !== "object" || Array.isArray(s.notas) || Object.values(s.notas).some(n => typeof n !== "string" || n.length > 800))) return false;
         for (const reloj of [s.practicasActualizadas, s.notasActualizadas]) if (reloj !== undefined && (!reloj || typeof reloj !== "object" || Array.isArray(reloj) || Object.values(reloj).some(t => typeof t !== "string" || !Number.isFinite(Date.parse(t))))) return false;
