@@ -3,40 +3,13 @@ import { Chess } from "chess.js";
 import { fechaMontevideo } from "./desafios";
 import { normalizarPractica, practicaValida, registrarPractica, type PracticaError } from "./entrenamientoPersonal";
 import type { AnalisisPosicion } from "./stockfish";
+import { TEMAS_TACTICOS } from "./temasTacticos";
 import bancoLichess from "../data/entrenamiento-lichess.json";
 import bancoDecisiones from "../data/entrenamiento-decisiones.json";
 
 export type ActividadGuiada = "tactica" | "candidatas" | "evaluacion";
 export type RutaGuiada = "base" | "club" | "competencia";
-export const TEMAS_TACTICOS = [
-  { id: "hangingPiece", nombre: "Pieza indefensa", alias: "pieza colgada captura" },
-  { id: "mateIn1", nombre: "Mate en una", alias: "mate en 1 jaque mate" },
-  { id: "mateIn2", nombre: "Mate en dos", alias: "mate en 2" },
-  { id: "mateIn3", nombre: "Mate en tres", alias: "mate en 3" },
-  { id: "mate", nombre: "Ataque de mate", alias: "jaque mate rey" },
-  { id: "backRankMate", nombre: "Mate de la última fila", alias: "pasillo octava primera" },
-  { id: "fork", nombre: "Ataque doble", alias: "doblete tenedor horquilla" },
-  { id: "pin", nombre: "Clavada", alias: "clavado" },
-  { id: "skewer", nombre: "Enfilada", alias: "rayos x" },
-  { id: "discoveredAttack", nombre: "Ataque descubierto", alias: "descubierta" },
-  { id: "discoveredCheck", nombre: "Jaque descubierto", alias: "descubierta" },
-  { id: "doubleCheck", nombre: "Jaque doble", alias: "doble" },
-  { id: "deflection", nombre: "Desviación", alias: "sobrecarga" },
-  { id: "attraction", nombre: "Atracción", alias: "atraer" },
-  { id: "capturingDefender", nombre: "Eliminar al defensor", alias: "captura defensor" },
-  { id: "intermezzo", nombre: "Jugada intermedia", alias: "zwischenzug" },
-  { id: "promotion", nombre: "Promoción", alias: "coronacion coronar" },
-  { id: "underPromotion", nombre: "Subpromoción", alias: "caballo torre alfil" },
-  { id: "sacrifice", nombre: "Sacrificio", alias: "entrega" },
-  { id: "defensiveMove", nombre: "Jugada defensiva", alias: "defensa" },
-  { id: "trappedPiece", nombre: "Pieza atrapada", alias: "encerrada" },
-] as const;
-// Identificadores compatibles con el catálogo público de temas de Lichess.
-const normalizar = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-export function sugerirTemas(consulta: string) {
-  const q = normalizar(consulta);
-  return TEMAS_TACTICOS.filter(t => !q || normalizar(`${t.nombre} ${t.alias} ${t.id}`).includes(q)).slice(0, 8);
-}
+export { TEMAS_TACTICOS, sugerirTemas } from "./temasTacticos";
 export type EjercicioGuiado = { id: string; actividad: ActividadGuiada; titulo: string; fen: string; temas: string[]; solucion: string[]; explicacion: string; pista: string; orden: number; tolerancia?: number; rating?: number; fuente?: "lichess"|"partida"; origen?:string; referencia?:AnalisisPosicion };
 const posicionInicial = new Chess().fen();
 export const BANCO_ENTRENAMIENTO: EjercicioGuiado[] = [
