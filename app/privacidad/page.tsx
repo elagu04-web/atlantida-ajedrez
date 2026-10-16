@@ -16,6 +16,15 @@ export default function PrivacidadPage() {
         archivos, calendario, etc.), ni se comparte tu email con nadie fuera del club.
       </p>
 
+      <h2 className="mt-2 font-semibold">Cuenta con usuario y contraseña</h2>
+      <p className="text-zinc-400">
+        También podés crear tu cuenta sin correo. Guardamos el usuario que elegís y tu
+        nombre para identificarte en el club. La contraseña se protege mediante el servicio
+        de autenticación de Supabase; el administrador no puede verla. Si ya usás Google,
+        podés agregar este acceso desde «Mi acceso» conservando tu cuenta y tu progreso.
+        Si necesitás recuperar el acceso, comunicate con el club.
+      </p>
+
       <h2 className="mt-2 font-semibold">Desafíos diarios y rachas</h2>
       <p className="text-zinc-400">
         Podés practicar sin iniciar sesión. Si elegís sumar una resolución a tu racha,
