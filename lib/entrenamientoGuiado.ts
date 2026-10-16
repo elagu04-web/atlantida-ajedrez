@@ -146,7 +146,9 @@ export function combinarProgresoGuiado(a: ProgresoGuiado, b: ProgresoGuiado): Pr
 export function prepararSesionGuiada(p: ProgresoGuiado, ahora = new Date()): ProgresoGuiado {
   const dia = fechaMontevideo(ahora), reloj = ahora.toISOString();
   const demostracion=p.nivelInicial&&p.sesionEnCurso?.items.every(id=>!ejercicioGuiado(id)?.fuente);
-  if (p.sesionEnCurso && !demostracion && (!p.sesionEnCurso.terminada || p.sesionEnCurso.dia === dia)) return p;
+  // Resume only unfinished work. A completed session must not lock the user
+  // out for the rest of the day; scheduling below still protects future reviews.
+  if (p.sesionEnCurso && !demostracion && !p.sesionEnCurso.terminada) return p;
   const banco = BANCO_ENTRENAMIENTO.filter(e => e.actividad === p.actividad);
   const repasos = banco.filter(e => { const practica = p.ejercicios[e.id]?.practica; return (!p.nivelInicial||!!e.fuente)&&!!practica?.proxima && practica.proxima <= dia; }).sort((a, b) => (p.ejercicios[a.id]?.practica?.proxima ?? "").localeCompare(p.ejercicios[b.id]?.practica?.proxima ?? ""));
   const nivel=nivelEntrenamiento(p);

@@ -26,7 +26,7 @@ test('Sesiónlimitada priorizarepasos, comienzafácil y noreseteaunasesión empe
  let p=prepararSesionGuiada(progresoGuiadoInicial(),dia1);assert.deepEqual(p.sesionEnCurso.items,['t-01','t-02']);assert.strictEqual(prepararSesionGuiada(p,dia2),p);
  const x={...p,sesionEnCurso:null,ejercicios:{}};for(let i=0;i<6;i++)x.ejercicios['t-0'+(i+1)]={practica:registrarPractica(undefined,true,false,new Date('2026-10-12T15:00:00Z')),actualizada:'2026-10-12T15:00:00.000Z'};
  const s=prepararSesionGuiada(x,dia1);assert.equal(s.sesionEnCurso.items.length,5);
- const cerrado={...p,sesionEnCurso:{...p.sesionEnCurso,terminada:true}};assert.strictEqual(prepararSesionGuiada(cerrado,dia1),cerrado);
+ const cerrado={...p,sesionEnCurso:{...p.sesionEnCurso,terminada:true}};assert.equal(prepararSesionGuiada(cerrado,dia1).sesionEnCurso.terminada,false);
 });
 test('Error/pistaquedapegadoaldía inclusoJSON/reload yfallonoaceleralosintervalos',()=>{
  let p=registrarResultadoGuiado(progresoGuiadoInicial(),'t-01',false,false,dia1);p=leerProgresoGuiado(JSON.stringify(p));p=registrarResultadoGuiado(p,'t-01',true,false,dia1);assert.equal(p.ejercicios['t-01'].practica.aciertos,0);assert.equal(p.ejercicios['t-01'].practica.proxima,'2026-10-15');
