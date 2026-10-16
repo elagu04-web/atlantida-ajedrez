@@ -1,5 +1,6 @@
 "use client";
 import {useId,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import {useAuth} from '@/context/AuthContext';
 type Modo='entrar'|'crear'|'correo'|'configurar';
 export function AuthWidget(){
@@ -32,7 +33,7 @@ export function AuthWidget(){
  if(cargando)return <span className="text-xs text-zinc-400">Conectando…</span>;
  return <>
   {session?<div className="flex min-w-0 flex-wrap items-center gap-2 text-xs"><button type="button" onClick={()=>abrir('configurar')} className="max-w-48 truncate rounded-lg px-2 py-2 text-zinc-200 hover:bg-white/10" title="Configurar usuario y contraseña">{nombreCuenta} <span className="text-blue-300">· Mi acceso</span></button><button type="button" onClick={()=>void cerrarSesion()} className="rounded-lg border border-white/20 px-3 py-2 hover:bg-white/10">Cerrar sesión</button></div>:<button type="button" onClick={()=>abrir('entrar')} className="rounded-lg border border-white/15 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10">Iniciar sesión</button>}
-  <dialog ref={dialogo} aria-labelledby={`${id}-titulo`} onCancel={e=>{if(enviando)e.preventDefault();else cerrar();}} onClick={e=>{if(e.target===e.currentTarget)cerrar();}} className="m-auto max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-zinc-900 p-6 text-zinc-100 shadow-2xl backdrop:bg-black/75">
+  {typeof document!=='undefined'&&createPortal(<dialog ref={dialogo} aria-labelledby={`${id}-titulo`} onCancel={e=>{if(enviando)e.preventDefault();else cerrar();}} onClick={e=>{if(e.target===e.currentTarget)cerrar();}} className="m-auto max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-zinc-900 p-6 text-zinc-100 shadow-2xl backdrop:bg-black/75">
    <div className="mb-2 flex items-center justify-between gap-3"><h2 id={`${id}-titulo`} className="text-xl font-semibold">{configurar?'Tu acceso al club':alta?'Creá tu cuenta':'Qué bueno verte de nuevo'}</h2><button type="button" disabled={enviando} onClick={cerrar} aria-label="Cerrar inicio de sesión" className="rounded-lg px-3 py-2 hover:bg-white/10">✕</button></div>
    <p className="mb-5 text-sm leading-relaxed text-zinc-400">{configurar?'Agregá usuario y contraseña a esta misma cuenta. Conservás todas tus partidas y tu progreso.':alta?'Elegí un usuario y guardá tu progreso. No necesitás correo.':'Tus partidas, tus desafíos y tu entrenamiento, en la misma cuenta.'}</p>
    {!configurar&&<div className="mb-5 flex gap-2" aria-label="Tipo de acceso">{(['entrar','crear'] as const).map(m=><button key={m} disabled={enviando} type="button" aria-pressed={modo===m} onClick={()=>cambiar(m)} className={`flex-1 rounded-xl px-3 py-2 text-sm ${modo===m?'bg-blue-600 text-white':'border border-white/15 text-zinc-300'}`}>{m==='entrar'?'Entrar':'Crear cuenta'}</button>)}</div>}
@@ -50,6 +51,6 @@ export function AuthWidget(){
    </form>
    {!configurar&&<><div className="my-4 flex items-center gap-3 text-xs text-zinc-500"><span className="h-px flex-1 bg-white/10"/>o<span className="h-px flex-1 bg-white/10"/></div><button type="button" disabled={enviando} onClick={()=>void iniciarSesionConGoogle()} className="w-full rounded-xl border border-white/20 px-4 py-3 text-sm font-medium hover:bg-white/10">Continuar con Google</button><button type="button" disabled={enviando} onClick={()=>cambiar(modo==='correo'?'entrar':'correo')} className="mt-3 w-full py-2 text-xs text-zinc-400 hover:text-white">{modo==='correo'?'Usar mi nombre de usuario':'Ya tengo acceso con correo'}</button></>}
    <a href="https://wa.me/59899861116?text=Hola%2C%20necesito%20ayuda%20para%20entrar%20a%20mi%20cuenta." target="_blank" rel="noopener noreferrer" className="mt-3 block text-center text-xs text-zinc-400 hover:text-white">¿Necesitás ayuda para entrar? Escribinos.</a>
-  </dialog>
+  </dialog>,document.body)}
  </>;
 }
