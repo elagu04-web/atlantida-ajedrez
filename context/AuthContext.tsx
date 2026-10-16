@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { accesoUsuario, nombreCuentaVisible } from "@/lib/accesoUsuario";
 import { useAvisos } from "./AvisosContext";
 
 // Único admin real del sitio. Cualquier otra sesión iniciada (por ejemplo,
@@ -14,6 +15,11 @@ const EMAIL_ADMIN = "elagu04@gmail.com";
 type AuthContextType = {
   session: Session | null;
   esAdmin: boolean;
+  usuarioInterno: string | null;
+  nombreCuenta: string;
+  entrarConUsuario: (usuario:string,password:string) => Promise<void>;
+  crearCuentaInterna: (usuario:string,password:string,nombre:string) => Promise<void>;
+  guardarAccesoInterno: (usuario:string,password:string) => Promise<void>;
   cargando: boolean;
   iniciarSesion: (email: string, password: string) => Promise<string | null>;
   iniciarSesionConGoogle: () => Promise<void>;
@@ -26,6 +32,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [cargando, setCargando] = useState(true);
   const avisar = useAvisos();
+  const [acceso, setAcceso] = useState<{id:string;usuario:string|null}|null>(null);
+  const usuarioInterno = acceso?.id===session?.user.id ? acceso?.usuario??null : null;
+  const idUsuario = session?.user.id;
+  useEffect(() => {
+    if(!idUsuario)return;
+    let vigente=true;
+    void accesoUsuario('info').then(d=>{if(vigente)setAcceso({id:idUsuario,usuario:d.usuario??null});}).catch(()=>{});
+    return ()=>{vigente=false;};
+  },[idUsuario]);
+
+  async function autenticar(accion:'entrar'|'crear',usuario:string,password:string,nombre='') {
+    const datos=await accesoUsuario(accion,{usuario,password,nombre});
+    if(!datos.session)throw new Error('No se confirmó la sesión. Volvé a entrar.');
+    const {data,error}=await supabase.auth.setSession(datos.session);
+    if(error||!data.user)throw new Error('No se confirmó la sesión. Volvé a entrar.');
+    setAcceso({id:data.user.id,usuario:usuario.trim().toLowerCase()});
+  }
+  async function guardarAccesoInterno(usuario:string,password:string){
+    const datos=await accesoUsuario('configurar',{usuario,password});
+    if(session&&datos.usuario)setAcceso({id:session.user.id,usuario:datos.usuario});
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -65,7 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, esAdmin, cargando, iniciarSesion, iniciarSesionConGoogle, cerrarSesion }}
+      value={{ session, esAdmin, cargando, iniciarSesion, iniciarSesionConGoogle, cerrarSesion,
+        usuarioInterno, nombreCuenta:session?nombreCuentaVisible(session.user,usuarioInterno):'',
+        entrarConUsuario:(u,p)=>autenticar('entrar',u,p),crearCuentaInterna:(u,p,n)=>autenticar('crear',u,p,n),guardarAccesoInterno }}
     >
       {children}
     </AuthContext.Provider>
