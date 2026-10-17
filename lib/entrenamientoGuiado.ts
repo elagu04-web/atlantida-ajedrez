@@ -7,6 +7,7 @@ import { TEMAS_TACTICOS } from "./temasTacticos";
 import { analizarTemas, elegirNuevosTematicos, observarTema, perfilTemaAnterior, perfilTemaValido, combinarPerfilTema, type PerfilTemaEjercicio, type OrigenIntentoTactico } from "./entrenamientoTemas";
 import bancoLichess from "../data/entrenamiento-lichess.json";
 import bancoDecisiones from "../data/entrenamiento-decisiones.json";
+import { nuevosSegunPareto } from "./entrenamientoPareto";
 
 export type ActividadGuiada = "tactica" | "candidatas" | "evaluacion";
 export type RutaGuiada = "base" | "club" | "competencia";
@@ -122,7 +123,7 @@ export function combinarProgresoGuiado(a: ProgresoGuiado, b: ProgresoGuiado): Pr
   if(pa.aperturas||pb.aperturas)resultado.aperturas=combinarRepertorios(pa.aperturas,pb.aperturas);
   return { ...resultado, ruta: ruta.ruta, rutaActualizada: ruta.rutaActualizada, actividad: actividad.actividad, actividadActualizada: actividad.actividadActualizada, sesionEnCurso: sesion.sesionEnCurso, sesionActualizada: sesion.sesionActualizada };
 }
-export function prepararSesionGuiada(p: ProgresoGuiado, ahora = new Date()): ProgresoGuiado {
+export function prepararSesionGuiada(p: ProgresoGuiado, ahora = new Date(), temasPartidas: readonly string[] = []): ProgresoGuiado {
   const dia = fechaMontevideo(ahora), reloj = ahora.toISOString();
   const demostracion=p.nivelInicial&&p.sesionEnCurso?.items.every(id=>!ejercicioGuiado(id)?.fuente);
   // Resume only unfinished work. A completed session must not lock the user
@@ -132,7 +133,7 @@ export function prepararSesionGuiada(p: ProgresoGuiado, ahora = new Date()): Pro
   const repasos = banco.filter(e => { const practica = p.ejercicios[e.id]?.practica; return (!p.nivelInicial||!!e.fuente)&&!!practica?.proxima && practica.proxima <= dia; }).sort((a, b) => (p.ejercicios[a.id]?.practica?.proxima ?? "").localeCompare(p.ejercicios[b.id]?.practica?.proxima ?? ""));
   const nivel=nivelEntrenamiento(p);
   const nuevos = banco.filter(e => !p.ejercicios[e.id]?.practica && (p.nivelInicial ? !!e.fuente : !e.fuente)).sort((a, b) => p.nivelInicial ? Math.abs((a.rating??nivel)-nivel)-Math.abs((b.rating??nivel)-nivel)||a.orden-b.orden : a.orden-b.orden);
-  const elegidos=p.actividad==="tactica"?elegirNuevosTematicos(nuevos,resumenTemasGuiado(p),nivel,Math.floor(Object.values(p.ejercicios).filter(a=>a.primerResultado).length/2)):nuevos.slice(0,2);
+  const elegidos=nuevosSegunPareto(nuevos,nivel,temasPartidas)??(p.actividad==="tactica"?elegirNuevosTematicos(nuevos,resumenTemasGuiado(p),nivel,Math.floor(Object.values(p.ejercicios).filter(a=>a.primerResultado).length/2)):nuevos.slice(0,2));
   const items = [...repasos.slice(0, 5), ...elegidos].map(e => e.id);
   if (!items.length) return { ...p, sesionEnCurso: null, sesionActualizada: reloj };
   const ejercicios = { ...p.ejercicios };

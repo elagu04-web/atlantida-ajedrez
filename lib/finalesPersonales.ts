@@ -72,6 +72,15 @@ export function finalesDePartidas(sesiones: SesionEntrenamiento[]): FinalDeParti
   }).sort((a, b) => Number(b.errorDetectado) - Number(a.errorDetectado) || b.sesion.creada.localeCompare(a.sesion.creada) || a.indice - b.indice);
 }
 
+/** Open the exact personal decision recommended by the training focus, even
+ * when it falls outside the four default suggestions for that game. */
+export function finalDePosicion(s: SesionEntrenamiento, indice: number): FinalDePartida | null {
+  const j = s.resultado.jugadas[indice];
+  if (!Number.isInteger(indice) || !j || j.color !== s.color) return null;
+  const familia = familiaFinal(j.fenAntes);
+  return familia ? { id: `${s.id}:${indice}`, sesion: s, indice, fen: j.fenAntes, familia, errorDetectado: j.perdidaCentipeones >= 100 } : null;
+}
+
 export function posicionFinal(estado: Pick<EstadoFinalPersonal, "fen" | "ruta">): Chess {
   const c = new Chess(estado.fen);
   for (const uci of estado.ruta) c.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });

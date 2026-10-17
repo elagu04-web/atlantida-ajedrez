@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { MotorEntrenamiento } from "@/lib/motorEntrenamiento";
-import { compararDecisionFinal, finalesDePartidas, PLANES_FINALES, posicionFinal, resultadoFinal, type EstadoFinalPersonal, type FinalDePartida, type PlanFinal } from "@/lib/finalesPersonales";
+import { compararDecisionFinal, finalesDePartidas, finalDePosicion, PLANES_FINALES, posicionFinal, resultadoFinal, type EstadoFinalPersonal, type FinalDePartida, type PlanFinal } from "@/lib/finalesPersonales";
 import { registrarPractica, type SesionEntrenamiento } from "@/lib/entrenamientoPersonal";
 import { fechaMontevideo } from "@/lib/desafios";
 import { sanPractica } from "@/lib/partidaPractica";
@@ -11,12 +11,17 @@ import { moverUci, uciApertura } from "@/lib/entrenamientoAperturas";
 import { TableroApertura } from "./TableroApertura";
 import styles from "./FinalesPersonales.module.css";
 
-export function FinalesPersonales({ sesiones, alGuardar, alCargar, alRevisar }: {
+export function FinalesPersonales({ sesiones, posicionInicial, alGuardar, alCargar, alRevisar }: {
   sesiones: SesionEntrenamiento[]; alGuardar: (sesion: SesionEntrenamiento) => void;
+  posicionInicial?: {sesion:string;indice:number} | null;
   alCargar: () => void; alRevisar: (s: SesionEntrenamiento) => void;
 }) {
-  const finales = useMemo(() => finalesDePartidas(sesiones), [sesiones]);
-  const [seleccion, setSeleccion] = useState<string | null>(null);
+  const finales = useMemo(() => {
+    const lista = finalesDePartidas(sesiones), s = sesiones.find(s => s.id === posicionInicial?.sesion);
+    const solicitada = s && posicionInicial ? finalDePosicion(s,posicionInicial.indice) : null;
+    return solicitada && !lista.some(e=>e.id===solicitada.id) ? [solicitada,...lista] : lista;
+  }, [sesiones,posicionInicial]);
+  const [seleccion, setSeleccion] = useState<string | null>(posicionInicial?`${posicionInicial.sesion}:${posicionInicial.indice}`:null);
   const [filtro, setFiltro] = useState("todos");
   const dia = fechaMontevideo(new Date());
   const visibles = finales.filter(e => filtro === "todos" || (filtro === "errores" ? e.errorDetectado :
