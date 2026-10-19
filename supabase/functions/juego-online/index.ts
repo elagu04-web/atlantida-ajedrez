@@ -31,11 +31,13 @@ Deno.serve(async(req:Request)=>{
   if(b.accion==='crear'){
    if(fila){if(fila.creador_id!==user.id)return respuesta({error:'Esta mesa no está disponible.'},409);return respuesta({partida:fila,ahora});}
    if(!['10+3','5+3','3+2'].includes(b.ritmo))return respuesta({error:'Elegí 10+3, 5+3 o 3+2.'},400);
+   if(b.porElo!==undefined&&typeof b.porElo!=='boolean')return respuesta({error:'Elegí amistosa o por Elo.'},400);
    const {data:puede}=await db.rpc('limitar_acceso_usuario',{p_clave:'online-crear:'+user.id,p_max:15,p_segundos:3600});
    if(!puede)return respuesta({error:'Llegaste al límite de mesas por hora. Volvé más tarde.'},429);
-   await db.from('online_partidas').update({estado:{...crearEstadoOnline('10+3','w',nombre),fase:'cancelada',motivo:'Invitación vencida'},actualizada:new Date(ahora).toISOString()}).eq('creador_id',user.id).eq('estado->>fase','espera').lt('expira',new Date(ahora).toISOString());
+   const {data:vencida}=await db.from('online_partidas').select('*').eq('creador_id',user.id).eq('estado->>fase','espera').lt('expira',new Date(ahora).toISOString()).maybeSingle();
+   if(vencida)await db.from('online_partidas').update({estado:{...vencida.estado,fase:'cancelada',motivo:'Invitación vencida'},actualizada:new Date(ahora).toISOString()}).eq('id',vencida.id).eq('version',vencida.version);
    const color=b.color==='w'||b.color==='b'?b.color:crypto.getRandomValues(new Uint8Array(1))[0]%2?'w':'b';
-   const {data,error}=await db.from('online_partidas').insert({id:b.id,creador_id:user.id,estado:crearEstadoOnline(b.ritmo as RitmoOnline,color,nombre)}).select().single();
+   const {data,error}=await db.from('online_partidas').insert({id:b.id,creador_id:user.id,estado:crearEstadoOnline(b.ritmo as RitmoOnline,color,nombre,b.porElo===true)}).select().single();
    if(error)return respuesta({error:error.code==='23505'?'Ya tenés una invitación abierta. Entrá a tu mesa o cancelala.':'No se pudo crear la mesa.'},409);
    return respuesta({partida:data,ahora});
   }
@@ -44,6 +46,7 @@ Deno.serve(async(req:Request)=>{
   if(b.accion==='unirse'){
    if(esParticipante)return respuesta({partida:p,ahora});
    if(p.estado.fase!=='espera'||Date.parse(p.expira)<=ahora)return respuesta({error:'La invitación ya venció o alguien ocupó la mesa.'},409);
+   if(p.estado.porElo&&b.aceptaElo!==true)return respuesta({error:'Esta mesa es por Elo. Confirmá la modalidad antes de entrar.'},400);
    const estado=unirEstadoOnline(p.estado,nombre,ahora);
    const {data,error}=await db.from('online_partidas').update({rival_id:user.id,estado,version:p.version+1,actualizada:new Date(ahora).toISOString()}).eq('id',p.id).eq('version',p.version).is('rival_id',null).select().maybeSingle();
    if(error)return respuesta({error:'No se pudo entrar a la mesa.'},503);

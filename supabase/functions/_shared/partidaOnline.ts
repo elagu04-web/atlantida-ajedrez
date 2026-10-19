@@ -3,6 +3,7 @@ import {Chess, type Color} from 'chess.js';
 export const RITMOS_ONLINE = {'10+3':{minutos:10,incremento:3},'5+3':{minutos:5,incremento:3},'3+2':{minutos:3,incremento:2}} as const;
 export type RitmoOnline=keyof typeof RITMOS_ONLINE;
 export type EstadoOnline={
+ porElo?:boolean;eloCreador?:number;eloInicio?:{w:number;b:number};elo?:{w:{antes:number;despues:number;variacion:number};b:{antes:number;despues:number;variacion:number}};
  fase:'espera'|'activa'|'terminada'|'cancelada';ritmo:RitmoOnline;colorCreador:Color;
  blancas:string;negras:string;fen:string;movimientos:string[];pgn:string;turno:Color;
  blancasMs:number;negrasMs:number;desde:number|null;oferta:Color|null;
@@ -14,9 +15,9 @@ export function colorOnline(p:PartidaOnline,usuario:string):Color|null{
  if(usuario===p.creador_id)return p.estado.colorCreador;
  if(usuario===p.rival_id)return p.estado.colorCreador==='w'?'b':'w';return null;
 }
-export function crearEstadoOnline(ritmo:RitmoOnline,color:Color,nombre:string):EstadoOnline{
+export function crearEstadoOnline(ritmo:RitmoOnline,color:Color,nombre:string,porElo=false):EstadoOnline{
  if(!Object.hasOwn(RITMOS_ONLINE,ritmo))throw Error('Elegí un ritmo disponible.');
- return {fase:'espera',ritmo,colorCreador:color,blancas:color==='w'?nombre:'Por confirmar',negras:color==='b'?nombre:'Por confirmar',fen:new Chess().fen(),movimientos:[],pgn:'',turno:'w',blancasMs:RITMOS_ONLINE[ritmo].minutos*60000,negrasMs:RITMOS_ONLINE[ritmo].minutos*60000,desde:null,oferta:null,resultado:'*',motivo:''};
+ return {porElo,fase:'espera',ritmo,colorCreador:color,blancas:color==='w'?nombre:'Por confirmar',negras:color==='b'?nombre:'Por confirmar',fen:new Chess().fen(),movimientos:[],pgn:'',turno:'w',blancasMs:RITMOS_ONLINE[ritmo].minutos*60000,negrasMs:RITMOS_ONLINE[ritmo].minutos*60000,desde:null,oferta:null,resultado:'*',motivo:''};
 }
 export function unirEstadoOnline(e:EstadoOnline,nombre:string,ahora:number):EstadoOnline{
  if(e.fase!=='espera')throw Error('Esta mesa ya no está disponible.');
@@ -29,7 +30,7 @@ export function relojesOnline(e:EstadoOnline,ahora:number){
 }
 function finalizar(e:EstadoOnline,resultado:EstadoOnline['resultado'],motivo:string,c:Chess,ahora:number):EstadoOnline{
  const relojes=relojesOnline(e,ahora);
- c.setHeader('Event','Atlántida · Partida online');c.setHeader('Site','https://atlantida-ajedrez.vercel.app/jugar/online');
+ c.setHeader('Event',e.porElo?'Atlántida · Online por Elo':'Atlántida · Partida online');c.setHeader('Site','https://atlantida-ajedrez.vercel.app/jugar/online');
  c.setHeader('Date',new Date(ahora).toISOString().slice(0,10).replaceAll('-','.'));
  c.setHeader('White',e.blancas);c.setHeader('Black',e.negras);c.setHeader('Result',resultado);
  const r=RITMOS_ONLINE[e.ritmo];c.setHeader('TimeControl',`${r.minutos*60}+${r.incremento}`);c.setHeader('Termination',motivo);
