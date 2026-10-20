@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icono } from "./Icono";
 import { fechaNoticia, minutosNoticia, type Noticia } from "@/lib/noticias";
+import styles from "./NoticiasClub.module.css";
 
-export function CarruselNoticias({noticias,portada=false}:{noticias:Noticia[];portada?:boolean}) {
+export function CarruselNoticias({noticias,portada=false,titulo}:{noticias:Noticia[];portada?:boolean;titulo?:string}) {
   const id=useId();
   const pista=useRef<HTMLDivElement>(null);
   const arrastre=useRef<{id:number;tipo:"pointer"|"touch";x:number;y:number;distancia:number;activo:boolean;paso:number;ultimoX:number;tiempo:number;velocidad:number}|null>(null);
@@ -87,11 +88,12 @@ export function CarruselNoticias({noticias,portada=false}:{noticias:Noticia[];po
     };
   },[cantidad,iniciar,mover,terminar]);
   if(!cantidad)return null;
-  return <section id={portada?"noticias":undefined} className="news-carousel" data-unica={cantidad===1} aria-labelledby={`${id}-titulo`}>
+  return <section id={portada?"noticias":undefined} className={`news-carousel ${styles.carrusel}`} data-unica={cantidad===1} aria-labelledby={`${id}-titulo`}>
     <div className="news-heading">
-      <div><p className="eyebrow news-eyebrow"><span/>Noticias de Atlántida</p><h2 id={`${id}-titulo`}>{portada?"Fuera del tablero.":"Las últimas del club."}</h2><p className="news-description">Los logros, las novedades y la vida del club, en primera fila.</p></div>
+      <div><p className="eyebrow news-eyebrow"><span/>Noticias de Atlántida</p><h2 id={`${id}-titulo`}>{titulo??(portada?"Fuera del tablero.":"Seguí leyendo.")}</h2><p className="news-description">Los logros, las novedades y la vida del club, en primera fila.</p></div>
       {portada&&<div className="news-heading-actions"><Link href="/noticias" className="text-link">Todas las noticias<Icono nombre="flecha" className="h-4 w-4"/></Link></div>}
     </div>
+    <div className="news-bottom"><p>{cantidad>1?"Deslizá o tocá una tarjeta lateral. Abrí la noticia del centro.":"Las historias del club, en primera fila."}</p><div className="news-pagination">{cantidad>1&&<button type="button" className="icon-button news-step" aria-label="Noticia anterior" aria-controls={`${id}-pista`} onClick={()=>irA(actual-1)}><Icono nombre="flecha" className="h-4 w-4 rotate-180"/></button>}<div className="news-position"><span className="news-counter">{String(actual+1).padStart(2,"0")}<span> / {String(cantidad).padStart(2,"0")}</span></span>{cantidad>1&&<div className="news-dots" role="group" aria-label="Elegir noticia">{noticias.map((noticia,indice)=><button type="button" key={noticia.slug} aria-label={`Ver noticia ${indice+1}: ${noticia.titulo}`} aria-pressed={indice===actual} onClick={()=>irA(indice)}/>)}</div>}</div>{cantidad>1&&<button type="button" className="icon-button news-step" aria-label="Noticia siguiente" aria-controls={`${id}-pista`} onClick={()=>irA(actual+1)}><Icono nombre="flecha" className="h-4 w-4"/></button>}</div></div>
     <div id={`${id}-pista`} ref={pista} className="news-track" role="region" aria-roledescription="carrusel" aria-label="Fotos y noticias del club" tabIndex={cantidad>1?0:undefined}
       onKeyDown={e=>{
         if(cantidad<2)return;
@@ -122,7 +124,7 @@ export function CarruselNoticias({noticias,portada=false}:{noticias:Noticia[];po
         </article>;
       })}
     </div>
-    <div className="news-bottom"><p>{cantidad>1?"Deslizá o tocá una tarjeta lateral. Abrí la noticia del centro.":"Las historias del club, en primera fila."}</p><div className="news-pagination">{cantidad>1&&<button type="button" className="icon-button news-step" aria-label="Noticia anterior" aria-controls={`${id}-pista`} onClick={()=>irA(actual-1)}><Icono nombre="flecha" className="h-4 w-4 rotate-180"/></button>}<div className="news-position"><span className="news-counter">{String(actual+1).padStart(2,"0")}<span> / {String(cantidad).padStart(2,"0")}</span></span>{cantidad>1&&<div className="news-dots" role="group" aria-label="Elegir noticia">{noticias.map((noticia,indice)=><button type="button" key={noticia.slug} aria-label={`Ver noticia ${indice+1}: ${noticia.titulo}`} aria-pressed={indice===actual} onClick={()=>irA(indice)}/>)}</div>}</div>{cantidad>1&&<button type="button" className="icon-button news-step" aria-label="Noticia siguiente" aria-controls={`${id}-pista`} onClick={()=>irA(actual+1)}><Icono nombre="flecha" className="h-4 w-4"/></button>}</div></div>
+    <p className={styles.ayuda}>{cantidad>1?"Deslizá las fotos o usá las flechas. Abrí la noticia del centro para leer.":"Abrí la foto para leer la historia completa."}</p>
     <p className="sr-only" aria-live="polite" aria-atomic="true">Noticia {actual+1} de {cantidad}: {noticias[actual].titulo}</p>
   </section>;
 }
