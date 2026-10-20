@@ -11,7 +11,7 @@
 .ruta { stroke: #b4cba55c; stroke-width: 1.5; stroke-dasharray: 218; stroke-dashoffset: 0; animation: recorrido 3.5s both ease-in-out; }
 .origen { fill: #a9c8e9; }
 .destino { stroke: #e8c989; stroke-width: 1; opacity: .8; animation: destino 3.5s both; }
-.caballo { position: absolute; width: 30px; height: 30px; transform: translate(117px,45px); filter: drop-shadow(0 4px 5px #0006); animation: saltos 3.5s both cubic-bezier(.22,1,.36,1); }
+.caballo { position: absolute; left: 0; top: 0; width: 30px; height: 30px; transform: translate(117px,45px); filter: drop-shadow(0 4px 5px #0006); animation: saltos 3.5s both cubic-bezier(.22,1,.36,1); }
 .caballo svg { width: 100%; height: 100%; }
 .repetir { position: absolute; right: 5px; bottom: 3px; color: #a9c8e9; font-size: 16px; transform: rotate(12deg); }
 .portada :global(.home-welcome .button-primary) { position: relative; overflow: hidden; }
@@ -43,7 +43,7 @@
 @media (max-width:1000px) and (min-width:768px) { .grafica { display: none; } }
 @media (max-width:767px) {
   .portada :global(.home-welcome .hero-copy .eyebrow) { max-width: calc(100% - 55px); }
-  .grafica { width: 70px; height: 70px; right: 12px; top: 9px; transform: rotate(-12deg); opacity: .5; z-index: 2; }
+  .grafica { width: 70px; height: 70px; right: 12px; top: 9px; transform: rotate(-12deg); opacity: .65; z-index: 2; }
   .escena { transform: scale(.364583); }
   .repetir { font-size: 12px; right: -1px; bottom: -3px; }
 }
