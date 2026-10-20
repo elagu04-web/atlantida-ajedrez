@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { URL_SITIO, NOMBRE_SITIO, DESCRIPCION_SITIO, IMAGEN_SITIO } from "@/lib/seo";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -12,6 +12,7 @@ import { EpicoJugadoresProvider } from "@/context/EpicoJugadoresContext";
 import { EpicoTorneosProvider } from "@/context/EpicoTorneosContext";
 import { AvisosProvider } from "@/context/AvisosContext";
 import { ChromeDelSitio } from "@/components/ChromeDelSitio";
+import { InstalacionProvider } from "@/context/InstalacionContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,11 +27,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(URL_SITIO),
   applicationName: NOMBRE_SITIO,
+  appleWebApp: {capable:true,title:"Atlántida",statusBarStyle:"default"},
+  icons: {apple:[{url:"/app-icons/apple-touch-icon.png",sizes:"180x180",type:"image/png"}]},
   title: NOMBRE_SITIO,
   description: DESCRIPCION_SITIO,
   openGraph: { type:"website",siteName:NOMBRE_SITIO,locale:"es_UY",title:NOMBRE_SITIO,description:DESCRIPCION_SITIO,images:[{url:IMAGEN_SITIO,alt:NOMBRE_SITIO}] },
   verification: {google:process.env.GOOGLE_SITE_VERIFICATION || "jE79xHEiUAKsw4MQ2Bqe8_zhs6gpsifkaeGIdr4WqGs"},
 };
+
+export const viewport:Viewport={themeColor:'#080f1b'};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -47,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   <ColegioTorneosProvider>
                     <EpicoJugadoresProvider>
                       <EpicoTorneosProvider>
-                        <ChromeDelSitio>{children}</ChromeDelSitio>
+                        <InstalacionProvider><ChromeDelSitio>{children}</ChromeDelSitio></InstalacionProvider>
                       </EpicoTorneosProvider>
                     </EpicoJugadoresProvider>
                   </ColegioTorneosProvider>
