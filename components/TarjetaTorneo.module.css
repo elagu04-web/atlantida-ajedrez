@@ -1,0 +1,32 @@
+.conFoto {
+  isolation: isolate;
+  background: #10233b;
+  border-color: #8aafdf26;
+}
+.fondo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.foto {
+  object-fit: cover;
+  object-position: 50% 55%;
+  filter: blur(2.5px) saturate(.55);
+  transform: scale(1.04);
+}
+.fondo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, #0b1b30f0 0%, #0e223bcf 55%, #122b48bd 100%), linear-gradient(0deg, #0c1a2df2, transparent 70%);
+}
+.conFoto :global(.text-zinc-400) { color: #becbdf; }
+.conFoto :global(.status-badge) { background-color: #122b45e6; }
+.conFoto :global(.text-zinc-500) { color: #9eb3cc; }
+@media (max-width:767px) {
+  .foto { object-position: 50% 56%; }
+  .fondo::after { background: linear-gradient(110deg, #0b1b30ed, #102942b8), linear-gradient(0deg, #0c1a2df5, transparent 80%); }
+}

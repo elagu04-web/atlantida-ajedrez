@@ -1,15 +1,18 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import type { Torneo } from "@/lib/tournaments";
 import { rondaActualDelTorneo, standingsConDesempates } from "@/lib/tournaments";
 import { Icono } from "./Icono";
+import styles from "./TarjetaTorneo.module.css";
 
-export function TarjetaTorneo({ torneo, nombreJugador, accion }: { torneo: Torneo; nombreJugador: (id: string) => string; accion?: React.ReactNode }) {
+export function TarjetaTorneo({ torneo, nombreJugador, accion, fotoFondo }: { torneo: Torneo; nombreJugador: (id: string) => string; accion?: React.ReactNode; fotoFondo?: string }) {
   const ronda = rondaActualDelTorneo(torneo);
   const huboJuego = torneo.rondas.some(r => r.emparejamientos.some(e => e.negrasId && e.resultado));
   const lider = huboJuego ? standingsConDesempates(torneo)[0] : null;
   const formato = torneo.formato === "round-robin" ? "Round robin" : torneo.formato === "suizo" ? "Sistema suizo" : "Match";
-  return <article className="tournament-card group">
+  return <article className={`tournament-card group${fotoFondo ? ` ${styles.conFoto}` : ""}`}>
+    {fotoFondo && <div className={styles.fondo} aria-hidden="true"><Image src={fotoFondo} alt="" fill sizes="(max-width: 767px) 100vw, (max-width: 1100px) 60vw, 780px" className={styles.foto}/></div>}
     <div className="flex items-start justify-between gap-3"><span className={`status-badge status-${torneo.estado}`}>{torneo.estado === "en_curso" && <span className="live-dot" />}{torneo.estado === "en_curso" ? "En curso" : torneo.estado === "armado" ? "Inscripción abierta" : "Finalizado"}</span><span className="text-right text-xs text-zinc-400">{torneo.iniciadoEn ? "Inicio: " : "Creado: "}{new Date(torneo.iniciadoEn ?? torneo.creadoEn).toLocaleDateString("es-UY",{day:"numeric",month:"short",year:"numeric",timeZone:"America/Montevideo"})}</span></div>
     <Link href={`/torneos/${torneo.id}`} className="card-main-link mt-5 block"><h3 className="text-lg font-semibold leading-snug tracking-tight text-white transition-colors group-hover:text-blue-300">{torneo.nombre}</h3><p className="mt-2 text-xs text-zinc-400">{formato}{torneo.formato === "round-robin" && torneo.idaYVuelta ? " · Ida y vuelta" : ""}</p></Link>
     <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-300"><span className="inline-flex items-center gap-1.5"><Icono nombre="personas" className="h-3.5 w-3.5 text-zinc-500" />{torneo.jugadoresIds.length} jugadores</span>{ronda && <span className="inline-flex items-center gap-1.5"><Icono nombre="reloj" className="h-3.5 w-3.5 text-zinc-500" />Ronda {ronda.numero}{torneo.formato !== "suizo" ? ` de ${torneo.rondas.length}` : ""}</span>}</div>
