@@ -15,6 +15,7 @@ import { AgendaClub } from "@/components/AgendaClub";
 import { MesaEstudioClub } from "@/components/MesaEstudioClub";
 import { PrimeraVisitaClub } from "@/components/PrimeraVisitaClub";
 import { CompartirInvitacion } from "@/components/CompartirInvitacion";
+import { MovimientoPortada, CaballoPortada } from "@/components/MovimientoPortada";
 export function PaginaInicio() {
   const jugadores=useJugadoresEnVivo();
   const {cargando:cargandoJugadores,errorCarga:errorJugadores}=useJugadores();
@@ -28,8 +29,9 @@ export function PaginaInicio() {
   const destacados=recientes.filter(t=>vistaActiva==="todos"||t.estado===vistaActiva).slice(0,3);
   const partidas=torneos.reduce((s,t)=>s+t.rondas.reduce((n,r)=>n+r.emparejamientos.filter(e=>e.negrasId&&e.resultado).length,0),0);
   const nombreJugador=(id:string)=>{const j=jugadores.find(j=>j.id===id);return j?nombreVisible(j):"Jugador";};
-  return <div className="flex flex-col gap-10 sm:gap-14">
+  return <MovimientoPortada>
     <section className="home-hero home-welcome">
+      <CaballoPortada/>
       <div className="hero-copy"><p className="eyebrow text-blue-300">Atlántida, jugada a jugada</p><h1>El ajedrez nos <span>mueve.</span></h1><p className="hero-description">Encontrá tu próximo torneo, seguí al club y jugá desde casa.</p></div>
       <div className="home-welcome-actions"><Link href="#competencia" className="button-primary">Ver torneos<Icono nombre="flecha" className="h-4 w-4"/></Link><Link href="/jugar" className="button-secondary">Jugar contra los bots</Link><p className="home-welcome-note">{cargandoTorneos?"Cargando torneos…":proximos?`${proximos} ${proximos===1?"torneo con inscripción abierta":"torneos con inscripción abierta"}`:enCurso?`${enCurso} ${enCurso===1?"torneo en curso":"torneos en curso"}`:"Nos vemos en el tablero."}</p><Link href="#sumate" className="text-link text-xs">¿Es tu primera vez? Te contamos cómo sumarte →</Link></div>
     </section>
@@ -58,5 +60,5 @@ export function PaginaInicio() {
       {valor:torneos.length,texto:"Torneos registrados",icono:"trofeo"},
       {valor:partidas,texto:"Partidas con historia",icono:"actividad"},
     ].map(m=><div key={m.texto} className="metric"><Icono nombre={m.icono as NombreIcono} className="h-5 w-5 text-blue-300" /><div><p className="metric-value">{cargando?<span className="skeleton inline-block h-7 w-12" />:m.valor}</p><p className="mt-1 text-xs text-zinc-400">{m.texto}</p></div></div>)}</div>
-  </div>;
+  </MovimientoPortada>;
 }

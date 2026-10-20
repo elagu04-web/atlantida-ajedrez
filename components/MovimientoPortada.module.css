@@ -1,0 +1,55 @@
+.portada { min-width: 0; }
+.portada :global(.home-welcome) { position: relative; isolation: isolate; }
+.portada :global(.hero-copy), .portada :global(.home-welcome-actions) { position: relative; z-index: 1; }
+.portada :global(.hero-copy h1 span) { display: inline-block; position: relative; }
+.portada :global(.hero-copy h1 span)::after { content: ""; position: absolute; left: 2%; right: 0; bottom: -.08em; height: 2px; background: linear-gradient(90deg, #b7d3ff, #b7d3ff00); transform-origin: left; animation: subrayar 850ms 200ms both cubic-bezier(.22,1,.36,1); }
+.grafica { position: absolute; width: 160px; height: 160px; right: 330px; top: 50%; transform: translateY(-50%) rotate(-12deg); opacity: .7; z-index: 0; border-radius: 16px; transition: opacity .2s; }
+.grafica:hover, .grafica:focus-visible { opacity: 1; }
+.grafica:focus-visible { outline: 2px solid #b7d3ff; outline-offset: 4px; }
+.escena { position: absolute; width: 192px; height: 192px; left: 0; top: 0; transform: scale(.833333); transform-origin: top left; pointer-events: none; }
+.tablero { position: absolute; inset: 0; width: 192px; height: 192px; color: #88abce12; border: 1px solid #b7d3ff12; border-radius: 12px; }
+.ruta { stroke: #b4cba55c; stroke-width: 1.5; stroke-dasharray: 218; stroke-dashoffset: 0; animation: recorrido 3.5s both ease-in-out; }
+.origen { fill: #a9c8e9; }
+.destino { stroke: #e8c989; stroke-width: 1; opacity: .8; animation: destino 3.5s both; }
+.caballo { position: absolute; width: 30px; height: 30px; transform: translate(117px,45px); filter: drop-shadow(0 4px 5px #0006); animation: saltos 3.5s both cubic-bezier(.22,1,.36,1); }
+.caballo svg { width: 100%; height: 100%; }
+.repetir { position: absolute; right: 5px; bottom: 3px; color: #a9c8e9; font-size: 16px; transform: rotate(12deg); }
+.portada :global(.home-welcome .button-primary) { position: relative; overflow: hidden; }
+.portada :global(.home-welcome .button-primary)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, #ffffff26 50%, transparent 70%); transform: translateX(-120%); animation: luz 950ms 500ms both; pointer-events: none; }
+.portada :global(.button-primary), .portada :global(.button-secondary), .portada :global(.ranking-list a), .portada :global(.broadcast-card), .portada :global(.knight-home-heading .knight-invite-art) { transition: transform .22s ease, border-color .22s ease, background-color .22s ease, box-shadow .22s ease; }
+.portada :global(.button-primary:active), .portada :global(.button-secondary:active) { transform: scale(.97); }
+.portada :global(.text-link svg) { transition: transform .22s ease; }
+@media (hover:hover) and (pointer:fine) {
+  .portada :global(.button-primary:hover), .portada :global(.button-secondary:hover) { transform: translateY(-2px); box-shadow: 0 5px 18px #0002; }
+  .portada :global(.text-link:hover svg) { transform: translateX(3px); }
+  .portada :global(.ranking-list a:hover) { transform: translateX(4px); }
+  .portada :global(.broadcast-card:hover) { transform: translateY(-3px); }
+  .portada :global(.knight-home-heading:hover .knight-invite-art) { transform: translateY(-4px) rotate(-5deg); }
+}
+@keyframes saltos {
+  0%,12% { transform: translate(21px,165px); }
+  22% { transform: translate(28px,134px) scale(1.08); }
+  34%,42% { transform: translate(45px,117px); }
+  52% { transform: translate(53px,87px) scale(1.08); }
+  64%,72% { transform: translate(69px,69px); }
+  82% { transform: translate(96px,43px) scale(1.08); }
+  94%,100% { transform: translate(117px,45px); }
+}
+@keyframes recorrido { 0%,12% { stroke-dashoffset: 218; } 94%,100% { stroke-dashoffset: 0; } }
+@keyframes destino { 0%,75% { opacity: 0; } 100% { opacity: .8; } }
+@keyframes subrayar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes luz { to { transform: translateX(120%); } }
+@media (max-width:1199px) { .grafica { right: 310px; opacity: .3; width: 130px; height: 130px; }.escena { transform: scale(.677083); } }
+@media (max-width:1000px) and (min-width:768px) { .grafica { display: none; } }
+@media (max-width:767px) {
+  .portada :global(.home-welcome .hero-copy .eyebrow) { max-width: calc(100% - 55px); }
+  .grafica { width: 70px; height: 70px; right: 12px; top: 9px; transform: rotate(-12deg); opacity: .5; z-index: 2; }
+  .escena { transform: scale(.364583); }
+  .repetir { font-size: 12px; right: -1px; bottom: -3px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .portada *, .portada *::before, .portada *::after { animation: none !important; transition: none !important; }
+  .portada :global(.hero-copy h1 span)::after { transform: none; }
+  .portada :global(.home-welcome .button-primary)::after { display: none; }
+  .portada :global(.button-primary:hover), .portada :global(.button-secondary:hover), .portada :global(.ranking-list a:hover), .portada :global(.broadcast-card:hover), .portada :global(.knight-home-heading:hover .knight-invite-art), .portada :global(.text-link:hover svg) { transform: none; }
+}
