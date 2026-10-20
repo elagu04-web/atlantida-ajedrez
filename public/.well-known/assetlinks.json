@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "uy.atlantida.ajedrez",
+      "sha256_cert_fingerprints": [
+        "CB:D5:25:45:5D:73:2A:9C:11:FA:5C:31:02:36:98:07:3D:B3:FC:50:B0:99:9F:87:46:CE:61:4C:E1:AB:0A:B9"
+      ]
+    }
+  }
+]

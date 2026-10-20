@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {useInstalacion} from '@/context/InstalacionContext';
 import styles from './InstalarApp.module.css';
+import androidRelease from '@/lib/androidRelease.json';
 
 export function InstalarApp(){
  const {disponible,enApp,instalar}=useInstalacion();
@@ -16,6 +17,7 @@ export function InstalarApp(){
    <div className={styles.acciones}>{enApp?<Link href="/entrenamiento" className="button-primary">Ir a entrenar →</Link>:disponible?<button type="button" className="button-primary" disabled={ocupado} onClick={()=>void pedir()}>{ocupado?'Abriendo instalación…':'Instalar en este dispositivo'}</button>:<a className="button-primary" href="#pasos-instalar">Cómo agregar el ícono ↓</a>}<Link href="/jugar/online" className="button-secondary">Jugar online</Link></div>
    {mensaje&&<p className={styles.mensaje} role="status">{mensaje}</p>}
   </section>
+  {androidRelease.disponible&&<section className={styles.destacado} style={{marginTop:24}} aria-label="Aplicación Android"><div><p className={styles.sello}>Nuevo · Android</p><h2>También podés instalar el APK.</h2><p>La primera versión Android de Atlántida ya está para probar, con las mismas cuentas y el sitio actualizado.</p></div><div className={styles.acciones}><Link href="/android" className="button-primary">Ver la app para Android →</Link></div></section>}
   {!enApp&&<section id="pasos-instalar" className={styles.pasos} aria-label="Pasos de instalación">
    <article><p className={styles.sello}>Android</p><h2>Desde Chrome</h2><ol><li>Abrí esta página en <strong>Chrome</strong>.</li><li>Tocá el menú de <strong>tres puntos ⋮</strong>.</li><li>Elegí <strong>Agregar a pantalla principal</strong> o <strong>Instalar app</strong> y confirmá.</li></ol><p className={styles.nota}>Si aparece el botón «Instalar en este dispositivo» arriba, podés usarlo directamente.</p></article>
    <article><p className={styles.sello}>iPhone / iPad</p><h2>Desde Safari</h2><ol><li>Abrí esta página en <strong>Safari</strong>.</li><li>Tocá <strong>Compartir</strong> (el cuadrado con una flecha hacia arriba; puede estar dentro del menú).</li><li>Elegí <strong>Agregar a inicio</strong> o <strong>Añadir a pantalla de inicio</strong>. Si aparece <strong>Abrir como app web</strong>, dejalo activado y tocá <strong>Agregar</strong>.</li></ol></article>

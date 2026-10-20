@@ -1,0 +1,71 @@
+{
+  "packageId": "uy.atlantida.ajedrez",
+  "host": "atlantida-ajedrez.vercel.app",
+  "name": "Atlántida Ajedrez",
+  "launcherName": "Atlántida",
+  "display": "standalone",
+  "themeColor": "#080F1B",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#080F1B",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://atlantida-ajedrez.vercel.app/app-icons/icon-512.png",
+  "maskableIconUrl": "https://atlantida-ajedrez.vercel.app/app-icons/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "../private/atlantida-release.p12",
+    "alias": "atlantida"
+  },
+  "appVersionName": "0.1.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Jugar online",
+      "shortName": "Jugar",
+      "url": "https://atlantida-ajedrez.vercel.app/jugar/online",
+      "chosenIconUrl": "https://atlantida-ajedrez.vercel.app/app-icons/icon-192.png"
+    },
+    {
+      "name": "Mi entrenamiento",
+      "shortName": "Entrenar",
+      "url": "https://atlantida-ajedrez.vercel.app/entrenamiento",
+      "chosenIconUrl": "https://atlantida-ajedrez.vercel.app/app-icons/icon-192.png"
+    },
+    {
+      "name": "Desafío diario",
+      "shortName": "Desafío",
+      "url": "https://atlantida-ajedrez.vercel.app/desafios",
+      "chosenIconUrl": "https://atlantida-ajedrez.vercel.app/app-icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-1.27.0",
+  "webManifestUrl": "https://atlantida-ajedrez.vercel.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://atlantida-ajedrez.vercel.app/",
+  "minSdkVersion": 26,
+  "orientation": "default",
+  "fingerprints": [
+    {
+      "name": "Firma del APK Android",
+      "value": "CB:D5:25:45:5D:73:2A:9C:11:FA:5C:31:02:36:98:07:3D:B3:FC:50:B0:99:9F:87:46:CE:61:4C:E1:AB:0A:B9"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "0.1.0"
+}

@@ -42,3 +42,14 @@ next-env.d.ts
 
 # Supabase CLI cache
 /supabase/.temp/
+
+# Android build outputs and private signing material
+/mobile/android/.gradle/
+/mobile/android/build/
+/mobile/android/app/build/
+/mobile/android/local.properties
+/mobile/private/
+/mobile/dist/
+*.jks
+*.keystore
+*.p12
