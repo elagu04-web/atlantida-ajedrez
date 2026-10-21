@@ -221,7 +221,7 @@ export default function JugadorPage() {
               className="hidden"
             />
           </div>}
-          <div>
+          <div className="min-w-0 flex-1">
             <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-4xl">
               {nombreVisible(jugador)}
             </h1>
