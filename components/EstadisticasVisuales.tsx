@@ -82,7 +82,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
   const seleccion = jugadorElegido ?? GABI;
   const [repeticion, setRepeticion] = useState(0);
   const [ranking, setRanking] = useState<"rendimiento" | "elo">("rendimiento");
-  const rankingRef = useClasificacionMotion(`${periodo}-${ranking}-${minimo}-${filas.length}`);
+  const rankingRef = useClasificacionMotion(`${periodo}-${ranking}-${minimo}-${filas.map(f => `${f.jugadorId}:${f.partidas}:${f.rendimiento}:${f.variacion}`).join(",")}`);
   const fila = filas.find(f => f.jugadorId === seleccion) ?? filas[0];
   const jugador = jugadores.find(j => j.id === fila?.jugadorId);
   if (!fila || !jugador) return null;
