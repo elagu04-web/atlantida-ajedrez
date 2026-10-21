@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTorneos } from "@/context/TorneosContext";
 import { useJugadores } from "@/context/JugadoresContext";
@@ -19,6 +20,11 @@ import { TorneoDelMate } from "@/components/TorneoDelMate";
 const porcentaje = (valor: number | null) => valor === null ? "—" : `${valor.toFixed(1)}%`;
 const delta = (valor: number) => `${valor>0?"+":""}${valor}`;
 export default function EstadisticasPage() {
+  return <Suspense fallback={<p role="status" className="panel p-5">Cargando estadísticas…</p>}><ContenidoEstadisticas /></Suspense>;
+}
+
+function ContenidoEstadisticas() {
+  const jugadorSolicitado = useSearchParams().get("jugador");
   const motionRef = useEstadisticasMotion();
   const { torneos, cargando: cargandoTorneos, errorCarga } = useTorneos();
   const { jugadores: bases, cargando: cargandoJugadores, errorCarga: errorJugadores } = useJugadores();
@@ -32,7 +38,9 @@ export default function EstadisticasPage() {
   const cargando = cargandoTorneos || cargandoJugadores;
   const grupos = agruparTorneosPorPeriodo(torneos.filter(t=>resumenClub([t]).partidas>0),modo);
   const periodos = [...grupos.keys()].sort().reverse();
-  const activo = periodo && periodos.includes(periodo) ? periodo : periodos[0];
+  const partidasSolicitadas = jugadores.find(j => j.id === jugadorSolicitado)?.partidas;
+  const ultimoPeriodoJugador = partidasSolicitadas ? periodos.find(p => partidasSolicitadas.some(partida => partida.fecha.startsWith(p))) : undefined;
+  const activo = periodo && periodos.includes(periodo) ? periodo : ultimoPeriodoJugador ?? periodos[0];
   const delPeriodo = (activo ? grupos.get(activo) ?? [] : []);
   const resumen = resumenClub(delPeriodo);
   const tabla = calcularTablaGeneral(delPeriodo);
@@ -40,7 +48,7 @@ export default function EstadisticasPage() {
   const ordenadas = [...filas].sort((a,b)=>(orden==="rendimiento" ? (b.rendimiento??0)-(a.rendimiento??0) : orden==="elo" ? b.variacion-a.variacion : orden==="partidas" ? b.partidas-a.partidas : b.puntos-a.puntos) || b.partidas-a.partidas || a.nombre.localeCompare(b.nombre,"es"));
   const elegibles = filas.filter(f=>f.partidas>=minimo);
   const subidas = [...elegibles].filter(f=>f.variacion>0).sort((a,b)=>b.variacion-a.variacion).slice(0,5);
-  const elegido = filas.find(f=>f.jugadorId===jugadorElegido) ?? filas.find(f=>f.jugadorId==="d1c933d4-197b-434a-924c-d404421e02a6") ?? ordenadas[0];
+  const elegido = filas.find(f=>f.jugadorId===(jugadorElegido ?? jugadorSolicitado)) ?? filas.find(f=>f.jugadorId==="d1c933d4-197b-434a-924c-d404421e02a6") ?? ordenadas[0];
   const meses = [...agruparTorneosPorPeriodo(torneos,"mes").keys()].filter(m=>activo && m.slice(0,activo.length)<=activo).sort().slice(-12);
   const ids = comparacion ?? jugadores.filter(j=>j.jugadas>0).slice(0,3).map(j=>j.id);
   const comparados = jugadores.filter(j=>ids.includes(j.id));

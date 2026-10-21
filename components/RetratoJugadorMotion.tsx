@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, type PointerEvent } from "react";
-import s from "./GabiPerfilRetrato.module.css";
+import s from "./RetratoJugadorMotion.module.css";
+import { nombreVisible, type Jugador } from "@/lib/players";
+import { retratoJugador } from "@/lib/retratosJugadores";
 
 /** La fotografía permanece intacta; el movimiento y la luz pertenecen a la interfaz. */
-export function GabiPerfilRetrato() {
+export function RetratoJugadorMotion({ jugador }: { jugador: Pick<Jugador, "id" | "nombre" | "apodo" | "fotoUrl"> }) {
+  const retrato = retratoJugador(jugador);
+  const nombre = nombreVisible(jugador);
+  const [fallo, setFallo] = useState<string | null>(null);
   const [repeticion, setRepeticion] = useState(0);
   function mover(e: PointerEvent<HTMLDivElement>) {
     if (e.pointerType !== "mouse") return;
@@ -23,16 +28,18 @@ export function GabiPerfilRetrato() {
     e.currentTarget.style.setProperty("--light-y", "45%");
   }
   return <>
-    <div key={repeticion} className={s.art} onPointerMove={mover} onPointerLeave={salir}>
+    <div key={repeticion} className={s.art} data-retrato-jugador={jugador.id} onPointerMove={mover} onPointerLeave={salir}>
       <div className={s.light} aria-hidden="true" />
       <div className={s.halo} aria-hidden="true"><i /><i /><i /></div>
       <div className={s.chessGrid} aria-hidden="true" />
       <div className={s.particles} aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <i key={i} style={{ left: `${12 + i * 9}%`, top: `${25 + i % 4 * 17}%`, animationDelay: `${i * 90}ms` }} />)}</div>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className={s.photo} src="/imagenes/gabi-estadisticas-transparente.png" alt="Gabi jugando ajedrez" />
+      {retrato.src && fallo !== retrato.src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className={`${s.photo} ${!retrato.transparente ? s.photoOriginal : ""}`} src={retrato.src} alt={`${nombre} jugando ajedrez`} onError={() => setFallo(retrato.src)} />
+      ) : <div className={s.initials} aria-hidden="true">{nombre.split(/\s+/).slice(0, 2).map(p => p[0]).join("")}</div>}
       <div className={s.frontLight} aria-hidden="true" />
-      <span className={s.caption} aria-hidden="true">GABI <small>ATLÁNTIDA AJEDREZ</small></span>
+      <span className={s.caption} aria-hidden="true">{nombre} <small>ATLÁNTIDA AJEDREZ</small></span>
     </div>
-    <button className={s.replay} onClick={() => setRepeticion(n => n + 1)} aria-label="Repetir efectos del retrato de Gabi">↻ <span>Repetir efectos</span></button>
+    <button className={s.replay} onClick={() => setRepeticion(n => n + 1)} aria-label={`Repetir efectos del retrato de ${nombre}`}>↻ <span>Repetir efectos</span></button>
   </>;
 }

@@ -6,6 +6,7 @@ import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
 import { useAuth } from "@/context/AuthContext";
 import { nombreVisible } from "@/lib/players";
+import { retratoJugador } from "@/lib/retratosJugadores";
 import { ELO_MINIMO, jugoRecientemente, type JugadorEnVivo } from "@/lib/elo";
 import { EncabezadoPagina } from "@/components/EncabezadoPagina";
 import { Icono } from "@/components/Icono";
@@ -376,12 +377,12 @@ export default function JugadoresPage() {
                   <td className="px-4 py-3 text-zinc-400">{posiciones.get(j.id)??"—"}</td>
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/jugadores/${j.id}`} className="flex items-center gap-2 hover:underline">
-                      {j.fotoUrl ? (
+                      {retratoJugador(j).src ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                          src={j.fotoUrl}
+                          src={retratoJugador(j).miniatura!}
                           alt=""
-                          className="h-7 w-7 shrink-0 rounded-full border border-white/10 object-cover"
+                          className="h-7 w-7 shrink-0 rounded-full border border-white/10 bg-[#1a3049] object-cover object-[center_22%]"
                         />
                       ) : (
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-xs font-semibold text-zinc-400">

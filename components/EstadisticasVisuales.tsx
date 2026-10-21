@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import type { JugadorEnVivo } from "@/lib/elo";
 import { nombreVisible } from "@/lib/players";
+import { retratoJugador } from "@/lib/retratosJugadores";
 import { rendimientoPeriodo } from "@/lib/rendimiento";
 import s from "./EstadisticasVisuales.module.css";
 
@@ -11,7 +12,7 @@ const GABI = "d1c933d4-197b-434a-924c-d404421e02a6";
 type Fila = ReturnType<typeof rendimientoPeriodo>;
 const porcentaje = (n: number | null) => n === null ? "—" : `${n.toFixed(1)}%`;
 const cambio = (n: number) => `${n > 0 ? "+" : ""}${n}`;
-function foto(j: JugadorEnVivo) { return j.id === GABI ? "/imagenes/gabi-campeon-20-octubre-2026.jpg" : j.fotoUrl; }
+function foto(j: JugadorEnVivo) { return retratoJugador(j).miniatura; }
 
 export function FotoEstadisticas({ jugador }: { jugador?: JugadorEnVivo }) {
   const [fallo, setFallo] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
   const fila = filas.find(f => f.jugadorId === seleccion) ?? filas[0];
   const jugador = jugadores.find(j => j.id === fila?.jugadorId);
   if (!fila || !jugador) return null;
+  const retrato = retratoJugador(jugador);
   const historial = jugador.partidas.filter(p => p.fecha.startsWith(periodo))
     .map((p, i) => ({ ...p, orden: i })).sort((a, b) => a.fecha.localeCompare(b.fecha) || a.orden - b.orden);
   const puntos = [{ elo: fila.eloInicial, texto: "Inicio del período" }, ...historial.filter(p => p.eloDespues !== undefined).map(p => ({ elo: p.eloDespues!, texto: `${p.fecha} · ${p.resultado} ante ${p.rival} · ${p.torneo}` }))];
@@ -75,9 +77,9 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
       <div className={s.portrait}>
         <div className={s.orbit} aria-hidden="true" /><div className={s.orbitSmall} aria-hidden="true" />
         <span className={s.portraitLabel}>ATLÁNTIDA · {etiqueta}</span>
-        {jugador.id === GABI ?
+        {retrato.transparente && retrato.src ?
           // eslint-disable-next-line @next/next/no-img-element
-          <img className={s.cutout} src="/imagenes/gabi-estadisticas-transparente.png" alt="Gabi jugando ajedrez" /> : foto(jugador) ?
+          <img className={s.cutout} src={retrato.src} alt={`${nombreVisible(jugador)} jugando ajedrez`} /> : foto(jugador) ?
           // eslint-disable-next-line @next/next/no-img-element
           <img className={s.original} src={foto(jugador)!} alt={nombreVisible(jugador)} /> :
           <div className={s.noPortrait}><span>♟</span><p>El próximo movimiento<br />también cuenta.</p></div>}
