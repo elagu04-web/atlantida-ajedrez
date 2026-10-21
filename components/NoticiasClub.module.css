@@ -14,6 +14,8 @@
 .carrusel :global(.news-bottom) { grid-column: 2; grid-row: 1; align-self: end; justify-content: end; margin: 0 0 16px; }
 .carrusel :global(.news-bottom > p) { display: none; }
 .carrusel :global(.news-pagination) { gap: 8px; }
+.carrusel :global(.news-position) { min-width: 0; }
+.carrusel :global(.news-dots) { max-width: 100%; flex-wrap: wrap; justify-content: center; }
 .carrusel :global(.news-counter) { color: #c8dafa; font-size: 10px; }
 .carrusel :global(.news-dots > button) { width: 26px; }
 .carrusel :global(.news-dots > button)::after { left: 5px; right: 5px; height: 2px; }

@@ -11,6 +11,26 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "gabi-campeon-invicto-copa-de-campeones",
+  titulo: "Gabi, campeón invicto y a la Copa de Campeones",
+  tituloTarjeta: "Gabi, campeón con puntaje perfecto",
+  bajada: "Seis triunfos en seis partidas para ganar el torneo del 20 de octubre y clasificarse a la Copa de Campeones de fin de año.",
+  categoria: "Orgullo del club", fecha: "2026-10-21",
+  imagen: "/imagenes/gabi-campeon-20-octubre-2026.jpg",
+  imagenAlt: "Gabi concentrado frente al tablero, moviendo una pieza blanca durante una partida del club",
+  imagenPosicion: "50% 32%", imagenVertical: true, imagenAspecto: "9 / 16", imagenAncho: 720, imagenCalidad: 90, imagenSinCompresion: true,
+  pieFoto: "Gabi, campeón invicto del torneo del 20 de octubre.",
+  parrafos: [
+    "Ayer Gabi estuvo intratable. **Seis partidas, seis victorias y campeón del torneo del 20 de octubre.** Ni una tabla para disimular. Esta vez vino con pocas ganas de repartir puntos y se los llevó todos.",
+    "Hubo siete jugadores, todos contra todos, a ritmo **10+5**. Gabi les ganó a sus seis rivales y terminó con **6 puntos sobre 6**, uno más que Fonchi, que quedó segundo. No hubo que sacar la calculadora para buscar un desempate: la tabla no dejó dudas.",
+    "Y lo hizo parejito: **tres victorias con blancas y tres con negras**. Cambiaba el color de las piezas, pero el resultado era el mismo. Cerró la jornada con el **100% de los puntos** y el título bien ganado.",
+    "La racha tampoco empezó ayer. Al cerrar este torneo, Gabi llevaba **nueve victorias consecutivas**. Su octubre en el club quedó en **10 triunfos y una tabla en 11 partidas**, sin derrotas y con un **95,5% de los puntos**. Un mes para encuadrar.",
+    "El Elo también acompaña: **subió 65 puntos en octubre, de 1675 a 1740 de Elo Atlántida**. Se está haciendo cada vez más difícil sentarse enfrente de Gabi y salir con algo.",
+    "Con este campeonato, además, **clasificó a la Copa de Campeones de fin de año**. Ya tiene su lugar entre los campeones y, con este presente, va a ser un rival para tener muy en cuenta.",
+    "¡Felicitaciones, Gabi! Tremendo torneo. Ahora a festejar un poco, que el resto vamos a tener que estudiar algo para la próxima.",
+    "[Mirá todos los resultados del torneo](https://atlantida-ajedrez.vercel.app/torneos/f08e466c-b201-4cf0-a493-8a68f7e8d1a9) y [seguí el recorrido de Gabi en el club](https://atlantida-ajedrez.vercel.app/jugadores/d1c933d4-197b-434a-924c-d404421e02a6)."
+  ]
+}, {
   slug: "conocias-el-torneo-del-mate",
   titulo: "¿Conocías el Torneo del Mate?",
   bajada: "Cuatro amigos, un tablero y un cinturón que nadie quiere soltar. El mate se comparte; las ganas de ganarle al otro, también.",
