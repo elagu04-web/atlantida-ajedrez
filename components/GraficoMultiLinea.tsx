@@ -18,10 +18,12 @@ export function GraficoMultiLinea({
   categorias,
   series,
   formatoValor = (v: number) => String(v),
+  animado = false,
 }: {
   categorias: string[];
   series: SerieLinea[];
   formatoValor?: (v: number) => string;
+  animado?: boolean;
 }) {
   const [seleccionado, setSeleccionado] = useState<number | null>(null);
   const [hover, setHover] = useState<number | null>(null);
@@ -48,7 +50,7 @@ export function GraficoMultiLinea({
   }
 
   return (
-    <div className="relative">
+    <div className={`relative ${animado ? "stats-evolution" : ""}`} data-stats-motion={animado ? "" : undefined}>
       <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full" role="img" aria-label="Evolución por período. Elegí un período debajo para consultar los valores." onMouseLeave={() => setHover(null)}>
         <text x={4} y={y(valorMax) + 4} className="fill-zinc-400 text-[10px]">
           {formatoValor(valorMax)}
@@ -56,13 +58,17 @@ export function GraficoMultiLinea({
         <text x={4} y={y(valorMin) + 4} className="fill-zinc-400 text-[10px]">
           {formatoValor(valorMin)}
         </text>
+        {animado && Array.from({ length: 5 }, (_, i) => <line key={`grid-${i}`} x1={margen.izquierda} x2={ancho - margen.derecha} y1={margen.arriba + i * (alto - margen.arriba - margen.abajo) / 4} y2={margen.arriba + i * (alto - margen.arriba - margen.abajo) / 4} stroke="#ffffff0d" />)}
         {series.map((s) => {
-          const puntos = s.valores
-            .map((v, i) => (v === null ? null : `${x(i)},${y(v)}`))
-            .filter((p): p is string => p !== null)
-            .join(" ");
-          return <polyline key={s.id} points={puntos} fill="none" stroke={s.color} strokeWidth={2} />;
+          // Cada dato desconocido interrumpe la línea: no se inventa continuidad.
+          const segmentos: string[][] = [[]];
+          s.valores.forEach((v, i) => {
+            if (v === null) segmentos.push([]);
+            else segmentos[segmentos.length - 1].push(`${x(i)},${y(v)}`);
+          });
+          return segmentos.filter(p => p.length).map((puntos, i) => <polyline key={`${s.id}-${i}`} points={puntos.join(" ")} fill="none" stroke={s.color} strokeWidth={animado ? 3 : 2} strokeLinejoin="round" strokeLinecap="round" pathLength={1} />);
         })}
+        {animado && activo !== null && <line x1={x(activo)} x2={x(activo)} y1={margen.arriba} y2={alto - margen.abajo} stroke="#ffffff35" strokeDasharray="3 4" />}
         {series.map((s) =>
           s.valores.map((v, i) =>
             v === null ? null : (
