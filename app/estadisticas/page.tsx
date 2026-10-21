@@ -20,7 +20,10 @@ import { TorneoDelMate } from "@/components/TorneoDelMate";
 const porcentaje = (valor: number | null) => valor === null ? "—" : `${valor.toFixed(1)}%`;
 const delta = (valor: number) => `${valor>0?"+":""}${valor}`;
 export default function EstadisticasPage() {
-  return <Suspense fallback={<p role="status" className="panel p-5">Cargando estadísticas…</p>}><ContenidoEstadisticas /></Suspense>;
+  return <div className="flex min-w-0 flex-col gap-6">
+    <EncabezadoPagina titulo="Estadísticas que cuentan" subtitulo="Actividad, resultados y progreso. Elegí un período para ver qué pasó en el club." />
+    <Suspense fallback={<p role="status" className="panel p-5">Cargando estadísticas…</p>}><ContenidoEstadisticas /></Suspense>
+  </div>;
 }
 
 function ContenidoEstadisticas() {
@@ -63,7 +66,6 @@ function ContenidoEstadisticas() {
     const a=document.createElement("a");a.href=url;a.download=`atlantida-${activo}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   return <div ref={motionRef} className={`${visual.page} flex flex-col gap-6`}>
-    <EncabezadoPagina titulo="Estadísticas que cuentan" subtitulo="Actividad, resultados y progreso. Elegí un período para ver qué pasó en el club." />
     {(errorCarga||errorJugadores)&&<p role="status" className="panel p-4 text-sm text-amber-300">{errorCarga||errorJugadores}</p>}
     <div className="panel flex flex-wrap items-center justify-between gap-4 p-4">
       <div className="flex flex-wrap items-center gap-3"><div className="segmented-control" aria-label="Agrupar estadísticas" role="group">{(["mes","anio"] as const).map(m=><button key={m} aria-pressed={modo===m} onClick={()=>{setModo(m);setPeriodo(null);}}>{m==="mes"?"Por mes":"Por año"}</button>)}</div><select aria-label="Período de estadísticas" value={activo??""} onChange={e=>setPeriodo(e.target.value)} disabled={!periodos.length}>{!periodos.length&&<option value="">Sin resultados</option>}{periodos.map(p=><option key={p} value={p}>{etiquetaPeriodo(p)}</option>)}</select></div>

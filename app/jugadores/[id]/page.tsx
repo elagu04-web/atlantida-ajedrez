@@ -190,7 +190,7 @@ export default function JugadorPage() {
           ← Volver a jugadores
         </Link>
         <div className="mt-5 flex min-w-0 items-center gap-4">
-          <div className={!puedeEditar ? "hidden" : "relative shrink-0"}>
+          {puedeEditar && <div className="relative shrink-0">
             {jugador.fotoUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
@@ -220,7 +220,7 @@ export default function JugadorPage() {
               onChange={handleFotoChange}
               className="hidden"
             />
-          </div>
+          </div>}
           <div>
             <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-4xl">
               {nombreVisible(jugador)}
