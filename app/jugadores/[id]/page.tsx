@@ -10,6 +10,8 @@ import { supabase } from "@/lib/supabase";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO } from "@/lib/elo";
 import { GraficoElo } from "@/components/GraficoElo";
+import { GabiPerfilRetrato } from "@/components/GabiPerfilRetrato";
+import retrato from "@/components/GabiPerfilRetrato.module.css";
 
 const FOTOS_BUCKET = "fotos-jugadores";
 
@@ -179,14 +181,17 @@ export default function JugadorPage() {
     );
   }
 
+  const esGabi = jugador.id === "d1c933d4-197b-434a-924c-d404421e02a6";
   return (
-    <div className="flex flex-col gap-6">
-      <div className="panel p-6 sm:p-8">
+    <div className="flex min-w-0 flex-col gap-6">
+      <div className={`panel p-6 sm:p-8 ${esGabi ? retrato.hero : ""}`}>
+        {esGabi && <GabiPerfilRetrato />}
+        <div className={esGabi ? retrato.content : undefined}>
         <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
           ← Volver a jugadores
         </Link>
         <div className="mt-5 flex min-w-0 items-center gap-4">
-          <div className="relative shrink-0">
+          <div className={esGabi && !puedeEditar ? "hidden" : "relative shrink-0"}>
             {jugador.fotoUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
@@ -263,7 +268,9 @@ export default function JugadorPage() {
             </div>
           </div>
         </div>
+        {esGabi && <><p className={retrato.intro}>EL CLUB, JUGADA A JUGADA</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? "victorias consecutivas" : "en su historial"}</small></div></div><Link href="/estadisticas" className={retrato.detailsLink}>Ver su rendimiento en Estadísticas ↗</Link></>}
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
+        </div>
       </div>
 
       {(editandoDescripcion || jugador.descripcion || puedeEditar) && (
