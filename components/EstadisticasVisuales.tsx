@@ -87,17 +87,17 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
         <header className={s.analysisHeader}><span className={s.eyebrow}>SU PERÍODO EN JUEGO</span><button onClick={() => setRepeticion(n => n + 1)} aria-label="Repetir animación de las estadísticas">↻ Repetir</button></header>
         <div className={s.scoreRow}>
           <div><span className={s.smallLabel}>ELO AL CIERRE</span><strong className={s.elo}>{fila.eloFinal}</strong><span className={fila.variacion < 0 ? s.negative : s.positive}>{cambio(fila.variacion)} <small>en el período</small></span></div>
-          <div className={s.ring} style={{ "--score": (fila.rendimiento ?? 0) / 100 } as CSSProperties}>
+          <div data-stats-motion className={s.ring} style={{ "--score": (fila.rendimiento ?? 0) / 100 } as CSSProperties}>
             <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="51" /><circle className={s.ringFill} cx="60" cy="60" r="51" pathLength="1" /></svg>
             <div><strong>{porcentaje(fila.rendimiento)}</strong><span>RENDIMIENTO</span></div>
           </div>
         </div>
-        <div className={s.results} aria-label={`${fila.victorias} victorias, ${fila.empates} tablas, ${fila.derrotas} derrotas`}>
+        <div data-stats-motion className={s.results} aria-label={`${fila.victorias} victorias, ${fila.empates} tablas, ${fila.derrotas} derrotas`}>
           {[{ n: fila.victorias, label: "Victorias", color: "#69d8b5" }, { n: fila.empates, label: "Tablas", color: "#e4c587" }, { n: fila.derrotas, label: "Derrotas", color: "#ed93a4" }].map(r => <div key={r.label} style={{ "--result-color": r.color } as CSSProperties}><strong>{r.n}</strong><span>{r.label}</span><i style={{ "--bar": `${r.n / fila.partidas * 100}%` } as CSSProperties} /></div>)}
         </div>
         <div className={s.chartTitle}><h4>Partida a partida</h4><span>{fila.partidas} partidas · {fila.puntos} puntos</span></div>
         {puntos.length > 1 ? <>
-          <svg className={s.eloChart} viewBox="0 0 640 200" role="img" aria-label={`Evolución de Elo de ${fila.eloInicial} a ${fila.eloFinal}. Consultá cada partida con el control debajo.`}>
+          <svg data-stats-motion className={s.eloChart} viewBox="0 0 640 200" role="img" aria-label={`Evolución de Elo de ${fila.eloInicial} a ${fila.eloFinal}. Consultá cada partida con el control debajo.`}>
             <defs><linearGradient id={gradiente} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#70baff" stopOpacity=".24" /><stop offset="100%" stopColor="#70baff" stopOpacity="0" /></linearGradient></defs>
             {[min + 8, (min + max) / 2, max - 8].map((v, i) => <g key={i}><line x1="40" x2="610" y1={y(v)} y2={y(v)} stroke="#ffffff0d" /><text x="0" y={y(v) + 4}>{Math.round(v)}</text></g>)}
             <polygon points={`40,180 ${linea} ${x(puntos.length - 1)},180`} fill={`url(#${gradiente})`} />
