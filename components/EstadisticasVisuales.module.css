@@ -13,3 +13,5 @@
 @keyframes metricSweep{from{transform:translateX(-110%)}to{transform:translateX(110%)}}@keyframes panelArrival{from{opacity:.7;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes portraitLight{from{transform:translateX(-80%);opacity:0}30%{opacity:1}to{transform:translateX(110%);opacity:0}}
 @media(hover:hover) and (pointer:fine){.cutout{transition:filter .4s}.spotlight:hover .cutout{filter:drop-shadow(0 8px 28px #73b5ed33)}.metricCard{transition:border-color .2s,box-shadow .2s}.metricCard:hover{border-color:#91bded55;box-shadow:0 10px 35px #04132255}}
 @media(prefers-reduced-motion:reduce){.metricCard:after,.portrait:before{animation:none!important;display:none}.spotlight,.raceTrack i,.cutout,.metricCard{animation:none!important;transition:none!important}.page :global([data-visible=true]) .colorTrack span{animation:none!important}}
+
+@media(max-width:380px){.analysis{padding:22px 17px}.scoreRow{gap:10px}.scoreRow>div:first-child{min-width:0}.elo{font-size:50px}.ring{width:100px;height:100px}.ring strong{font-size:21px}.positive small,.negative small{margin-left:0}}
