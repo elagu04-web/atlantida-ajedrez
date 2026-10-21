@@ -267,7 +267,7 @@ export default function JugadorPage() {
             </div>
           </div>
         </div>
-        <><p className={retrato.intro}>EL CLUB, JUGADA A JUGADA</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? "victorias consecutivas" : "en su historial"}</small></div></div><Link href={jugador.jugadas ? `/estadisticas?jugador=${jugador.id}` : "/estadisticas"} className={retrato.detailsLink}>{jugador.jugadas ? "Ver su rendimiento en Estadísticas ↗" : "Explorar las estadísticas del club ↗"}</Link></>
+        <><p className={retrato.intro}>EL CLUB, JUGADA A JUGADA</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? (rachaActual.cantidad === 1 ? "victoria consecutiva" : "victorias consecutivas") : "en su historial"}</small></div></div><Link href={jugador.jugadas ? `/estadisticas?jugador=${jugador.id}` : "/estadisticas"} className={retrato.detailsLink}>{jugador.jugadas ? "Ver su rendimiento en Estadísticas ↗" : "Explorar las estadísticas del club ↗"}</Link></>
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
         </div>
       </div>
