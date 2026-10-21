@@ -81,7 +81,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
           // eslint-disable-next-line @next/next/no-img-element
           <img className={s.original} src={foto(jugador)!} alt={nombreVisible(jugador)} /> :
           <div className={s.noPortrait}><span>♟</span><p>El próximo movimiento<br />también cuenta.</p></div>}
-        <div className={s.portraitName}><span>EN PRIMERA PERSONA</span><h3>{nombreVisible(jugador)}</h3><Link href={`/jugadores/${jugador.id}`}>Ver su perfil ↗</Link></div>
+        <div className={s.portraitName}><span>EN PRIMERA PERSONA</span><h3>{jugador.id === GABI ? "Gabi" : nombreVisible(jugador)}</h3><Link href={`/jugadores/${jugador.id}`}>Ver su perfil ↗</Link></div>
       </div>
       <div className={s.analysis}>
         <header className={s.analysisHeader}><span className={s.eyebrow}>SU PERÍODO EN JUEGO</span><button onClick={() => setRepeticion(n => n + 1)} aria-label="Repetir animación de las estadísticas">↻ Repetir</button></header>
