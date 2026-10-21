@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState, type PointerEvent } from "react";
+import motion from "./GraficoMultiLinea.module.css";
 
 export type SerieLinea = {
   id: string;
@@ -27,7 +28,12 @@ export function GraficoMultiLinea({
 }) {
   const [seleccionado, setSeleccionado] = useState<number | null>(null);
   const [hover, setHover] = useState<number | null>(null);
-  const activo = hover ?? seleccionado;
+  const [fijada, setFijada] = useState<string | null>(null);
+  const [señalada, setSeñalada] = useState<string | null>(null);
+  const destacada = señalada ?? fijada;
+  const gradiente = useId().replaceAll(":", "");
+  const consulta = hover ?? seleccionado ?? (animado ? categorias.length - 1 : null);
+  const activo = consulta === null ? null : Math.max(0, Math.min(consulta, categorias.length - 1));
 
   const todosLosValores = series.flatMap((s) => s.valores.filter((v): v is number => v !== null));
   if (todosLosValores.length === 0 || categorias.length < 2) {
@@ -35,7 +41,7 @@ export function GraficoMultiLinea({
   }
 
   const ancho = 640;
-  const alto = 220;
+  const alto = animado ? 260 : 220;
   const margen = { arriba: 16, abajo: 22, izquierda: 40, derecha: 12 };
   const valorMin = Math.min(...todosLosValores);
   const valorMax = Math.max(...todosLosValores);
@@ -48,10 +54,18 @@ export function GraficoMultiLinea({
   function y(valor: number) {
     return margen.arriba + (1 - (valor - valorMin) / rango) * (alto - margen.arriba - margen.abajo);
   }
+  function periodoPuntero(e: PointerEvent<SVGSVGElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return Math.max(0, Math.min(categorias.length - 1, Math.round(((e.clientX - rect.left) / rect.width * ancho - margen.izquierda) / (ancho - margen.izquierda - margen.derecha) * (categorias.length - 1))));
+  }
 
   return (
-    <div className={`relative ${animado ? "stats-evolution" : ""}`} data-stats-motion={animado ? "" : undefined}>
-      <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full" role="img" aria-label="Evolución por período. Elegí un período debajo para consultar los valores." onMouseLeave={() => setHover(null)}>
+    <div className={`relative ${animado ? `stats-evolution ${motion.comparacion}` : ""}`} data-stats-motion={animado ? "" : undefined}>
+      {animado && <p className={motion.hint}>Tocá el gráfico para comparar un mes. Señalá un nombre para destacar su línea.</p>}
+      <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full" role="img" aria-label="Evolución por período. Elegí un período debajo para consultar los valores." onMouseLeave={() => setHover(null)}
+        onPointerMove={animado ? e => { if (e.pointerType === "mouse") setHover(periodoPuntero(e)); else if (e.buttons) { setHover(null); setSeleccionado(periodoPuntero(e)); } } : undefined}
+        onPointerDown={animado ? e => { setHover(null); setSeleccionado(periodoPuntero(e)); } : undefined}>
+        {animado && <defs>{series.map(s => <linearGradient key={s.id} id={`${gradiente}-${s.id}`} x1="0" y1="0" x2="0" y2="1"><stop stopColor={s.color} stopOpacity=".13" /><stop offset="100%" stopColor={s.color} stopOpacity="0" /></linearGradient>)}</defs>}
         <text x={4} y={y(valorMax) + 4} className="fill-zinc-400 text-[10px]">
           {formatoValor(valorMax)}
         </text>
@@ -66,7 +80,7 @@ export function GraficoMultiLinea({
             if (v === null) segmentos.push([]);
             else segmentos[segmentos.length - 1].push(`${x(i)},${y(v)}`);
           });
-          return segmentos.filter(p => p.length).map((puntos, i) => <polyline key={`${s.id}-${i}`} points={puntos.join(" ")} fill="none" stroke={s.color} strokeWidth={animado ? 3 : 2} strokeLinejoin="round" strokeLinecap="round" pathLength={1} />);
+          return <g key={s.id} style={{ opacity: animado && destacada && destacada !== s.id ? .18 : 1, transition: "opacity .2s" }}>{segmentos.filter(p => p.length).map((puntos, i) => <g key={i}>{animado && puntos.length > 1 && <polygon points={`${puntos[0].split(",")[0]},${alto - margen.abajo} ${puntos.join(" ")} ${puntos.at(-1)!.split(",")[0]},${alto - margen.abajo}`} fill={`url(#${gradiente}-${s.id})`} />}<polyline points={puntos.join(" ")} fill="none" stroke={s.color} strokeWidth={animado ? destacada === s.id ? 4 : 3 : 2} strokeLinejoin="round" strokeLinecap="round" pathLength={1} /></g>)}</g>;
         })}
         {animado && activo !== null && <line x1={x(activo)} x2={x(activo)} y1={margen.arriba} y2={alto - margen.abajo} stroke="#ffffff35" strokeDasharray="3 4" />}
         {series.map((s) =>
@@ -78,6 +92,7 @@ export function GraficoMultiLinea({
                 cy={y(v)}
                 r={activo === i ? 5 : 3}
                 fill={s.color}
+                opacity={animado && destacada && destacada !== s.id ? .18 : 1}
                 onMouseEnter={() => setHover(i)}
                 className="cursor-pointer"
               />
@@ -91,11 +106,11 @@ export function GraficoMultiLinea({
           ) : null)}
       </svg>
       {activo !== null && (
-        <div role="status" className="mt-3 rounded-md border border-white/10 bg-zinc-900 px-3 py-2 text-xs">
+        <div role="status" className={animado ? motion.readout : "mt-3 rounded-md border border-white/10 bg-zinc-900 px-3 py-2 text-xs"}>
           <div className="mb-1 font-semibold text-zinc-300">{categorias[activo]}</div>
-          <div className="flex flex-col gap-0.5">
+          <div className={animado ? motion.values : "flex flex-col gap-0.5"}>
             {series.map((s) =>
-              s.valores[activo] === null ? null : (
+              s.valores[activo] == null ? null : (
                 <div key={s.id} className="flex items-center gap-1.5">
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color }} />
                   <span className="text-zinc-300">
@@ -109,11 +124,11 @@ export function GraficoMultiLinea({
       )}
       <label className="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-400">
         Consultar período
-        <select aria-label="Período del gráfico" value={seleccionado ?? ""} onChange={e => setSeleccionado(e.target.value === "" ? null : Number(e.target.value))} className="max-w-full rounded-md border border-white/20 bg-zinc-900 px-3 py-2 text-zinc-200"><option value="">Elegir…</option>{categorias.map((c, i) => <option key={i} value={i}>{c}</option>)}</select>
+        <select aria-label="Período del gráfico" value={seleccionado ?? (animado ? categorias.length - 1 : "")} onChange={e => { setHover(null); setSeleccionado(e.target.value === "" ? null : Number(e.target.value)); }} className="max-w-full rounded-md border border-white/20 bg-zinc-900 px-3 py-2 text-zinc-200"><option value="">Elegir…</option>{categorias.map((c, i) => <option key={i} value={i}>{c}</option>)}</select>
       </label>
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-400">
         {series.map((s) => (
-          <span key={s.id} className="flex items-center gap-1.5">
+          animado ? <button key={s.id} className={motion.legend} aria-label={`Destacar línea de ${s.nombre}`} aria-pressed={fijada === s.id} onClick={() => setFijada(fijada === s.id ? null : s.id)} onPointerEnter={e => { if (e.pointerType === "mouse") setSeñalada(s.id); }} onPointerLeave={e => { if (e.pointerType === "mouse") setSeñalada(null); }} onFocus={() => setSeñalada(s.id)} onBlur={() => setSeñalada(null)}><span style={{ background: s.color }} />{s.nombre}</button> : <span key={s.id} className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
             {s.nombre}
           </span>
