@@ -33,6 +33,11 @@ export function validarProgresoAleServidor(valor:unknown):ProgresoAle {
 export function puntosMontanaAle(progreso:ProgresoAle){
   return recorridoAle(progreso);
 }
+export function ajustePartidaAle(progreso:ProgresoAle,id:string){
+  const i=progreso.partidas.indexOf(id);if(i<0)return null;
+  const puntos=recorridoAle(progreso),antes=puntos[i].elo,despues=puntos[i+1].elo;
+  return {antes,despues,variacion:despues-antes};
+}
 export function pasoAjusteAle(progreso:ProgresoAle){const n=Object.keys(progreso.resultados??{}).length;return n<10?50:n<30?25:10;}
 function recorridoAle(progreso:ProgresoAle){
   let elo=ELO_INICIAL_ALE,medidas=0;const puntos=[{partida:0,elo}];
