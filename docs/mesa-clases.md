@@ -35,3 +35,17 @@ público ni abrir el bucket para simplificar una actualización.
 
 Comprobaciones: `node --test tests/clases-privadas.test.cjs`, RLS sobre el proyecto
 real, compilación de Next y revisión del catálogo en el navegador.
+
+## Estética de Atlántida
+
+Al servir los dos documentos HTML, temaMesaClases.ts agrega al final del head
+la hoja propia /estilos/mesa-atlantida.css. Cambia catálogo, controles, Profe,
+cuentos y proyección al azul de Atlántida. Los scripts, IDs, eventos, permisos
+y clases guardadas de la app conservan su funcionamiento original. Los colores
+que expresan equipos, casillas pintadas, flechas o reglas no se reemplazan.
+
+Geist Latin se sirve localmente sin modificar, desde la copia incluida en
+Next.js 16.3.1 (next-devtools/server/font/geist-latin.woff2). Se conserva la licencia
+SIL OFL 1.1 en public/fuentes/GEIST-OFL.txt; obtenida del repositorio oficial
+https://github.com/vercel/geist-font/blob/main/OFL.txt. No se agregan consultas
+a servicios de fuentes externos durante la clase.
