@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Icono } from "./Icono";
+import {useSonidoPiezas} from '@/lib/useSonidoPiezas';
 import { Chess, type Square, type PieceSymbol } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { MotorEntrenamiento } from "@/lib/motorEntrenamiento";
@@ -115,6 +116,7 @@ export function EntrenarHoy({ sesiones, progreso, pareto, alGuardarProgreso, alR
 }
 
 function EjercicioDeHoy({ ejercicio, avance, practica, alCambiar, alIntentar, alSiguiente, ultimo, nivel=1400 }: { ejercicio: EjercicioGuiado; avance: RazonamientoGuiado; practica?: import("@/lib/entrenamientoPersonal").PracticaError; alCambiar: (r: RazonamientoGuiado) => void; alIntentar: (acierto: boolean, ayudado: boolean, origen:OrigenIntentoTactico) => void; alSiguiente: () => void; ultimo: boolean; nivel?:number }) {
+  const sonido=useSonidoPiezas();
   const [r, setR] = useState(avance), [seleccion, setSeleccion] = useState<Square | null>(null), [ocupado, setOcupado] = useState(false), [error, setError] = useState(""), [promocion, setPromocion] = useState<{ from: string; to: string } | null>(null);
   const referencia = useRef<AnalisisPosicion | null>(null), motor = useRef<MotorEntrenamiento | null>(null), activo = useRef(true), ocupadoRef = useRef(false), estado = useRef(r);
   useEffect(() => { activo.current = true; return () => { activo.current = false; motor.current?.destruir(); }; }, []);
@@ -148,10 +150,12 @@ function EjercicioDeHoy({ ejercicio, avance, practica, alCambiar, alIntentar, al
     if (!preparado || r.resuelto || r.revelado || ocupadoRef.current) return;
     const entrada = from + to + (promotion ?? ""), m = interpretarJugada(partida.fen(), entrada);
     if (!m) return;
+    sonido.preparar();
     setSeleccion(null); setPromocion(null);
     await operacion(async () => {
       if(ejercicio.fuente==="lichess"){
         const paso=pasoTactico(ejercicio,r.movimientos,m.uci);
+        if(paso.acierto)sonido.golpear(!!new Chess(partida.fen()).move(m.uci).captured);
         if(!paso.acierto)informar(false,"Esa jugada no sostiene la variante. Mirá la respuesta del rival y probá otra vez.");
         else if(paso.terminada)informar(true,conAyuda()?"Completaste la variante. Volvé a repasarla sin ayuda otro día.":"¡Variante completa! Guardamos tu resultado y ajustamos los próximos problemas.",{movimientos:paso.movimientos,resuelto:true,etapa:"terminada"});
         else cambiar({movimientos:paso.movimientos,mensaje:"El rival respondió. Continuá la variante: todavía falta tu siguiente jugada."});
@@ -160,6 +164,7 @@ function EjercicioDeHoy({ ejercicio, avance, practica, alCambiar, alIntentar, al
       let acierto = ejercicio.solucion.includes(m.uci);
       if (!acierto) { const antes = await base(), despues = await evaluar(m.fen); acierto = perdida(antes, despues, color) <= 60; }
       if (!activo.current) return;
+      if(acierto)sonido.golpear(!!new Chess(partida.fen()).move(m.uci).captured);
       if (acierto) informar(true, conAyuda() ? "Bien. Mañana volvé a reconocer la idea sin ayuda." : "¡Bien encontrada! Guardamos el repaso para otro día.", { movimientos: [m.san], resuelto: true, etapa: "terminada" });
       else informar(false, "Esa jugada deja pasar una opción mejor. Revisá el motivo y probá otra vez.");
     });
@@ -205,7 +210,7 @@ function EjercicioDeHoy({ ejercicio, avance, practica, alCambiar, alIntentar, al
   const estilos: Record<string, CSSProperties> = {};
   if (seleccion) { estilos[seleccion] = { backgroundColor: "#e4be7180" }; for (const m of original.moves({ square: seleccion, verbose: true })) estilos[m.to] = { backgroundImage: "radial-gradient(circle, #173f3b88 0 15%, transparent 17%)" }; }
   return <div className={styles.ejercicio}>
-    <div className={styles.tableroColumna}><div className={styles.tableroTitulo}><strong>{ejercicio.titulo}{ejercicio.rating?` · ${ejercicio.fuente==="partida"?"≈ ":""}${ejercicio.rating}`:""}</strong><span>{color === "w" ? "Juegan blancas" : "Juegan negras"}</span></div><div className={`${styles.tablero} play-board`}><Chessboard options={{ id: `guiado-${ejercicio.id}`, position: partida.fen(), boardOrientation: color === "w" ? "white" : "black", allowDragging: ejercicio.actividad === "tactica" && preparado && !r.resuelto && !r.revelado && !ocupado, allowAutoScroll: false, animationDurationInMs: 200, lightSquareStyle: { backgroundColor: "#f0e6ce" }, darkSquareStyle: { backgroundColor: "#638480" }, squareStyles: estilos,
+    <div className={styles.tableroColumna}><label className={styles.guardado}><input type="checkbox" checked={sonido.activo} onChange={e=>sonido.setActivo(e.target.checked)}/> Sonido de piezas</label><div className={styles.tableroTitulo}><strong>{ejercicio.titulo}{ejercicio.rating?` · ${ejercicio.fuente==="partida"?"≈ ":""}${ejercicio.rating}`:""}</strong><span>{color === "w" ? "Juegan blancas" : "Juegan negras"}</span></div><div className={`${styles.tablero} play-board`}><Chessboard options={{ id: `guiado-${ejercicio.id}`, position: partida.fen(), boardOrientation: color === "w" ? "white" : "black", allowDragging: ejercicio.actividad === "tactica" && preparado && !r.resuelto && !r.revelado && !ocupado, allowAutoScroll: false, animationDurationInMs: 200, lightSquareStyle: { backgroundColor: "#f0e6ce" }, darkSquareStyle: { backgroundColor: "#638480" }, squareStyles: estilos,
       canDragPiece: ({ square }) => preparado && !r.resuelto && !r.revelado && !ocupado && !promocion && ejercicio.actividad === "tactica" && original.get(square as Square)?.color === color,
       onPieceDrop: ({ sourceSquare, targetSquare }) => targetSquare ? elegir(sourceSquare, targetSquare) : false,
       onSquareClick: ({ square }) => { if (!preparado || r.resuelto || r.revelado || ocupadoRef.current || ejercicio.actividad !== "tactica") return; const pieza = original.get(square as Square); if (seleccion && original.moves({ square: seleccion, verbose: true }).some(m => m.to === square)) elegir(seleccion, square); else setSeleccion(pieza?.color === color ? square as Square : null); },

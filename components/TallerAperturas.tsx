@@ -7,6 +7,7 @@ import { registrarPractica, ayudaEnDia, type SesionEntrenamiento } from "@/lib/e
 import { fechaMontevideo } from "@/lib/desafios";
 import { sanPractica } from "@/lib/partidaPractica";
 import { agregarLineas, buscarAperturas, comenzarLinea, exportarRepertorio, importarRepertorio, moverUci, nuevaLinea, posicionLinea, repertorioInicial, uciApertura, type LineaApertura, type RepertorioAperturas } from "@/lib/entrenamientoAperturas";
+import {useSonidoPiezas} from '@/lib/useSonidoPiezas';
 import {TableroApertura} from "./TableroApertura";
 import {CargarPartidasAperturas} from "./CargarPartidasAperturas";
 import {ErroresApertura} from "./ErroresApertura";
@@ -37,10 +38,12 @@ function Detalles({linea,guardar}:{linea:LineaApertura;guardar:(datos:Partial<Li
  return <div className={styles.detalles}><label className="training-field">Nombre de la variante<input value={nombre} maxLength={100} onChange={e=>{setNombre(e.target.value);setMensaje('');}}/></label><label className="training-field">Ideas, planes y respuestas<textarea value={notas} maxLength={800} onChange={e=>{setNotas(e.target.value);setMensaje('');}} placeholder="Qué busco, dónde van mis piezas, qué amenaza el rival…"/></label><button type="button" className="button-secondary" onClick={()=>{guardar({nombre:nombre.trim()||linea.nombre,notas});setMensaje('Ideas incorporadas al entrenamiento.');}}>Guardar mis ideas</button><span role="status">{mensaje}</span></div>;
 }
 function PracticarLinea({linea,repertorio,alGuardar,repetir}:{linea:LineaApertura;repertorio:RepertorioAperturas;alGuardar:(r:RepertorioAperturas)=>void;repetir:()=>void}){
+ const sonido=useSonidoPiezas();
  const [mensaje,setMensaje]=useState('Recordá tu jugada. El rival responde automáticamente.'),ultimo=useRef(repertorio);useEffect(()=>{ultimo.current=repertorio;},[repertorio]);
  const recorrido=repertorio.recorrido?.lineaId===linea.id?repertorio.recorrido:null;const indice=recorrido?.indice??0,c=posicionLinea(linea,indice);const terminada=recorrido?.terminada??false;
  function avanzar(u:string,ayuda=false){const r=ultimo.current,s=r.recorrido;if(!s||s.terminada)return;const l=r.lineas[linea.id],c=posicionLinea(l,s.indice),esperada=l.movimientos[s.indice];let correcta=false;try{correcta=uciApertura(moverUci(c,u))===esperada;}catch{return;}
   const ahora=new Date(),reloj=ahora.toISOString();if(!correcta){alGuardar({...r,lineas:{...r.lineas,[l.id]:{...l,practica:registrarPractica(l.practica,false,false,ahora),practicaActualizada:reloj}},recorrido:{...s,ayudado:true,actualizada:reloj},recorridoActualizado:reloj});setMensaje('Es legal, pero no es la jugada que preparaste en esta variante. Volvé a calcular; otras alternativas pueden ser buenas.');return;}
+  sonido.golpear(!!c.history({verbose:true}).at(-1)?.captured);
   const siguiente=s.indice+1,fin=siguiente===l.movimientos.length,ayudado=s.ayudado||ayuda||ayudaEnDia(l.practica);const nueva={...l};if(ayuda||fin){nueva.practica=registrarPractica(l.practica,fin,ayudado,ahora);nueva.practicaActualizada=reloj;}
   alGuardar({...r,lineas:{...r.lineas,[l.id]:nueva},recorrido:{...s,indice:siguiente,ayudado,terminada:fin,actualizada:reloj},recorridoActualizado:reloj});setMensaje(fin?(ayudado?'Variante recorrida. Volvé a repasarla mañana sin ayuda.':'¡Variante recordada! El próximo repaso queda programado.'):'Bien. Ahora responde tu rival.');
  }

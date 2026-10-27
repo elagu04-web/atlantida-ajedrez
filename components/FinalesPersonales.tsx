@@ -8,6 +8,7 @@ import { registrarPractica, type SesionEntrenamiento } from "@/lib/entrenamiento
 import { fechaMontevideo } from "@/lib/desafios";
 import { sanPractica } from "@/lib/partidaPractica";
 import { moverUci, uciApertura } from "@/lib/entrenamientoAperturas";
+import {useSonidoPiezas} from '@/lib/useSonidoPiezas';
 import { TableroApertura } from "./TableroApertura";
 import styles from "./FinalesPersonales.module.css";
 
@@ -53,6 +54,7 @@ export function FinalesPersonales({ sesiones, posicionInicial, alGuardar, alCarg
 }
 
 function PracticarFinal({ entrada, estado, alGuardar }: { entrada: FinalDePartida; estado?: EstadoFinalPersonal; alGuardar: (e: EstadoFinalPersonal) => void }) {
+  const sonido=useSonidoPiezas();
   const [valoracion, setValoracion] = useState<EstadoFinalPersonal["valoracion"]>(estado?.valoracion ?? "ganar");
   const [plan, setPlan] = useState<PlanFinal>(estado?.plan ?? "activar"), [nota, setNota] = useState(estado?.nota ?? "");
   const [ocupado, setOcupado] = useState(false), [mensaje, setMensaje] = useState("Pensá tu evaluación y tu plan antes de mover."), [error, setError] = useState("");
@@ -77,6 +79,7 @@ function PracticarFinal({ entrada, estado, alGuardar }: { entrada: FinalDePartid
     const antesChess = posicionFinal(estado), nueva = posicionFinal(estado);
     let u: string;
     try { u = uciApertura(nueva.move({ from, to, promotion })); } catch { return false; }
+    sonido.golpear(!!nueva.history({verbose:true}).at(-1)?.captured);
     const turno = ++generacion.current;
     bloqueo.current = true; setOcupado(true); setError(""); setAvance([...estado.ruta, u]);
     try {
@@ -88,7 +91,7 @@ function PracticarFinal({ entrada, estado, alGuardar }: { entrada: FinalDePartid
       const ruta = [...estado.ruta, u]; let respuesta = "";
       if (!nueva.isGameOver()) {
         if (!despues.mejorJugada) throw new Error("No se recibió una respuesta.");
-        const m = moverUci(nueva, despues.mejorJugada); ruta.push(uciApertura(m)); respuesta = sanPractica(m.san);
+        const m = moverUci(nueva, despues.mejorJugada); ruta.push(uciApertura(m)); respuesta = sanPractica(m.san);sonido.golpear(!!m.captured);
       }
       const errores = estado.errores + Number(!juicio.acierto), final = resultadoFinal(nueva, color);
       let practica = estado.practica;
@@ -132,7 +135,7 @@ function PracticarFinal({ entrada, estado, alGuardar }: { entrada: FinalDePartid
       <label>¿Cuál es tu plan?<select value={plan} onChange={e => setPlan(e.target.value as PlanFinal)}>{Object.entries(PLANES_FINALES).map(([k, texto]) => <option key={k} value={k}>{texto}</option>)}</select></label>
       <label>Mi idea en una frase<textarea maxLength={800} value={nota} onChange={e => setNota(e.target.value)} placeholder="Qué quiero mejorar y qué quiere hacer el rival…"/></label>
     </div> : <div className={styles.plan}><strong>Tu plan: {PLANES_FINALES[estado.plan]}</strong><span>Buscás {({ ganar: "ganar", tablas: "conservar las tablas", resistir: "resistir" })[estado.valoracion]}.</span>{estado.nota && <p>{estado.nota}</p>}</div>}
-    <TableroApertura chess={c} color={color} habilitado={!!estado && !ocupado && !resultado && !limite} mover={(f, t, p) => { void mover(f, t, p); return false; }}/>
+    <label className="text-xs text-zinc-400"><input type="checkbox" checked={sonido.activo} onChange={e=>sonido.setActivo(e.target.checked)}/> Sonido de piezas</label><TableroApertura chess={c} color={color} habilitado={!!estado && !ocupado && !resultado && !limite} mover={(f, t, p) => { void mover(f, t, p); return false; }}/>
     <p className={styles.feedback} role="status">{ocupado ? "Stockfish está comprobando la decisión y preparando su respuesta…" : resultado ? `Final terminado: ${resultado}. ${estado?.errores ?? 0} decisiones para revisar · ${estado?.ayudas ?? 0} ayudas.` : limite ? "Llegaste al límite de este recorrido. Podés exportarlo o empezar otro intento; no lo marcamos como final resuelto." : estado && mensaje === "Pensá tu evaluación y tu plan antes de mover." ? "Recorrido recuperado. Tu turno: continuá con el plan que guardaste." : mensaje}</p>
     {error && <p role="alert" className={styles.error}>{error}</p>}
     <div className={styles.acciones}>{!estado ? <button type="button" className="button-primary" onClick={empezar}>Empezar este final</button> : <><button type="button" className="button-secondary" disabled={ocupado || !!resultado || limite} onClick={() => void pista()}>Pedir una pista</button><button type="button" className="text-link" disabled={ocupado} onClick={empezar}>Nuevo intento desde mi partida</button><button type="button" className="text-link" disabled={ocupado} onClick={descargar}>Descargar práctica PGN</button></>}</div>

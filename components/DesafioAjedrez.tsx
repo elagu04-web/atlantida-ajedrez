@@ -4,6 +4,7 @@ import { Chessboard } from "react-chessboard";
 import { useMiJugador } from "@/context/useMiJugador";
 import { nombreVisible } from "@/lib/players";
 import { Chess, type Square, type PieceSymbol } from "chess.js";
+import {useSonidoPiezas} from '@/lib/useSonidoPiezas';
 import { Icono } from "./Icono";
 import { aplicarUci, fechaMontevideo, validarDesafio, type Desafio } from "@/lib/desafios";
 import reserva from "@/data/desafio-reserva.json";
@@ -35,7 +36,7 @@ export function DesafioAjedrez({ampliado=false}:{ampliado?:boolean}) {
 }
 
 function TableroDesafio({desafio,ampliado}:{desafio:Desafio;ampliado:boolean}) {
-  const {jugador}=useMiJugador();
+  const {jugador}=useMiJugador(),sonido=useSonidoPiezas();
   const mesa=useRef<HTMLElement>(null);
   useEffect(()=>{if(ampliado&&window.innerWidth>900)requestAnimationFrame(()=>mesa.current?.scrollIntoView({block:"start",behavior:"instant"}));},[ampliado]);
   const [fen,setFen]=useState(desafio.fen);
@@ -63,6 +64,7 @@ function TableroDesafio({desafio,ampliado}:{desafio:Desafio;ampliado:boolean}) {
     const movimiento=intento.move({from:origen,to:destino,promotion:piezaPromocion});
     setPromocion(null);
     if(uci!==desafio.solution[paso]&&!intento.isCheckmate()){setFallado(true);setMensaje("Esa jugada no es la mejor continuación. El intento de hoy ya no suma racha; podés seguir practicando.");setSeleccion(null);return false;}
+    sonido.golpear(!!movimiento.captured);
     let siguiente=paso+1;
     let texto=`Bien: ${sanEsp(movimiento.san)}.`;
     let destinoFinal=movimiento.to;
@@ -85,7 +87,7 @@ function TableroDesafio({desafio,ampliado}:{desafio:Desafio;ampliado:boolean}) {
   if(partida.isCheck())for(const fila of partida.board())for(const p of fila)if(p?.type==="k"&&p.color===partida.turn())estilos[p.square]={backgroundColor:"#dc6c6c"};
   const tableroInteractivo=<div className="play-board"><Chessboard options={{id:"desafio-diario",position:fen,boardOrientation:color==="w"?"white":"black",allowDragging:!resuelto,allowDragOffBoard:false,allowDrawingArrows:false,allowAutoScroll:false,showNotation:true,animationDurationInMs:180,lightSquareStyle:{backgroundColor:"#f0e6ce"},darkSquareStyle:{backgroundColor:"#638480"},squareStyles:estilos,canDragPiece:({piece})=>!resuelto&&piece.pieceType.startsWith(color),onPieceDrop:({sourceSquare,targetSquare})=>targetSquare?mover(sourceSquare as Square,targetSquare as Square):false,onSquareClick:({square})=>elegir(square as Square),squareRenderer:({piece,square,children})=>{const archivo="abcdefgh".indexOf(square[0]);const rango=Number(square[1]);const indice=color==="w"?(8-rango)*8+archivo:(rango-1)*8+7-archivo;return <button type="button" className="play-square" style={estilos[square]} ref={el=>{casillas.current[indice]=el;}} tabIndex={foco===indice?0:-1} onFocus={()=>setFoco(indice)} aria-label={`${square}${piece?`, ${nombres[piece.pieceType[1].toLowerCase() as PieceSymbol]} ${piece.pieceType[0]==="w"?"blanco":"negro"}`: ", vacía"}`} onKeyDown={e=>{const siguiente:Record<string,number>={ArrowRight:Math.min(63,indice+1),ArrowLeft:Math.max(0,indice-1),ArrowDown:Math.min(63,indice+8),ArrowUp:Math.max(0,indice-8)};if(e.key in siguiente){e.preventDefault();casillas.current[siguiente[e.key]]?.focus();}}}>{children}</button>;}}}/></div>;
   const coronacion=promocion&&<div className="puzzle-promotion" role="group" aria-label="Elegir coronación">{(["q","r","b","n"] as const).map(p=><button type="button" key={p} className="button-secondary" onClick={()=>seleccion&&mover(seleccion,promocion,p)}>{nombres[p]}</button>)}</div>;
-  const controles=<div className="play-controls"><button type="button" disabled={resuelto} onClick={pista} className="button-secondary"><Icono nombre="idea" className="h-4 w-4"/>Ver pista</button><button type="button" onClick={()=>{setFen(desafio.fen);setPaso(0);setSeleccion(null);setPromocion(null);setUltimoDestino(null);setMensaje("Elegí la mejor jugada y continuá la secuencia.");}} className="button-secondary"><Icono nombre="reiniciar" className="h-4 w-4"/>Reiniciar</button></div>;
+  const controles=<div className="play-controls"><label className="text-xs text-zinc-400"><input type="checkbox" checked={sonido.activo} onChange={e=>sonido.setActivo(e.target.checked)}/> Sonido de piezas</label><button type="button" disabled={resuelto} onClick={pista} className="button-secondary"><Icono nombre="idea" className="h-4 w-4"/>Ver pista</button><button type="button" onClick={()=>{setFen(desafio.fen);setPaso(0);setSeleccion(null);setPromocion(null);setUltimoDestino(null);setMensaje("Elegí la mejor jugada y continuá la secuencia.");}} className="button-secondary"><Icono nombre="reiniciar" className="h-4 w-4"/>Reiniciar</button></div>;
   const pasos=Math.ceil(desafio.solution.length/2),completados=Math.min(Math.ceil(paso/2),pasos);
   const progreso=<div className="puzzle-progress"><div><span>Tu secuencia</span><strong>{completados} / {pasos}</strong></div><progress value={completados} max={pasos} aria-label="Jugadas correctas del desafío"/></div>;
   const nivel=desafio.objetivo!==undefined&&<p className="mt-3 text-xs leading-relaxed text-amber-200/80">Objetivo de hoy: ≈{desafio.objetivo} · {desafio.rachaBase?`Racha líder al cierre de ayer: ${desafio.rachaBase} ${desafio.rachaBase===1?"día":"días"}`:"Comienza una nueva racha"}. Desde el tercer día sube 50; si nadie mantiene la racha, mañana vuelve a ≈1800.</p>;

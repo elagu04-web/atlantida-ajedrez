@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Chess, type Square, type PieceSymbol } from "chess.js";
 import { Chessboard } from "react-chessboard";
+import {useSonidoPiezas} from '@/lib/useSonidoPiezas';
 import { MotorEntrenamiento } from "@/lib/motorEntrenamiento";
 import type { AnalisisPosicion } from "@/lib/stockfish";
 import type { EjercicioPersonal, PracticaError } from "@/lib/entrenamientoPersonal";
@@ -11,7 +12,7 @@ import { sanPractica } from "@/lib/partidaPractica";
 const nombrePieza: Record<string, string> = { p: "peón", n: "caballo", b: "alfil", r: "torre", q: "dama", k: "rey" };
 const valor = (a: AnalisisPosicion) => a.mateEn !== null ? Math.sign(a.mateEn) * (100000 - Math.abs(a.mateEn) * 100) : a.evaluacionCentipawns ?? 0;
 export function EjercicioEntrenamiento({ ejercicio, practica, alIntentar, nota = "", alGuardarNota }: { ejercicio: EjercicioPersonal; practica?: PracticaError; alIntentar: (acierto: boolean, ayudado: boolean) => void; nota?: string; alGuardarNota: (nota: string) => void }) {
-  const j = ejercicio.jugada;
+  const j = ejercicio.jugada,sonido=useSonidoPiezas();
   const [fen, setFen] = useState(j.fenAntes), [seleccion, setSeleccion] = useState<Square | null>(null);
   const [resuelto, setResuelto] = useState(false), [revelado, setRevelado] = useState(false), [evaluando, setEvaluando] = useState(false);
   const [mensaje, setMensaje] = useState(""), [pista, setPista] = useState(false);
@@ -24,6 +25,7 @@ export function EjercicioEntrenamiento({ ejercicio, practica, alIntentar, nota =
     const ajedrez = new Chess(j.fenAntes);
     let movimiento;
     try { movimiento = ajedrez.move({ from, to, promotion }); } catch { setSeleccion(null); return; }
+    sonido.preparar();
     ocupado.current = true; setEvaluando(true); setMensaje(""); setSeleccion(null);
     try {
       let acertado = movimiento.san === j.mejorJugadaSan;
@@ -39,7 +41,7 @@ export function EjercicioEntrenamiento({ ejercicio, practica, alIntentar, nota =
       if (!activo.current) return;
       const conAyuda = revelado || pista || ayudaEnDia(practica);
       alIntentar(acertado, conAyuda);
-      if (acertado) { setFen(ajedrez.fen()); setResuelto(true); setMensaje(conAyuda ? "Bien. Volvé otro día para resolverla sin ayuda." : "¡Bien encontrada! El repaso quedará pendiente para otro día."); }
+      if (acertado) { sonido.golpear(!!movimiento.captured);setFen(ajedrez.fen()); setResuelto(true); setMensaje(conAyuda ? "Bien. Volvé otro día para resolverla sin ayuda." : "¡Bien encontrada! El repaso quedará pendiente para otro día."); }
       else setMensaje("Hay una alternativa mejor. Volvé a mirar las amenazas de ambos lados y probá otro candidato.");
     } catch (e) {
       if (activo.current && (e as Error).name !== "AbortError") { motor.current?.destruir(); motor.current = null; setMensaje("No pudimos comprobar esa alternativa. Reintentá; este intento no cuenta como error."); }
@@ -60,7 +62,7 @@ export function EjercicioEntrenamiento({ ejercicio, practica, alIntentar, nota =
     estilos[seleccion] = { backgroundColor: "#e4be7180" };
     for (const m of partida.moves({ square: seleccion, verbose: true })) estilos[m.to] = { backgroundImage: "radial-gradient(circle, #173f3b88 0 15%, transparent 17%)" };
   }
-  return <div className="training-exercise"><div className="training-exercise-heading"><span>{j.color === "w" ? "Jugás con blancas" : "Jugás con negras"}</span><span>{ejercicio.tema}</span></div>
+  return <div className="training-exercise"><label className="text-xs text-zinc-400"><input type="checkbox" checked={sonido.activo} onChange={e=>sonido.setActivo(e.target.checked)}/> Sonido de piezas</label><div className="training-exercise-heading"><span>{j.color === "w" ? "Jugás con blancas" : "Jugás con negras"}</span><span>{ejercicio.tema}</span></div>
     <div className="training-board play-board"><Chessboard options={{ id: "ejercicio-personal", position: fen, boardOrientation: j.color === "w" ? "white" : "black", allowDragging: !resuelto && !evaluando, allowAutoScroll: false, animationDurationInMs: 220, lightSquareStyle: { backgroundColor: "#f0e6ce" }, darkSquareStyle: { backgroundColor: "#638480" }, squareStyles: estilos,
       canDragPiece: ({ square }) => !resuelto && !evaluando && !promocion && partida.get(square as Square)?.color === j.color,
       onPieceDrop: ({ sourceSquare, targetSquare }) => targetSquare ? elegir(sourceSquare, targetSquare) : false,

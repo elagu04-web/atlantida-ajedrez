@@ -1,0 +1,858 @@
+[
+  {
+    "id": "mate-uno-1",
+    "fen": "7k/5K2/6Q1/8/8/8/8/8 w - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-1",
+    "fuente": "club",
+    "soluciones": [
+      "g6g7",
+      "g6g8",
+      "g6h6",
+      "g6h5"
+    ]
+  },
+  {
+    "id": "mate-uno-2",
+    "fen": "6k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1",
+    "nivel": 1,
+    "familia": "ultima-fila",
+    "fuente": "club",
+    "soluciones": [
+      "e1e8"
+    ]
+  },
+  {
+    "id": "mate-uno-3",
+    "fen": "7k/R7/8/8/8/8/8/1R5K w - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-3",
+    "fuente": "club",
+    "soluciones": [
+      "b1b8"
+    ]
+  },
+  {
+    "id": "mate-uno-4",
+    "fen": "7k/6pp/8/7Q/8/3B4/8/7K w - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-4",
+    "fuente": "club",
+    "soluciones": [
+      "h5e8",
+      "h5h7"
+    ]
+  },
+  {
+    "id": "mate-uno-5",
+    "fen": "4r1k1/8/8/8/8/8/5PPP/6K1 b - - 0 1",
+    "nivel": 1,
+    "familia": "ultima-fila",
+    "fuente": "club",
+    "soluciones": [
+      "e8e1"
+    ]
+  },
+  {
+    "id": "mate-uno-6",
+    "fen": "8/8/5K1k/8/8/8/8/R7 w - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-6",
+    "fuente": "club",
+    "soluciones": [
+      "a1h1"
+    ]
+  },
+  {
+    "id": "mate-uno-1-espejo",
+    "fen": "k7/2K5/1Q6/8/8/8/8/8 w - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-1",
+    "fuente": "club",
+    "soluciones": [
+      "b6b7",
+      "b6b8",
+      "b6a5",
+      "b6a6"
+    ]
+  },
+  {
+    "id": "mate-uno-1-negras",
+    "fen": "8/8/8/8/8/6q1/5k2/7K b - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-1",
+    "fuente": "club",
+    "soluciones": [
+      "g3h4",
+      "g3h3",
+      "g3g2",
+      "g3g1"
+    ]
+  },
+  {
+    "id": "mate-uno-1-negras-espejo",
+    "fen": "8/8/8/8/8/1q6/2k5/K7 b - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-1",
+    "fuente": "club",
+    "soluciones": [
+      "b3a4",
+      "b3b2",
+      "b3b1",
+      "b3a3"
+    ]
+  },
+  {
+    "id": "mate-uno-2-espejo",
+    "fen": "1k6/ppp5/8/8/8/8/8/1K1R4 w - - 0 1",
+    "nivel": 1,
+    "familia": "ultima-fila",
+    "fuente": "club",
+    "soluciones": [
+      "d1d8"
+    ]
+  },
+  {
+    "id": "mate-uno-2-negras-espejo",
+    "fen": "1k1r4/8/8/8/8/8/PPP5/1K6 b - - 0 1",
+    "nivel": 1,
+    "familia": "ultima-fila",
+    "fuente": "club",
+    "soluciones": [
+      "d8d1"
+    ]
+  },
+  {
+    "id": "mate-uno-3-espejo",
+    "fen": "k7/7R/8/8/8/8/8/K5R1 w - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-3",
+    "fuente": "club",
+    "soluciones": [
+      "g1g8"
+    ]
+  },
+  {
+    "id": "mate-uno-3-negras",
+    "fen": "1r5k/8/8/8/8/8/r7/7K b - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-3",
+    "fuente": "club",
+    "soluciones": [
+      "b8b1"
+    ]
+  },
+  {
+    "id": "mate-uno-3-negras-espejo",
+    "fen": "k5r1/8/8/8/8/8/7r/K7 b - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-3",
+    "fuente": "club",
+    "soluciones": [
+      "g8g1"
+    ]
+  },
+  {
+    "id": "mate-uno-4-espejo",
+    "fen": "k7/pp6/8/Q7/8/4B3/8/K7 w - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-4",
+    "fuente": "club",
+    "soluciones": [
+      "a5a7",
+      "a5d8"
+    ]
+  },
+  {
+    "id": "mate-uno-4-negras",
+    "fen": "7k/8/3b4/8/7q/8/6PP/7K b - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-4",
+    "fuente": "club",
+    "soluciones": [
+      "h4h2",
+      "h4e1"
+    ]
+  },
+  {
+    "id": "mate-uno-4-negras-espejo",
+    "fen": "k7/8/4b3/8/q7/8/PP6/K7 b - - 0 1",
+    "nivel": 2,
+    "familia": "mate-uno-4",
+    "fuente": "club",
+    "soluciones": [
+      "a4d1",
+      "a4a2"
+    ]
+  },
+  {
+    "id": "mate-uno-6-espejo",
+    "fen": "8/8/k1K5/8/8/8/8/7R w - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-6",
+    "fuente": "club",
+    "soluciones": [
+      "h1a1"
+    ]
+  },
+  {
+    "id": "mate-uno-6-negras",
+    "fen": "r7/8/8/8/8/5k1K/8/8 b - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-6",
+    "fuente": "club",
+    "soluciones": [
+      "a8h8"
+    ]
+  },
+  {
+    "id": "mate-uno-6-negras-espejo",
+    "fen": "7r/8/8/8/8/K1k5/8/8 b - - 0 1",
+    "nivel": 1,
+    "familia": "mate-uno-6",
+    "fuente": "club",
+    "soluciones": [
+      "h8a8"
+    ]
+  },
+  {
+    "id": "m1-li-0082f",
+    "fen": "r4rk1/2q2ppp/3pp3/4Pb1N/1p6/1p4Q1/PPP3PP/1K1RR3 w - - 0 22",
+    "nivel": 2,
+    "familia": "lichess-li-0082f",
+    "fuente": "lichess",
+    "rating": 882,
+    "enlace": "https://lichess.org/training/0082f",
+    "soluciones": [
+      "g3g7"
+    ]
+  },
+  {
+    "id": "m1-li-00HnR",
+    "fen": "q5kr/p4p2/4b1p1/4B2p/5n2/2P5/P1Q2PPP/3R1RK1 b - - 0 21",
+    "nivel": 2,
+    "familia": "lichess-li-00HnR",
+    "fuente": "lichess",
+    "rating": 805,
+    "enlace": "https://lichess.org/training/00HnR",
+    "soluciones": [
+      "a8g2"
+    ]
+  },
+  {
+    "id": "m1-li-00LWX",
+    "fen": "2r4k/5p2/4pNp1/6Pp/qQ5P/7r/2P5/1RKN4 b - - 3 37",
+    "nivel": 2,
+    "familia": "lichess-li-00LWX",
+    "fuente": "lichess",
+    "rating": 828,
+    "enlace": "https://lichess.org/training/00LWX",
+    "soluciones": [
+      "c8c2",
+      "a4c2"
+    ]
+  },
+  {
+    "id": "m1-li-00pHb",
+    "fen": "r6k/4qp1p/p4NrQ/1p2p3/3pP3/1P1P3P/1PP3P1/5RK1 w - - 3 24",
+    "nivel": 2,
+    "familia": "lichess-li-00pHb",
+    "fuente": "lichess",
+    "rating": 812,
+    "enlace": "https://lichess.org/training/00pHb",
+    "soluciones": [
+      "h6h7"
+    ]
+  },
+  {
+    "id": "m1-li-01H4V",
+    "fen": "r5k1/6p1/2N3pp/3p4/P2P4/1P5n/6PP/6RK b - - 0 34",
+    "nivel": 2,
+    "familia": "lichess-li-01H4V",
+    "fuente": "lichess",
+    "rating": 810,
+    "enlace": "https://lichess.org/training/01H4V",
+    "soluciones": [
+      "h3f2"
+    ]
+  },
+  {
+    "id": "m1-li-02PrW",
+    "fen": "r3k2r/1bBp1p2/pp2p3/2b3P1/2PnP1p1/2N5/PPB3P1/R2Q1RK1 b kq - 0 16",
+    "nivel": 2,
+    "familia": "lichess-li-02PrW",
+    "fuente": "lichess",
+    "rating": 853,
+    "enlace": "https://lichess.org/training/02PrW",
+    "soluciones": [
+      "d4f3",
+      "d4e2"
+    ]
+  },
+  {
+    "id": "m1-li-03ooN",
+    "fen": "r1b4k/p4n2/1qpQpr1p/1p6/2p1B2P/P1N2P2/1P6/2KR4 w - - 4 27",
+    "nivel": 2,
+    "familia": "lichess-li-03ooN",
+    "fuente": "lichess",
+    "rating": 876,
+    "enlace": "https://lichess.org/training/03ooN",
+    "soluciones": [
+      "d6f8"
+    ]
+  },
+  {
+    "id": "m1-li-03sBK",
+    "fen": "r2r4/2R3pk/5pNp/p4N2/Pn2P3/7P/1P4P1/6K1 w - - 4 29",
+    "nivel": 2,
+    "familia": "lichess-li-03sBK",
+    "fuente": "lichess",
+    "rating": 815,
+    "enlace": "https://lichess.org/training/03sBK",
+    "soluciones": [
+      "c7g7"
+    ]
+  },
+  {
+    "id": "m1-li-049zW",
+    "fen": "r3k3/1p3p1p/p1p1p3/3pPp2/2P1n2P/PP4R1/1BQ1Nq2/R2K4 b q - 0 23",
+    "nivel": 2,
+    "familia": "lichess-li-049zW",
+    "fuente": "lichess",
+    "rating": 874,
+    "enlace": "https://lichess.org/training/049zW",
+    "soluciones": [
+      "f2f1"
+    ]
+  },
+  {
+    "id": "m1-li-04Zmz",
+    "fen": "5rk1/pp6/3pp1pQ/8/3pPn2/3P2N1/PPP2qPP/R6K b - - 0 24",
+    "nivel": 2,
+    "familia": "lichess-li-04Zmz",
+    "fuente": "lichess",
+    "rating": 851,
+    "enlace": "https://lichess.org/training/04Zmz",
+    "soluciones": [
+      "f2g2"
+    ]
+  },
+  {
+    "id": "m1-li-008rw",
+    "fen": "rn2kb1r/pp2pp1p/2p2np1/4q3/8/2N4Q/PPPPBPPP/R1B1K2R w KQkq - 0 9",
+    "nivel": 2,
+    "familia": "lichess-li-008rw",
+    "fuente": "lichess",
+    "rating": 912,
+    "enlace": "https://lichess.org/training/008rw",
+    "soluciones": [
+      "h3c8"
+    ]
+  },
+  {
+    "id": "m1-li-00AfZ",
+    "fen": "2r3kq/Q7/8/1brpN3/5Pp1/4P1P1/6K1/1B6 w - - 0 44",
+    "nivel": 2,
+    "familia": "lichess-li-00AfZ",
+    "fuente": "lichess",
+    "rating": 925,
+    "enlace": "https://lichess.org/training/00AfZ",
+    "soluciones": [
+      "a7f7"
+    ]
+  },
+  {
+    "id": "m1-li-00FH6",
+    "fen": "r6r/1q2bpk1/7p/p1p1pPpn/Pp2P1nP/1P1B1N2/1BP3P1/3RR1QK b - - 8 30",
+    "nivel": 2,
+    "familia": "lichess-li-00FH6",
+    "fuente": "lichess",
+    "rating": 910,
+    "enlace": "https://lichess.org/training/00FH6",
+    "soluciones": [
+      "h5g3"
+    ]
+  },
+  {
+    "id": "m1-li-00cl7",
+    "fen": "r5k1/ppp1p1b1/4N1Q1/3pq1Bp/7P/5N2/PPP2rP1/2KR4 b - - 2 17",
+    "nivel": 2,
+    "familia": "lichess-li-00cl7",
+    "fuente": "lichess",
+    "rating": 941,
+    "enlace": "https://lichess.org/training/00cl7",
+    "soluciones": [
+      "e5b2"
+    ]
+  },
+  {
+    "id": "m1-li-00ems",
+    "fen": "2r1r1k1/1bpn1ppp/p4n2/1p6/1P1N2q1/P3P3/1BB1QPPP/3R1RK1 b - - 7 18",
+    "nivel": 2,
+    "familia": "lichess-li-00ems",
+    "fuente": "lichess",
+    "rating": 960,
+    "enlace": "https://lichess.org/training/00ems",
+    "soluciones": [
+      "g4g2"
+    ]
+  },
+  {
+    "id": "m1-li-00fDM",
+    "fen": "3rr1k1/2p3b1/1p2q2Q/3p4/1P6/2B4P/6P1/3R2K1 w - - 0 34",
+    "nivel": 2,
+    "familia": "lichess-li-00fDM",
+    "fuente": "lichess",
+    "rating": 928,
+    "enlace": "https://lichess.org/training/00fDM",
+    "soluciones": [
+      "h6g7"
+    ]
+  },
+  {
+    "id": "m1-li-00fZM",
+    "fen": "5rk1/1q3r2/3p2pQ/3p4/3B4/2P2P2/P5PP/6K1 w - - 0 31",
+    "nivel": 2,
+    "familia": "lichess-li-00fZM",
+    "fuente": "lichess",
+    "rating": 989,
+    "enlace": "https://lichess.org/training/00fZM",
+    "soluciones": [
+      "h6h8"
+    ]
+  },
+  {
+    "id": "m1-li-00pDE",
+    "fen": "r3k2r/pp3p2/1qN1p2p/3p4/P7/8/1PPK1bPP/R2Q1B1R b kq - 1 17",
+    "nivel": 2,
+    "familia": "lichess-li-00pDE",
+    "fuente": "lichess",
+    "rating": 971,
+    "enlace": "https://lichess.org/training/00pDE",
+    "soluciones": [
+      "b6e3"
+    ]
+  },
+  {
+    "id": "m1-li-00pmn",
+    "fen": "8/P6p/6p1/1k6/3Qq3/1PP5/6PP/6K1 b - - 0 35",
+    "nivel": 2,
+    "familia": "lichess-li-00pmn",
+    "fuente": "lichess",
+    "rating": 947,
+    "enlace": "https://lichess.org/training/00pmn",
+    "soluciones": [
+      "e4e1"
+    ]
+  },
+  {
+    "id": "m1-li-00sMF",
+    "fen": "r1bqr1k1/p4pPp/2p1p3/2bp3Q/8/2Nn4/PPP3PP/R1B2R1K w - - 0 16",
+    "nivel": 2,
+    "familia": "lichess-li-00sMF",
+    "fuente": "lichess",
+    "rating": 923,
+    "enlace": "https://lichess.org/training/00sMF",
+    "soluciones": [
+      "h5f7"
+    ]
+  },
+  {
+    "id": "m1-li-013fd",
+    "fen": "8/1P6/6p1/3B3p/R3P3/5PkP/1q4P1/R6K b - - 0 46",
+    "nivel": 2,
+    "familia": "lichess-li-013fd",
+    "fuente": "lichess",
+    "rating": 974,
+    "enlace": "https://lichess.org/training/013fd",
+    "soluciones": [
+      "b2g2"
+    ]
+  },
+  {
+    "id": "m1-li-01f6o",
+    "fen": "r3kb1r/pp1qp1p1/2npNp2/8/4Q2p/6P1/PPP1PPKP/R1B2R2 w kq - 0 14",
+    "nivel": 2,
+    "familia": "lichess-li-01f6o",
+    "fuente": "lichess",
+    "rating": 992,
+    "enlace": "https://lichess.org/training/01f6o",
+    "soluciones": [
+      "e4g6"
+    ]
+  },
+  {
+    "id": "m1-li-003AX",
+    "fen": "2r2rk1/5ppp/bq2p3/p2pP1N1/Pb1p2P1/1P2P2P/2QN4/2R1K2R w K - 0 19",
+    "nivel": 3,
+    "familia": "lichess-li-003AX",
+    "fuente": "lichess",
+    "rating": 1014,
+    "enlace": "https://lichess.org/training/003AX",
+    "soluciones": [
+      "c2h7"
+    ]
+  },
+  {
+    "id": "m1-li-00Pw1",
+    "fen": "5r1k/2p3Rp/3p4/p2Pn3/1p2B3/1P6/PKP1r2P/6R1 w - - 2 29",
+    "nivel": 3,
+    "familia": "lichess-li-00Pw1",
+    "fuente": "lichess",
+    "rating": 1077,
+    "enlace": "https://lichess.org/training/00Pw1",
+    "soluciones": [
+      "g7h7"
+    ]
+  },
+  {
+    "id": "m1-li-00QkV",
+    "fen": "5k1r/p3R1bp/3N1pp1/4nbB1/2P5/3rP3/q4PPP/3Q1RK1 w - - 0 17",
+    "nivel": 3,
+    "familia": "lichess-li-00QkV",
+    "fuente": "lichess",
+    "rating": 1094,
+    "enlace": "https://lichess.org/training/00QkV",
+    "soluciones": [
+      "e7e8"
+    ]
+  },
+  {
+    "id": "m1-li-00WAp",
+    "fen": "r5k1/4p2p/p5p1/1p1b2Q1/2p5/P4q2/1P3P2/R2R2KN b - - 0 28",
+    "nivel": 3,
+    "familia": "lichess-li-00WAp",
+    "fuente": "lichess",
+    "rating": 1004,
+    "enlace": "https://lichess.org/training/00WAp",
+    "soluciones": [
+      "f3h1"
+    ]
+  },
+  {
+    "id": "m1-li-00eNa",
+    "fen": "rnb1k2r/p1p2ppp/1p3n2/2b3B1/3qP3/3P1N2/PPP3PP/RN1QKB1R b KQkq - 2 8",
+    "nivel": 3,
+    "familia": "lichess-li-00eNa",
+    "fuente": "lichess",
+    "rating": 1045,
+    "enlace": "https://lichess.org/training/00eNa",
+    "soluciones": [
+      "d4f2"
+    ]
+  },
+  {
+    "id": "m1-li-00lio",
+    "fen": "r4k2/1p4R1/3pQ3/pP2p3/4q3/4Pr2/8/7K w - - 5 39",
+    "nivel": 3,
+    "familia": "lichess-li-00lio",
+    "fuente": "lichess",
+    "rating": 1086,
+    "enlace": "https://lichess.org/training/00lio",
+    "soluciones": [
+      "g7g8",
+      "e6e7",
+      "e6g8"
+    ]
+  },
+  {
+    "id": "m1-li-0104L",
+    "fen": "6k1/pQ3pp1/7p/8/3P4/6Pb/PPR2r1P/6K1 b - - 0 25",
+    "nivel": 3,
+    "familia": "lichess-li-0104L",
+    "fuente": "lichess",
+    "rating": 1010,
+    "enlace": "https://lichess.org/training/0104L",
+    "soluciones": [
+      "f2f1"
+    ]
+  },
+  {
+    "id": "m1-li-01L59",
+    "fen": "rnb2rk1/pp1p1ppp/4p3/4P3/3b1Pnq/2N3P1/PPPNB2P/R1BQ1R1K b - - 0 12",
+    "nivel": 3,
+    "familia": "lichess-li-01L59",
+    "fuente": "lichess",
+    "rating": 1073,
+    "enlace": "https://lichess.org/training/01L59",
+    "soluciones": [
+      "h4h2"
+    ]
+  },
+  {
+    "id": "m1-li-01QId",
+    "fen": "8/2Q2pk1/1Pq3p1/8/4RKP1/4RP1P/P7/6r1 b - - 10 43",
+    "nivel": 3,
+    "familia": "lichess-li-01QId",
+    "fuente": "lichess",
+    "rating": 1092,
+    "enlace": "https://lichess.org/training/01QId",
+    "soluciones": [
+      "c6f6"
+    ]
+  },
+  {
+    "id": "m1-li-002HE",
+    "fen": "1qr2rk1/1p1p1ppp/pB2p1n1/7n/2P1P3/1Q2NP1P/PP2BKPb/3R1R2 b - - 2 20",
+    "nivel": 3,
+    "familia": "lichess-li-002HE",
+    "fuente": "lichess",
+    "rating": 1116,
+    "enlace": "https://lichess.org/training/002HE",
+    "soluciones": [
+      "b8g3"
+    ]
+  },
+  {
+    "id": "m1-li-00GY4",
+    "fen": "3k2r1/pR5R/3r4/4p3/7q/3Pn1PP/PP5K/8 w - - 0 28",
+    "nivel": 3,
+    "familia": "lichess-li-00GY4",
+    "fuente": "lichess",
+    "rating": 1156,
+    "enlace": "https://lichess.org/training/00GY4",
+    "soluciones": [
+      "b7b8"
+    ]
+  },
+  {
+    "id": "m1-li-00Hut",
+    "fen": "r4rk1/4p1bp/3p2p1/q1pP1P2/4QP2/4B3/1pK4P/1B1R3R b - - 1 22",
+    "nivel": 3,
+    "familia": "lichess-li-00Hut",
+    "fuente": "lichess",
+    "rating": 1162,
+    "enlace": "https://lichess.org/training/00Hut",
+    "soluciones": [
+      "a5c3"
+    ]
+  },
+  {
+    "id": "m1-li-00MYL",
+    "fen": "1R6/5Q2/p1kb1p2/2r1p3/3n4/P6P/5PP1/4qBK1 w - - 2 41",
+    "nivel": 3,
+    "familia": "lichess-li-00MYL",
+    "fuente": "lichess",
+    "rating": 1100,
+    "enlace": "https://lichess.org/training/00MYL",
+    "soluciones": [
+      "f7b7"
+    ]
+  },
+  {
+    "id": "m1-li-00jPw",
+    "fen": "r3r1k1/ppp2R2/1b5Q/3PP2n/2B3bq/2N5/PP4PP/R6K b - - 0 18",
+    "nivel": 3,
+    "familia": "lichess-li-00jPw",
+    "fuente": "lichess",
+    "rating": 1159,
+    "enlace": "https://lichess.org/training/00jPw",
+    "soluciones": [
+      "h5g3"
+    ]
+  },
+  {
+    "id": "m1-li-004JD",
+    "fen": "3r4/R7/2p5/p1P2p2/1p4k1/nP2K3/P3NP2/8 b - - 4 41",
+    "nivel": 4,
+    "familia": "lichess-li-004JD",
+    "fuente": "lichess",
+    "rating": 1291,
+    "enlace": "https://lichess.org/training/004JD",
+    "soluciones": [
+      "a3c2"
+    ]
+  },
+  {
+    "id": "m1-li-009J1",
+    "fen": "rn3k1r/pp2bp1p/2p1pNp1/6B1/5P2/7P/PPP4P/2K1RR2 w - - 4 18",
+    "nivel": 3,
+    "familia": "lichess-li-009J1",
+    "fuente": "lichess",
+    "rating": 1243,
+    "enlace": "https://lichess.org/training/009J1",
+    "soluciones": [
+      "g5h6"
+    ]
+  },
+  {
+    "id": "m1-li-00H1C",
+    "fen": "r3r3/1kpR1qpp/p1n2p2/Qp2P2P/1N6/4Pb2/PPP3P1/2K2R2 w - - 1 23",
+    "nivel": 3,
+    "familia": "lichess-li-00H1C",
+    "fuente": "lichess",
+    "rating": 1249,
+    "enlace": "https://lichess.org/training/00H1C",
+    "soluciones": [
+      "a5c7"
+    ]
+  },
+  {
+    "id": "m1-li-00LPw",
+    "fen": "1rb4r/pp1nb1pp/6k1/3np3/2q1P3/2N2Q2/PPP2PPP/R1B1K2R w KQ - 0 13",
+    "nivel": 3,
+    "familia": "lichess-li-00LPw",
+    "fuente": "lichess",
+    "rating": 1207,
+    "enlace": "https://lichess.org/training/00LPw",
+    "soluciones": [
+      "f3f5"
+    ]
+  },
+  {
+    "id": "m1-li-00qoE",
+    "fen": "1n1q2rk/p3b3/1pr1p1Rp/2p1P3/4N3/2PP1N1P/P3B2K/6R1 w - - 0 29",
+    "nivel": 4,
+    "familia": "lichess-li-00qoE",
+    "fuente": "lichess",
+    "rating": 1251,
+    "enlace": "https://lichess.org/training/00qoE",
+    "soluciones": [
+      "g6h6"
+    ]
+  },
+  {
+    "id": "m1-li-00u3h",
+    "fen": "8/2p2r1p/1p4pk/p2PQ3/2P3P1/1P1q1B1P/P1n3K1/8 w - - 8 42",
+    "nivel": 3,
+    "familia": "lichess-li-00u3h",
+    "fuente": "lichess",
+    "rating": 1213,
+    "enlace": "https://lichess.org/training/00u3h",
+    "soluciones": [
+      "g4g5"
+    ]
+  },
+  {
+    "id": "m1-li-00Zwc",
+    "fen": "r2k4/pp1nRr2/2pP1N1p/8/3P3p/8/PPP3P1/6K1 w - - 0 25",
+    "nivel": 4,
+    "familia": "lichess-li-00Zwc",
+    "fuente": "lichess",
+    "rating": 1328,
+    "enlace": "https://lichess.org/training/00Zwc",
+    "soluciones": [
+      "e7e8"
+    ]
+  },
+  {
+    "id": "m1-li-00fXd",
+    "fen": "8/Q5b1/p3p3/1p1kqpN1/1P6/P7/4nPP1/5K2 w - - 6 47",
+    "nivel": 4,
+    "familia": "lichess-li-00fXd",
+    "fuente": "lichess",
+    "rating": 1341,
+    "enlace": "https://lichess.org/training/00fXd",
+    "soluciones": [
+      "a7c5"
+    ]
+  },
+  {
+    "id": "m1-li-015mX",
+    "fen": "r3k2r/1ppqb2p/p1b1N3/3pPp2/3P2Q1/2P5/PP4PP/RNB3K1 w kq - 0 15",
+    "nivel": 4,
+    "familia": "lichess-li-015mX",
+    "fuente": "lichess",
+    "rating": 1394,
+    "enlace": "https://lichess.org/training/015mX",
+    "soluciones": [
+      "g4h5"
+    ]
+  },
+  {
+    "id": "m1-li-00HXr",
+    "fen": "2k4r/Q1p2pp1/5n2/3rNq2/4p3/6pb/PPP1BP1P/R3R1K1 w - - 0 23",
+    "nivel": 4,
+    "familia": "lichess-li-00HXr",
+    "fuente": "lichess",
+    "rating": 1437,
+    "enlace": "https://lichess.org/training/00HXr",
+    "soluciones": [
+      "a7a8"
+    ]
+  },
+  {
+    "id": "m1-li-00ySR",
+    "fen": "4rk2/pprR3p/1b4p1/6B1/4p2P/1B6/PP3PP1/6K1 w - - 1 32",
+    "nivel": 4,
+    "familia": "lichess-li-00ySR",
+    "fuente": "lichess",
+    "rating": 1483,
+    "enlace": "https://lichess.org/training/00ySR",
+    "soluciones": [
+      "g5h6"
+    ]
+  },
+  {
+    "id": "m1-li-001cr",
+    "fen": "8/3B2pp/p5k1/6P1/1ppp1K2/8/1P6/8 w - - 0 39",
+    "nivel": 5,
+    "familia": "lichess-li-001cr",
+    "fuente": "lichess",
+    "rating": 1517,
+    "enlace": "https://lichess.org/training/001cr",
+    "soluciones": [
+      "d7e8"
+    ]
+  },
+  {
+    "id": "m1-li-00CWE",
+    "fen": "3r4/1p4p1/2pB1bBp/p1Pk4/3rp3/P7/1PK2P2/4R3 w - - 2 32",
+    "nivel": 5,
+    "familia": "lichess-li-00CWE",
+    "fuente": "lichess",
+    "rating": 1503,
+    "enlace": "https://lichess.org/training/00CWE",
+    "soluciones": [
+      "g6f7"
+    ]
+  },
+  {
+    "id": "m1-li-00Mbv",
+    "fen": "2k2b1r/pp3ppp/8/BN2p1P1/2n1Nn1P/8/PP3P2/2KR4 w - - 0 25",
+    "nivel": 5,
+    "familia": "lichess-li-00Mbv",
+    "fuente": "lichess",
+    "rating": 1551,
+    "enlace": "https://lichess.org/training/00Mbv",
+    "soluciones": [
+      "d1d8"
+    ]
+  },
+  {
+    "id": "m1-li-00Qqp",
+    "fen": "6k1/4P3/p5p1/8/8/2P3PP/1r5r/R3RK2 b - - 0 46",
+    "nivel": 5,
+    "familia": "lichess-li-00Qqp",
+    "fuente": "lichess",
+    "rating": 1592,
+    "enlace": "https://lichess.org/training/00Qqp",
+    "soluciones": [
+      "h2h1"
+    ]
+  },
+  {
+    "id": "m1-li-00VIe",
+    "fen": "8/8/8/P6p/8/2Rnk3/r7/3KN3 b - - 2 60",
+    "nivel": 5,
+    "familia": "lichess-li-00VIe",
+    "fuente": "lichess",
+    "rating": 1667,
+    "enlace": "https://lichess.org/training/00VIe",
+    "soluciones": [
+      "a2d2"
+    ]
+  },
+  {
+    "id": "m1-li-016fz",
+    "fen": "8/8/3R4/1P3k2/2Bb2p1/6K1/7r/8 b - - 2 63",
+    "nivel": 5,
+    "familia": "lichess-li-016fz",
+    "fuente": "lichess",
+    "rating": 1733,
+    "enlace": "https://lichess.org/training/016fz",
+    "soluciones": [
+      "d4e5"
+    ]
+  }
+]
