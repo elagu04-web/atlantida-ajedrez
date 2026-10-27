@@ -3,6 +3,7 @@
 import { createContext, useContext, ReactNode } from "react";
 import {
   Torneo,
+  type OpcionesLibres,
   FormatoTorneo,
   EstadoTorneo,
   RondaTorneo,
@@ -75,7 +76,7 @@ type TorneosContextType = {
   obtenerTorneo: (id: string) => Torneo | undefined;
   agregarJugadorATorneo: (torneoId: string, jugadorId: string) => Promise<void>;
   quitarJugadorDeTorneo: (torneoId: string, jugadorId: string) => Promise<void>;
-  generarRondas: (torneoId: string, jugadorByeElegido?: string) => Promise<void>;
+  generarRondas: (torneoId: string, jugadorByeElegido?: string, opciones?: OpcionesLibres) => Promise<boolean>;
   registrarResultado: (
     torneoId: string,
     rondaNumero: number,
@@ -323,50 +324,53 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
     registrar("torneo", `Se quitó a ${nombreDe(jugadorId)} del torneo "${torneo.nombre}".`);
   }
 
-  async function generarRondas(torneoId: string, jugadorByeElegido?: string) {
+  async function generarRondas(torneoId: string, jugadorByeElegido?: string, opciones: OpcionesLibres = {}) {
     const torneo = obtenerTorneo(torneoId);
-    if (!torneo || torneo.jugadoresIds.length < 2) return;
+    if (!torneo || torneo.jugadoresIds.length < 2) return false;
 
-    let nuevasRondas: RondaTorneo[];
-    const nuevoEstado: EstadoTorneo = "en_curso";
+    try {
+      let nuevasRondas: RondaTorneo[];
+      const nuevoEstado: EstadoTorneo = "en_curso";
 
-    if (torneo.formato === "round-robin") {
-      if (torneo.rondas.length > 0) return;
-      nuevasRondas = generarRoundRobin(torneo.jugadoresIds, torneo.idaYVuelta === true, jugadorByeElegido);
-    } else if (torneo.formato === "match") {
-      if (torneo.rondas.length > 0) return;
-      if (torneo.jugadoresIds.length !== 2) return;
-      nuevasRondas = generarMatch(torneo.jugadoresIds, torneo.rondasObjetivo ?? PARTIDAS_MATCH_POR_DEFECTO);
-    } else {
-      if (torneo.rondasObjetivo && torneo.rondas.length >= torneo.rondasObjetivo) {
-        return; // ya se jugaron todas las rondas planificadas
+      if (torneo.formato === "round-robin") {
+        if (torneo.rondas.length > 0) return false;
+        nuevasRondas = generarRoundRobin(torneo.jugadoresIds, torneo.idaYVuelta === true, jugadorByeElegido, opciones.ordenRoundRobin);
+      } else if (torneo.formato === "match") {
+        if (torneo.rondas.length > 0) return false;
+        if (torneo.jugadoresIds.length !== 2) return false;
+        nuevasRondas = generarMatch(torneo.jugadoresIds, torneo.rondasObjetivo ?? PARTIDAS_MATCH_POR_DEFECTO);
+      } else {
+        if (torneo.rondasObjetivo && torneo.rondas.length >= torneo.rondasObjetivo) {
+          return false; // ya se jugaron todas las rondas planificadas
+        }
+        const ultimaRonda = torneo.rondas[torneo.rondas.length - 1];
+        if (ultimaRonda && ultimaRonda.emparejamientos.some((e) => e.negrasId && e.resultado === null)) {
+          return false; // faltan resultados por cargar
+        }
+        const enVivo = calcularEloYHistorialEnVivo(jugadores, torneos);
+        const elos = new Map(enVivo.map((j) => [j.id, j.eloAtlantida]));
+        const siguienteNumero = torneo.rondas.length + 1;
+        const nuevaRonda =
+          siguienteNumero === 1
+            ? generarRondaUnoDutch(torneo.jugadoresIds, elos, jugadorByeElegido, opciones.solicitados)
+            : generarRondaSuiza(torneo, siguienteNumero, elos, jugadorByeElegido, opciones.solicitados);
+        nuevasRondas = [...torneo.rondas, nuevaRonda];
       }
-      const ultimaRonda = torneo.rondas[torneo.rondas.length - 1];
-      if (ultimaRonda && ultimaRonda.emparejamientos.some((e) => e.resultado === null)) {
-        return; // faltan resultados por cargar
-      }
-      const enVivo = calcularEloYHistorialEnVivo(jugadores, torneos);
-      const elos = new Map(enVivo.map((j) => [j.id, j.eloAtlantida]));
-      const siguienteNumero = torneo.rondas.length + 1;
-      const nuevaRonda =
-        siguienteNumero === 1
-          ? generarRondaUnoDutch(torneo.jugadoresIds, elos, jugadorByeElegido)
-          : generarRondaSuiza(torneo, siguienteNumero, elos, jugadorByeElegido);
-      nuevasRondas = [...torneo.rondas, nuevaRonda];
-    }
 
-    // La primera ronda que se genera marca "cuándo arrancó de verdad" el
-    // torneo — con la creación rápida puede haber quedado armado días antes.
-    const iniciadoEn = torneo.iniciadoEn ?? new Date().toISOString();
+      // La primera ronda que se genera marca "cuándo arrancó de verdad" el
+      // torneo — con la creación rápida puede haber quedado armado días antes.
+      const iniciadoEn = torneo.iniciadoEn ?? new Date().toISOString();
 
 
-    if (!(await guardar(torneoId, { rondas: nuevasRondas, estado: nuevoEstado, iniciado_en: iniciadoEn }))) return;
-    registrar(
-      "torneo",
-      torneo.formato === "round-robin" || torneo.formato === "match"
-        ? `Se generaron todas las rondas del torneo "${torneo.nombre}".`
-        : `Se generó la ronda ${nuevasRondas.length} del torneo "${torneo.nombre}".`
-    );
+      if (!(await guardar(torneoId, { rondas: nuevasRondas, estado: nuevoEstado, iniciado_en: iniciadoEn }))) return false;
+      registrar(
+        "torneo",
+        torneo.formato === "round-robin" || torneo.formato === "match"
+          ? `Se generaron todas las rondas del torneo "${torneo.nombre}".`
+          : `Se generó la ronda ${nuevasRondas.length} del torneo "${torneo.nombre}".`
+      );
+      return true;
+    } catch(causa) { avisar(causa instanceof Error ? causa.message : "No se pudo generar el emparejamiento."); return false; }
   }
 
   async function registrarResultado(

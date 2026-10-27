@@ -13,7 +13,8 @@ export function HeaderNav() {
   const [abierto,setAbierto]=useState(false);const pathname=usePathname();const {esAdmin}=useAuth();
   const activo=(href:string)=>href==="/"?pathname==="/":pathname===href||pathname.startsWith(`${href}/`);
   useEffect(()=>{function cerrar(e:KeyboardEvent){if(e.key==="Escape")setAbierto(false);}document.addEventListener("keydown",cerrar);return()=>document.removeEventListener("keydown",cerrar);},[]);
-  const links=esAdmin?[...navLinks,...gestion]:navLinks;
+  const publicos=[...navLinks.slice(0,3),{href:"/aprender",label:"Aprender desde cero"},...navLinks.slice(3)];
+  const links=esAdmin?[...publicos,...gestion]:publicos;
   return <div className="site-width">
     <div className="flex min-h-20 items-center justify-between gap-4">
       <Link href="/" className="brand" onClick={()=>setAbierto(false)}><span className="brand-mark"><LogoClub claseTam="h-8 w-8" /></span><span><span className="block text-sm font-bold tracking-tight sm:text-base">Atlántida Ajedrez</span><span className="mt-0.5 block text-[9px] font-medium uppercase tracking-[0.2em] text-zinc-400">El club, jugada a jugada</span></span></Link>

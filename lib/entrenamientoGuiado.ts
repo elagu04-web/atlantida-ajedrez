@@ -1,3 +1,4 @@
+import {leerDesdeCero,combinarDesdeCero,type ProgresoDesdeCero} from "./aprenderDesdeCero";
 import { leerRepertorio, combinarRepertorios, type RepertorioAperturas } from "./entrenamientoAperturas";
 import { Chess } from "chess.js";
 import { fechaMontevideo } from "./desafios";
@@ -44,7 +45,7 @@ export type PrimerResultado = {fecha:string;acierto:boolean};
 export type NivelInicial = {elo:number;jugadorId:string|null;fecha:string};
 export type AvanceGuiado = { perfilTema?:PerfilTemaEjercicio; practica?: PracticaError; actualizada?: string; nota?: string; notaActualizada?: string; razonamiento?: RazonamientoGuiado; razonamientoActualizada?: string; primerResultado?:PrimerResultado };
 export type SesionGuiada = { id: string; dia: string; ruta: RutaGuiada; items: string[]; indice: number; terminada: boolean; actualizada: string };
-export type ProgresoGuiado = { version: 1; ruta: RutaGuiada; rutaActualizada: string; actividad: ActividadGuiada; actividadActualizada: string; ejercicios: Record<string, AvanceGuiado>; sesionEnCurso: SesionGuiada | null; sesionActualizada: string; nivelInicial?:NivelInicial; aperturas?:RepertorioAperturas };
+export type ProgresoGuiado = { version: 1; desdeCero?:ProgresoDesdeCero; ruta: RutaGuiada; rutaActualizada: string; actividad: ActividadGuiada; actividadActualizada: string; ejercicios: Record<string, AvanceGuiado>; sesionEnCurso: SesionGuiada | null; sesionActualizada: string; nivelInicial?:NivelInicial; aperturas?:RepertorioAperturas };
 export const FECHA_INICIAL_GUIADO = "1970-01-01T00:00:00.000Z";
 export function progresoGuiadoInicial(): ProgresoGuiado { return { version: 1, ruta: "base", rutaActualizada: FECHA_INICIAL_GUIADO, actividad: "tactica", actividadActualizada: FECHA_INICIAL_GUIADO, ejercicios: {}, sesionEnCurso: null, sesionActualizada: FECHA_INICIAL_GUIADO }; }
 const isoValida = (s: unknown): s is string => typeof s === "string" && s.length <= 30 && Number.isFinite(Date.parse(s)) && /^\d{4}-\d\d-\d\dT/.test(s);
@@ -67,6 +68,7 @@ export function leerProgresoGuiado(texto: string): ProgresoGuiado {
   try {
     const v: unknown = JSON.parse(texto); if (!esObjeto(v) || v.version !== 1) return inicial;
     if(v.aperturas)inicial.aperturas=leerRepertorio(v.aperturas);
+    if(v.desdeCero)inicial.desdeCero=leerDesdeCero(v.desdeCero);
     const n=v.nivelInicial;
     if(esObjeto(n)&&Number.isInteger(n.elo)&&Number(n.elo)>=800&&Number(n.elo)<=2700&&(n.jugadorId===null||(typeof n.jugadorId==="string"&&n.jugadorId.length<=100))&&isoValida(n.fecha))inicial.nivelInicial=n as NivelInicial;
     if (rutaValida(v.ruta) && isoValida(v.rutaActualizada)) { inicial.ruta = v.ruta; inicial.rutaActualizada = v.rutaActualizada; }
@@ -120,6 +122,7 @@ export function combinarProgresoGuiado(a: ProgresoGuiado, b: ProgresoGuiado): Pr
   const ruta = masReciente(pa, pa.rutaActualizada, pb, pb.rutaActualizada), actividad = masReciente(pa, pa.actividadActualizada, pb, pb.actividadActualizada), sesion = masReciente(pa, pa.sesionActualizada, pb, pb.sesionActualizada);
   const iniciales=[pa.nivelInicial,pb.nivelInicial].filter((v):v is NivelInicial=>!!v).sort((a,b)=>a.fecha.localeCompare(b.fecha)||JSON.stringify(a).localeCompare(JSON.stringify(b)));
   if(iniciales.length)resultado.nivelInicial=iniciales[0];
+  if(pa.desdeCero||pb.desdeCero)resultado.desdeCero=combinarDesdeCero(pa.desdeCero,pb.desdeCero);
   if(pa.aperturas||pb.aperturas)resultado.aperturas=combinarRepertorios(pa.aperturas,pb.aperturas);
   return { ...resultado, ruta: ruta.ruta, rutaActualizada: ruta.rutaActualizada, actividad: actividad.actividad, actividadActualizada: actividad.actividadActualizada, sesionEnCurso: sesion.sesionEnCurso, sesionActualizada: sesion.sesionActualizada };
 }

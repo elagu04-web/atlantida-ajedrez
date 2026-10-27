@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { ConfiguracionLibres } from "@/components/ConfiguracionLibres";
 import { useParams } from "next/navigation";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
@@ -12,6 +13,8 @@ import { usePremiosTorneo } from "@/context/usePremiosTorneo";
 import { premioEnTorneo } from "@/lib/premiosTorneo";
 import {
   rondaCompleta,
+  textoDescanso,
+  type OpcionesLibres,
   puedeEditarJugadores,
   puedeEditarEmparejamientos,
   determinarCampeon,
@@ -74,7 +77,8 @@ export default function TorneoPage() {
   const puedeEditar = esAdmin;
   const { premios, error: errorPremios } = usePremiosTorneo();
 
-  const [byeElegido, setByeElegido] = useState("");
+  const [configLibres,setConfigLibres] = useState<{clave:string;opciones:OpcionesLibres;bye:string}>({clave:"",opciones:{},bye:""});
+  const [generando,setGenerando] = useState(false);
   const [jugadorAAgregar, setJugadorAAgregar] = useState("");
   const [busquedaAgregar, setBusquedaAgregar] = useState("");
   const [mostrarListaAgregar, setMostrarListaAgregar] = useState(false);
@@ -218,6 +222,12 @@ export default function TorneoPage() {
   async function handleRegistrarFinal(jugadorIds: string[], ganadorId: string) {
     await registrarFinalDesempate(torneo!.id, jugadorIds, ganadorId);
   }
+
+  const claveLibres = `${torneo.id}:${torneo.formato}:${torneo.rondas.length}`;
+  const configuracion = configLibres.clave===claveLibres ? configLibres : {clave:claveLibres,opciones:{},bye:""};
+  const opcionesLibres = configuracion.opciones, byeElegido = configuracion.bye;
+  const setOpcionesLibres = (opciones:OpcionesLibres) => setConfigLibres({...configuracion,opciones});
+  const setByeElegido = (bye:string) => setConfigLibres(prev=>({...(prev.clave===claveLibres?prev:configuracion),bye}));
 
   const ultimaRonda = torneo.rondas[torneo.rondas.length - 1];
   const puedeEditarEstaRonda = Boolean(ultimaRonda && puedeEditarEmparejamientos(ultimaRonda));
@@ -566,44 +576,20 @@ export default function TorneoPage() {
         </p>
       )}
 
-      {puedeGenerarRondas &&
-        puedeEditar &&
-        torneo.formato !== "match" &&
-        (torneo.formato === "round-robin" ? torneo.rondas.length === 0 : true) &&
-        torneo.jugadoresIds.length % 2 !== 0 && (
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-medium text-zinc-400">
-              ¿Quién descansa en la ronda {torneo.formato === "round-robin" ? 1 : torneo.rondas.length + 1}?
-            </span>
-            <select
-              value={byeElegido}
-              onChange={(e) => setByeElegido(e.target.value)}
-              className="rounded-md border border-white/20 bg-white/5 px-2 py-1 text-xs"
-            >
-              <option value="">
-                {torneo.formato === "round-robin" || torneo.rondas.length === 0
-                  ? "Automático (menor Elo)"
-                  : "Automático (menor puntaje)"}
-              </option>
-              {inscriptos.map((j) => (
-                <option key={j!.id} value={j!.id}>
-                  {nombreVisible(j!)}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+      {puedeGenerarRondas && puedeEditar && <ConfiguracionLibres jugadores={inscriptos.filter(j=>!!j).map(j=>({id:j!.id,nombre:nombreVisible(j!)}))} formato={torneo.formato} ronda={torneo.rondas.length+1} idaYVuelta={torneo.idaYVuelta===true} opciones={opcionesLibres} cambiar={setOpcionesLibres} bye={byeElegido} cambiarBye={setByeElegido} bloqueado={generando}/>}
 
       <div className="flex flex-wrap items-center gap-3">
         {puedeGenerarRondas && puedeEditar && (
           <button
-            onClick={() => {
-              generarRondas(torneo.id, byeElegido || undefined);
-              setByeElegido("");
+            disabled={generando}
+            onClick={async () => {
+              setGenerando(true);
+              try { if(await generarRondas(torneo.id, torneo.formato==="suizo"?byeElegido||undefined:undefined, opcionesLibres)){setConfigLibres({clave:"",opciones:{},bye:""});} }
+              finally { setGenerando(false); }
             }}
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
-            {textoBotonRondas}
+            {generando?"Generando…":textoBotonRondas}
           </button>
         )}
         {torneo.rondas.length > 0 && torneo.estado !== "finalizado" && puedeEditar && (
@@ -868,7 +854,7 @@ export default function TorneoPage() {
                             </button>
                           </>
                         ) : (
-                          <span className="flex-1 text-center text-xs text-zinc-400">— descansa —</span>
+                          <span className="flex-1 text-center text-xs text-zinc-400">{textoDescanso(torneo,e)}</span>
                         )}
                       </div>
                     );
@@ -878,7 +864,7 @@ export default function TorneoPage() {
                     return (
                       <div key={e.numero} className="flex items-center justify-between p-4 text-sm text-zinc-400">
                         <span>{nombreDe(e.blancasId)}</span>
-                        <span className="text-zinc-400">{torneo.formato === "round-robin" ? "— descanso · 0 puntos —" : "— bye · 1 punto —"}</span>
+                        <span className="text-zinc-400">{textoDescanso(torneo,e)}</span>
                       </div>
                     );
                   }

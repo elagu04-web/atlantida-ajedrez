@@ -9,7 +9,24 @@ export type EmparejamientoTorneo = {
   blancasId: string;
   negrasId: string | null; // null = descanso (bye)
   resultado: ResultadoPartida | null;
+  libreSolicitado?: boolean; // ausencia pedida para esta ronda: 0 puntos, sin partida
 };
+
+export type OpcionesLibres = { solicitados?: string[]; ordenRoundRobin?: string[] };
+
+export function puntosDescanso(torneo: Pick<Torneo,"formato">, emp: EmparejamientoTorneo): number {
+  return torneo.formato === "round-robin" || emp.libreSolicitado ? 0 : 1;
+}
+export function textoDescanso(torneo: Pick<Torneo,"formato">, emp: EmparejamientoTorneo): string {
+  return emp.libreSolicitado ? "Libre solicitado · 0 puntos" : puntosDescanso(torneo,emp) === 0 ? "Descanso · 0 puntos" : "BYE · 1 punto";
+}
+function validarLibres(jugadoresIds: string[], solicitados: string[]): string[] {
+  if (solicitados.some(id => !jugadoresIds.includes(id))) throw new Error("Hay un libre solicitado de un jugador que no está en el torneo.");
+  return [...new Set(solicitados)];
+}
+function agregarLibres(ronda: RondaTorneo, ids: string[]): RondaTorneo {
+  return {...ronda, emparejamientos:[...ronda.emparejamientos,...ids.map((id,i)=>({numero:ronda.emparejamientos.length+i+1,blancasId:id,negrasId:null,resultado:null,libreSolicitado:true}))]};
+}
 
 export type RondaTorneo = {
   numero: number;
@@ -129,9 +146,10 @@ function intercambiarJugadorEnRondas(rondas: RondaTorneo[], a: string, b: string
 export function generarRoundRobin(
   jugadoresIds: string[],
   idaYVuelta = false,
-  jugadorByeElegido?: string
+  jugadorByeElegido?: string,
+  ordenDescansos: string[] = []
 ): RondaTorneo[] {
-  const matches = RoundRobin(jugadoresIds, 1, false) as Match[];
+  const matches = RoundRobin([...jugadoresIds], 1, true) as Match[];
   const porRonda = new Map<number, Match[]>();
   for (const m of matches) {
     if (!porRonda.has(m.round)) porRonda.set(m.round, []);
@@ -150,6 +168,22 @@ export function generarRoundRobin(
       rondasIda = intercambiarJugadorEnRondas(rondasIda, byeActual, jugadorByeElegido);
     }
   }
+
+  if (ordenDescansos.length) {
+    validarLibres(jugadoresIds, ordenDescansos);
+    if (new Set(ordenDescansos).size !== ordenDescansos.length) throw new Error("El orden de descansos no puede repetir jugadores.");
+    if (jugadoresIds.length % 2 === 0) throw new Error("Con cantidad par de jugadores no hay descansos de round robin.");
+    const pendientes = [...rondasIda];
+    const ordenadas: RondaTorneo[] = [];
+    for (const id of ordenDescansos) {
+      const i = pendientes.findIndex(r => r.emparejamientos.some(e => !e.negrasId && e.blancasId === id));
+      if (i < 0) throw new Error("No se encontró el descanso del jugador.");
+      ordenadas.push(...pendientes.splice(i,1));
+    }
+    rondasIda = [...ordenadas,...pendientes].map((r,i)=>({...r,numero:i+1}));
+  }
+  // Los descansos nuevos no guardan un 1-0 ficticio.
+  rondasIda = rondasIda.map(r=>({...r,emparejamientos:r.emparejamientos.map(e=>e.negrasId?e:{...e,resultado:null})}));
 
   if (!idaYVuelta) return rondasIda;
 
@@ -206,7 +240,7 @@ export function calcularStandings(torneo: Torneo): Map<string, Standing> {
     for (const emp of ronda.emparejamientos) {
       // Un descanso de round robin no es una partida ni otorga puntos.
       // También corrige calendarios antiguos que lo guardaron como 1-0.
-      if (!emp.negrasId && torneo.formato === "round-robin") continue;
+      if (!emp.negrasId && puntosDescanso(torneo,emp) === 0) continue;
       const blancas = standings.get(emp.blancasId);
       const negras = emp.negrasId ? standings.get(emp.negrasId) : undefined;
 
@@ -291,9 +325,9 @@ function progresivoDeJugador(torneo: Torneo, jugadorId: string): number {
     const emp = ronda.emparejamientos.find(
       (e) => e.blancasId === jugadorId || e.negrasId === jugadorId
     );
-    if (!emp || !emp.resultado) continue;
+    if (!emp || (emp.negrasId && !emp.resultado)) continue;
     let ganado = 0;
-    if (!emp.negrasId) ganado = torneo.formato === "round-robin" ? 0 : 1;
+    if (!emp.negrasId) ganado = puntosDescanso(torneo,emp);
     else if (emp.resultado === "1/2-1/2") ganado = 0.5;
     else if (
       (emp.resultado === "1-0" && emp.blancasId === jugadorId) ||
@@ -418,9 +452,11 @@ export function rondaActualDelTorneo(torneo: Torneo): RondaTorneo | null {
 export function generarRondaUnoDutch(
   jugadoresIds: string[],
   elos: Map<string, number>,
-  jugadorByeElegido?: string
+  jugadorByeElegido?: string,
+  libresSolicitados: string[] = []
 ): RondaTorneo {
-  let ordenados = [...jugadoresIds].sort(
+  const libres = validarLibres(jugadoresIds, libresSolicitados);
+  let ordenados = jugadoresIds.filter(id => !libres.includes(id)).sort(
     (a, b) => (elos.get(b) ?? 0) - (elos.get(a) ?? 0)
   );
 
@@ -454,7 +490,7 @@ export function generarRondaUnoDutch(
     });
   }
 
-  return { numero: 1, emparejamientos };
+  return agregarLibres({ numero: 1, emparejamientos }, libres);
 }
 
 /**
@@ -470,10 +506,12 @@ export function generarRondaSuiza(
   torneo: Torneo,
   numeroRonda: number,
   elos: Map<string, number>,
-  jugadorByeElegido?: string
+  jugadorByeElegido?: string,
+  libresSolicitados: string[] = []
 ): RondaTorneo {
+  const libres = validarLibres(torneo.jugadoresIds, libresSolicitados);
   const standings = calcularStandings(torneo);
-  let jugadoresIds = torneo.jugadoresIds;
+  let jugadoresIds = torneo.jugadoresIds.filter(id => !libres.includes(id));
   let byeForzado: string | null = null;
 
   if (jugadoresIds.length % 2 !== 0) {
@@ -500,7 +538,7 @@ export function generarRondaSuiza(
       rating: elos.get(id) ?? null,
     };
   });
-  const matches = Swiss(players, numeroRonda, true, true) as Match[];
+  const matches = players.length ? Swiss(players, numeroRonda, true, true) as Match[] : [];
   const emparejamientos = matches.map((m, i) => construirEmparejamiento(m, i + 1));
   if (byeForzado) {
     emparejamientos.push({
@@ -510,7 +548,7 @@ export function generarRondaSuiza(
       resultado: "1-0",
     });
   }
-  return { numero: numeroRonda, emparejamientos };
+  return agregarLibres({ numero: numeroRonda, emparejamientos }, libres);
 }
 
 export function rondaCompleta(ronda: RondaTorneo): boolean {
@@ -641,6 +679,7 @@ export function intercambiarEnRonda(
   const jugadorA = jugadorEnSlot(ronda, slotA);
   const jugadorB = jugadorEnSlot(ronda, slotB);
   if (!jugadorA || !jugadorB || jugadorA === jugadorB) return ronda;
+  if (ronda.emparejamientos.some(e=>e.libreSolicitado && [slotA.emparejamientoNumero,slotB.emparejamientoNumero].includes(e.numero))) return ronda;
 
   return {
     ...ronda,

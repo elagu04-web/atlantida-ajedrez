@@ -1,4 +1,5 @@
 "use client";
+import { textoDescanso } from "@/lib/tournaments";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -286,7 +287,7 @@ export default function PantallaTorneoPage() {
                       <span className="col-span-4 flex min-w-0 items-center gap-1.5 text-sm font-bold text-zinc-400 sm:gap-3 sm:text-xl lg:gap-4 lg:text-4xl">
                         <FotoJugador fotoUrl={fotoDe(e.blancasId)} nombre={nombreDe(e.blancasId)} claseTam={TAM_FOTO_PARTIDO} />
                         <span className="truncate">{nombreDe(e.blancasId)}</span>
-                        <span className="shrink-0 text-xs font-medium sm:text-lg lg:text-2xl">— descansa</span>
+                        <span className="shrink-0 text-xs font-medium sm:text-lg lg:text-2xl">— {textoDescanso(torneo,e)}</span>
                       </span>
                     )}
                   </div>
