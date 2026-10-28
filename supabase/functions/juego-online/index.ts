@@ -43,6 +43,26 @@ Deno.serve(async(req:Request)=>{
   }
   if(!fila)return respuesta({error:'Esta mesa no existe o ya no está disponible.'},404);
   const p=fila as PartidaOnline,color=colorOnline(p,user.id),esParticipante=color!==null;
+  // Tournament members may ask the server to settle an expired clock. They
+  // cannot choose a result or inspect anyone else's position or move history.
+  if(b.accion==='arbitrar'){
+   if(!p.torneo_id)return respuesta({error:'Esta mesa no pertenece a un torneo.'},403);
+   const [{data:t},{data:j}]=await Promise.all([
+    db.from('online_torneos').select('organizador_id').eq('id',p.torneo_id).maybeSingle(),
+    db.from('online_torneo_jugadores').select('usuario_id').eq('torneo_id',p.torneo_id).eq('usuario_id',user.id).maybeSingle(),
+   ]);
+   if(!t||(t.organizador_id!==user.id&&!j))return respuesta({error:'Solo los participantes y el organizador pueden actualizar esta ronda.'},403);
+   if(p.estado.fase==='activa'){
+    const estado=aplicarAccionOnline(p.estado,'w',{tipo:'tiempo'},ahora);
+    if(estado!==p.estado){
+     const {data,error}=await db.from('online_partidas').update({estado,version:p.version+1,actualizada:new Date(ahora).toISOString()}).eq('id',p.id).eq('version',p.version).select('id').maybeSingle();
+     if(error)return respuesta({error:'No se pudo actualizar el reloj.'},503);
+     if(!data)return respuesta({error:'La mesa cambió. Actualizá la ronda.'},409);
+     return respuesta({id:p.id,fase:estado.fase,resultado:estado.resultado,ahora});
+    }
+   }
+   return respuesta({id:p.id,fase:p.estado.fase,resultado:p.estado.resultado,ahora});
+  }
   if(b.accion==='unirse'){
    if(esParticipante)return respuesta({partida:p,ahora});
    if(p.estado.fase!=='espera'||Date.parse(p.expira)<=ahora)return respuesta({error:'La invitación ya venció o alguien ocupó la mesa.'},409);

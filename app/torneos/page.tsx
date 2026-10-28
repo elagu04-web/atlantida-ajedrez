@@ -115,6 +115,7 @@ export default function TorneosPage() {
         titulo="Torneos"
         subtitulo={puedeEditar ? "Administrá los torneos, jugadores y desempates." : "Consultá resultados, posiciones e inscripciones del club."}
       />
+      <Link className="button-secondary self-start" href="/torneos/online">Torneos online · Anotate y jugá en la página →</Link>
 
       {!puedeEditar && (
         <p className="text-sm text-zinc-400">

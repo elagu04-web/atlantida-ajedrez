@@ -3,13 +3,14 @@ import {Chess, type Color} from 'chess.js';
 export const RITMOS_ONLINE = {'10+3':{minutos:10,incremento:3},'5+3':{minutos:5,incremento:3},'3+2':{minutos:3,incremento:2}} as const;
 export type RitmoOnline=keyof typeof RITMOS_ONLINE;
 export type EstadoOnline={
+ torneoNombre?:string;torneoRonda?:number;
  porElo?:boolean;eloCreador?:number;eloInicio?:{w:number;b:number};elo?:{w:{antes:number;despues:number;variacion:number};b:{antes:number;despues:number;variacion:number}};
  fase:'espera'|'activa'|'terminada'|'cancelada';ritmo:RitmoOnline;colorCreador:Color;
  blancas:string;negras:string;fen:string;movimientos:string[];pgn:string;turno:Color;
  blancasMs:number;negrasMs:number;desde:number|null;oferta:Color|null;
  resultado:'*'|'1-0'|'0-1'|'1/2-1/2';motivo:string;
 };
-export type PartidaOnline={id:string;creador_id:string;rival_id:string|null;estado:EstadoOnline;version:number;creada:string;actualizada:string;expira:string;ultima_accion:string|null};
+export type PartidaOnline={id:string;creador_id:string;rival_id:string|null;estado:EstadoOnline;version:number;creada:string;actualizada:string;expira:string;ultima_accion:string|null;torneo_id?:string|null};
 export type AccionOnline={tipo:'mover';uci:string}|{tipo:'rendirse'|'ofrecer'|'aceptar'|'rechazar'|'tiempo'|'cancelar'};
 export function colorOnline(p:PartidaOnline,usuario:string):Color|null{
  if(usuario===p.creador_id)return p.estado.colorCreador;
@@ -30,7 +31,8 @@ export function relojesOnline(e:EstadoOnline,ahora:number){
 }
 function finalizar(e:EstadoOnline,resultado:EstadoOnline['resultado'],motivo:string,c:Chess,ahora:number):EstadoOnline{
  const relojes=relojesOnline(e,ahora);
- c.setHeader('Event',e.porElo?'Atlántida · Online por Elo':'Atlántida · Partida online');c.setHeader('Site','https://atlantida-ajedrez.vercel.app/jugar/online');
+ c.setHeader('Event',e.torneoNombre?e.torneoNombre.replace(/[\u0000-\u001f\u007f\[\]"\\]/g,'').slice(0,90):e.porElo?'Atlántida · Online por Elo':'Atlántida · Partida online');c.setHeader('Site','https://atlantida-ajedrez.vercel.app/jugar/online');
+ if(e.torneoRonda)c.setHeader('Round',String(e.torneoRonda));
  c.setHeader('Date',new Date(ahora).toISOString().slice(0,10).replaceAll('-','.'));
  c.setHeader('White',e.blancas);c.setHeader('Black',e.negras);c.setHeader('Result',resultado);
  const r=RITMOS_ONLINE[e.ritmo];c.setHeader('TimeControl',`${r.minutos*60}+${r.incremento}`);c.setHeader('Termination',motivo);

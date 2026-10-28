@@ -78,6 +78,7 @@ export function VisorPartidaOnline({ partida, color, volver }: { partida: Partid
       {recorrido && <div ref={lista} className={styles.jugadas} role="group" aria-label="Jugadas de la partida online">{recorrido.jugadas.length ? recorrido.jugadas.map((j, i) => <button key={i} aria-current={indice === i + 1 ? 'step' : undefined} onClick={() => ir(i + 1)}>{j.texto}</button>) : <p>La partida terminó sin movimientos.</p>}</div>}
       <div className={styles.acciones}><Link className="button-primary" href={`/entrenamiento?modo=online&partidaOnline=${partida.id}`}>Analizar con el motor →</Link><button className="button-secondary" disabled={!e.pgn} onClick={() => descargarOnline(partida)}>Descargar PGN</button></div>
       <button className={styles.volver} onClick={volver}>← Volver a mis mesas</button>
+      {partida.torneo_id&&<Link className="text-link" href={'/torneos/online/'+partida.torneo_id}>Ver posiciones de mi torneo →</Link>}
     </aside>
   </section>;
 }
