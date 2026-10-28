@@ -1,0 +1,31 @@
+export type ArteTarjetaClase={acento:string;habilidad:string;lema:string};
+export const ARTES_CLASE:Record<string,ArteTarjetaClase>={
+ normal:{acento:'#9bbde7',habilidad:'AJEDREZ CLÁSICO',lema:'Tu próxima partida empieza acá.'},
+ tateti:{acento:'#e7c38b',habilidad:'MOVIMIENTOS · LÓGICA',lema:'Tres piezas. Una gran idea.'},
+ bella:{acento:'#ceace4',habilidad:'RECORRIDOS · RESCATE',lema:'Despertá a tu reina.'},
+ fantasma:{acento:'#b6b3f3',habilidad:'CAPTURAS · PODERES',lema:'Cada captura te transforma.'},
+ bosque:{acento:'#99c4b0',habilidad:'ADAPTACIÓN · MOVIMIENTOS',lema:'El camino cambia tus poderes.'},
+ cuatro:{acento:'#e4c487',habilidad:'LÍNEAS · PLANIFICACIÓN',lema:'Cuatro piezas, un mismo plan.'},
+ dados:{acento:'#ecc295',habilidad:'AZAR · DECISIONES',lema:'Tirá. Elegí. Sorprendé.'},
+ cartas:{acento:'#bdb1ef',habilidad:'ESTRATEGIA · PODERES',lema:'Una carta cambia la partida.'},
+ dragon:{acento:'#83c8b9',habilidad:'FANTASÍA · MOVIMIENTOS',lema:'Un nuevo poder entra al tablero.'},
+ rey:{acento:'#e4bd7b',habilidad:'ATAQUE · CAPTURAS',lema:'El rey también puede caer.'},
+ todas:{acento:'#e0ad9c',habilidad:'CAPTURAS · PLANIFICACIÓN',lema:'Hasta la última pieza.'},
+ peones:{acento:'#aec6dd',habilidad:'PEONES · CORONACIÓN',lema:'Pequeños pasos, grandes carreras.'},
+ extincion:{acento:'#d8bd8d',habilidad:'DEFENSA · ATENCIÓN',lema:'Protegé al último de su especie.'},
+ poliladron:{acento:'#a6b9e5',habilidad:'PEONES · PERSECUCIÓN',lema:'Ocho peones. Una perseguidora.'},
+ comecome:{acento:'#d9aaa9',habilidad:'CAPTURAS · ANTICHESS',lema:'Acá, perder piezas puede ser ganar.'},
+ crazyhouse:{acento:'#8cc6c8',habilidad:'RESERVAS · ESTRATEGIA',lema:'Cada pieza tiene otra oportunidad.'},
+ futbol:{acento:'#a7c7ac',habilidad:'PASES · COORDINACIÓN',lema:'Pensá la jugada. Buscá el gol.'},
+ 'caballo-duelo':{acento:'#b5c4ea',habilidad:'2 A 4 JUGADORES · TERRITORIO',lema:'Un salto puede cambiar el duelo.'},
+ pintura:{acento:'#e0acd7',habilidad:'COLORES · TERRITORIO',lema:'Cada salto deja tu marca.'},
+ detective:{acento:'#ddc095',habilidad:'MEMORIA · OBSERVACIÓN',lema:'Algo cambió. ¿Lo descubrís?'},
+ 'caballo-fantasma':{acento:'#c1afe6',habilidad:'MISTERIO · DEFENSA',lema:'Una aparición recorre el tablero.'},
+ caballo:{acento:'#c5b3e0',habilidad:'RECORRIDOS · LÓGICA',lema:'Un caballo. Sesenta y cuatro caminos.'},
+ reinas:{acento:'#c8bae7',habilidad:'GEOMETRÍA · LÓGICA',lema:'Ocho reinas buscan su lugar.'},
+ 'bosque-cuento':{acento:'#a8c6ac',habilidad:'CUENTO · EXPLORACIÓN',lema:'Dos reinos. Una historia por descubrir.'},
+ laberinto:{acento:'#b2badb',habilidad:'CUENTO · LABERINTOS',lema:'Entrá al castillo. Encontrá el camino.'},
+ profe:{acento:'#a7c1e3',habilidad:'PREPARAR · EXPLICAR · EXPLORAR',lema:'Tus ideas toman el tablero.'},
+};
+export function arteTarjetaClase(id:string):ArteTarjetaClase{return ARTES_CLASE[id]||ARTES_CLASE.normal;}
+export function imagenTarjetaClase(id:string,ancho:480|960=960){return `/imagenes/clases/tarjetas-v2/${Object.hasOwn(ARTES_CLASE,id)?id:'normal'}-${ancho}.webp`;}

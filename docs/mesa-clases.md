@@ -51,9 +51,14 @@ https://github.com/vercel/geist-font/blob/main/OFL.txt. No se agregan consultas
 a servicios de fuentes externos durante la clase.
 ## Mesa integrada — octubre de 2026
 
-El catálogo se renderiza en React dentro de /clases: categorías, búsqueda y una
-portada SVG distinta por actividad, construida con su posición real y un motivo
-propio. La ilustración de cabecera está en public/imagenes/clases/mundo-ajedrez-v1.webp.
+El catálogo se renderiza en React dentro de /clases: categorías, búsqueda y 26
+portadas ilustradas que representan el tema y las reglas de cada actividad.
+Las tarjetas combinan el azul del club con un acento propio, la habilidad practicada
+y una acción visible. En celular mantienen la ilustración completa sobre el texto.
+Los WebP locales de 480 y 960 píxeles están en public/imagenes/clases/tarjetas-v2/;
+un cargador estático de next/image selecciona la variante sin recomprimirla.
+Se cargan al acercarse a la pantalla y respetan la preferencia de movimiento reducido.
+La ilustración de cabecera está en public/imagenes/clases/mundo-ajedrez-v1.webp.
 
 Los motores originales siguen privados y sin modificar en Storage. El documento
 principal, al pedir integrado=1, incorpora un puente de presentación que comunica
