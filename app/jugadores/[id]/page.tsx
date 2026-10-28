@@ -11,6 +11,7 @@ import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO } from "@/lib/elo";
 import { GraficoElo } from "@/components/GraficoElo";
 import { RetratoJugadorMotion } from "@/components/RetratoJugadorMotion";
+import { NavegadorJugadores } from "@/components/NavegadorJugadores";
 import retrato from "@/components/RetratoJugadorMotion.module.css";
 
 const FOTOS_BUCKET = "fotos-jugadores";
@@ -183,6 +184,7 @@ export default function JugadorPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <NavegadorJugadores jugadores={jugadoresEnVivo} actual={jugador.id} />
       <div className={`panel p-6 sm:p-8 ${retrato.hero}`}>
         <RetratoJugadorMotion jugador={jugador} />
         <div className={retrato.content}>
