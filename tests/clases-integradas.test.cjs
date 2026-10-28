@@ -13,7 +13,7 @@ test('Se integra solamente el documento principal; las reglas y recursos privado
 test('El puente ignora ventanas ajenas, orígenes externos y juegos inexistentes',()=>{
  const listeners={},events={},sent=[],opened=[],parent={postMessage:(data,origin)=>sent.push({data,origin})};
  const root={parent,Mesa:{modes:()=>[{id:'normal',title:'Ajedrez',size:8,order:0,preview:[]}],mode:id=>id==='normal'?{id,screen:'normal-screen'}:undefined,current:()=> 'menu',navigate:id=>opened.push(id)},MesaSound:{isEnabled:()=>true,setEnabled:()=>{}},addEventListener:(name,fn)=>listeners[name]=fn};
- const context={globalThis:root,location:{origin:'https://club.test'},document:{body:{dataset:{},getBoundingClientRect:()=>({height:500})},documentElement:{style:{setProperty:()=>{}}},addEventListener:(name,fn)=>events[name]=fn},requestAnimationFrame:fn=>fn(),ResizeObserver:class{observe(){}},MutationObserver:class{observe(){}}};
+ const context={globalThis:root,location:{origin:'https://club.test'},document:{getElementById:()=>null,body:{dataset:{},getBoundingClientRect:()=>({height:500})},documentElement:{style:{setProperty:()=>{}}},addEventListener:(name,fn)=>events[name]=fn},requestAnimationFrame:fn=>fn(),ResizeObserver:class{observe(){}},MutationObserver:class{observe(){}}};
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/clases-recursos/integracion.js'),'utf8'),context);events.DOMContentLoaded();
  assert.ok(sent.some(s=>s.data.tipo==='catalogo'&&s.origin==='https://club.test'));
  const msg=(source,origin,id)=>listeners.message({source,origin,data:{canal:'atlantida-clases-v1',tipo:'abrir',id}});

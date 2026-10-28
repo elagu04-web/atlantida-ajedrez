@@ -70,3 +70,13 @@ El sonido de madera es síntesis local, se puede silenciar y conserva mesa-sound
 
 Pruebas: clases-integradas.test.cjs (protocolo, piezas, sonido y transformación)
 y clases-privadas.test.cjs (autorización, cookie, RLS y rutas).
+
+### Proyección
+El botón Proyectar ofrece instrucciones separadas para computadora y iPhone/iPad.
+Chrome en computadora puede enviar la pestaña a Chromecast; iPhone usa duplicación
+AirPlay si la tele es compatible. Chromecast desde un navegador iOS no está
+soportado por el Web Sender SDK de Google: se explica la necesidad de una app
+intermedia, con un enlace informativo a Replica y sus limitaciones de la versión
+gratuita. No se afirma que la web inicie Cast automáticamente.
+En Modo Profe se mantiene el enlace de pantalla del grupo, que sincroniza pestañas
+del mismo navegador. No se promete sincronización entre dispositivos.

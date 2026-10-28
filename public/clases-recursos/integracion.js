@@ -17,7 +17,9 @@
  function catalog(){
   if(!root.Mesa)return;
   const juegos=root.Mesa.modes().map(m=>({id:m.id,title:m.title,description:m.description,tag:m.tag||'',meta:m.meta||'',category:m.category||'game',size:m.size,rows:m.rows||m.size,order:m.order,preview:m.preview||[]}));
-  send('catalogo',{juegos});send('sonido',{activo:root.MesaSound?.isEnabled()!==false});measure();
+  const pantalla=document.getElementById('prof-open-students');let aula=null;
+  if(pantalla)try{aula=new URL(pantalla.href).searchParams.get('aula');}catch{}
+  send('catalogo',{juegos,aula});send('sonido',{activo:root.MesaSound?.isEnabled()!==false});measure();
  }
  root.addEventListener('message',e=>{
   if(e.origin!==origin||e.source!==root.parent||e.data?.canal!==canal)return;
