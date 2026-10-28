@@ -3,6 +3,7 @@ import {Chess, type Color} from 'chess.js';
 export const RITMOS_ONLINE = {'10+3':{minutos:10,incremento:3},'5+3':{minutos:5,incremento:3},'3+2':{minutos:3,incremento:2}} as const;
 export type RitmoOnline=keyof typeof RITMOS_ONLINE;
 export type EstadoOnline={
+ eloTipo?:'club';clubBlancasId?:string;clubNegrasId?:string;
  torneoNombre?:string;torneoRonda?:number;
  porElo?:boolean;eloCreador?:number;eloInicio?:{w:number;b:number};elo?:{w:{antes:number;despues:number;variacion:number};b:{antes:number;despues:number;variacion:number}};
  fase:'espera'|'activa'|'terminada'|'cancelada';ritmo:RitmoOnline;colorCreador:Color;
@@ -33,6 +34,7 @@ function finalizar(e:EstadoOnline,resultado:EstadoOnline['resultado'],motivo:str
  const relojes=relojesOnline(e,ahora);
  c.setHeader('Event',e.torneoNombre?e.torneoNombre.replace(/[\u0000-\u001f\u007f\[\]"\\]/g,'').slice(0,90):e.porElo?'Atlántida · Online por Elo':'Atlántida · Partida online');c.setHeader('Site','https://atlantida-ajedrez.vercel.app/jugar/online');
  if(e.torneoRonda)c.setHeader('Round',String(e.torneoRonda));
+ if(e.eloTipo==='club')c.setHeader('RatingSystem','Elo Atlántida');
  c.setHeader('Date',new Date(ahora).toISOString().slice(0,10).replaceAll('-','.'));
  c.setHeader('White',e.blancas);c.setHeader('Black',e.negras);c.setHeader('Result',resultado);
  const r=RITMOS_ONLINE[e.ritmo];c.setHeader('TimeControl',`${r.minutos*60}+${r.incremento}`);c.setHeader('Termination',motivo);

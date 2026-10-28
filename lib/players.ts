@@ -2,6 +2,7 @@ export type Resultado = "victoria" | "empate" | "derrota";
 export type Color = "blancas" | "negras";
 
 export type Partida = {
+  partidaOnlineId?: string;
   rival: string;
   color: Color;
   resultado: Resultado;

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { JugadoresProvider } from "@/context/JugadoresContext";
 import { TorneosProvider } from "@/context/TorneosContext";
+import {ResultadosClubOnlineProvider} from '@/context/ResultadosClubOnlineContext';
 import { ActividadProvider } from "@/context/ActividadContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ColegioJugadoresProvider } from "@/context/ColegioJugadoresContext";
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AvisosProvider><AuthProvider>
           <ActividadProvider>
             <JugadoresProvider>
-              <TorneosProvider>
+              <ResultadosClubOnlineProvider><TorneosProvider>
                 <ColegioJugadoresProvider>
                   <ColegioTorneosProvider>
                     <EpicoJugadoresProvider>
@@ -57,7 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     </EpicoJugadoresProvider>
                   </ColegioTorneosProvider>
                 </ColegioJugadoresProvider>
-              </TorneosProvider>
+              </TorneosProvider></ResultadosClubOnlineProvider>
             </JugadoresProvider>
           </ActividadProvider>
         </AuthProvider></AvisosProvider>

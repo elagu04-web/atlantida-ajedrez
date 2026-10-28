@@ -25,6 +25,7 @@ import {
 import { useJugadores } from "@/context/JugadoresContext";
 import { useActividad } from "@/context/ActividadContext";
 import { calcularEloYHistorialEnVivo } from "@/lib/elo";
+import {useResultadosClubOnline} from './ResultadosClubOnlineContext';
 import { nombreVisible } from "@/lib/players";
 import { supabase } from "@/lib/supabase";
 import { useColeccionRemota } from "./useColeccionRemota";
@@ -131,6 +132,7 @@ function filaATorneo(fila: FilaTorneo): Torneo {
 
 function filaAControl(fila: ControlTorneo) { return fila; }
 export function TorneosProvider({ children }: { children: ReactNode }) {
+  const {resultados:resultadosOnline}=useResultadosClubOnline();
   const {esAdmin} = useAuth();
   const { items: torneosBase, incorporar, cargando, guardar, eliminar, avisar, errorCarga, ultimaActualizacion } = useColeccionRemota<FilaTorneo, Torneo>("torneos", filaATorneo);
   const {items: controles, incorporar: incorporarControl, cargando: cargandoControl, errorCarga: errorControl} = useColeccionRemota<ControlTorneo, ControlTorneo>("torneos_control", filaAControl, esAdmin);
@@ -347,7 +349,7 @@ export function TorneosProvider({ children }: { children: ReactNode }) {
         if (ultimaRonda && ultimaRonda.emparejamientos.some((e) => e.negrasId && e.resultado === null)) {
           return false; // faltan resultados por cargar
         }
-        const enVivo = calcularEloYHistorialEnVivo(jugadores, torneos);
+        const enVivo = calcularEloYHistorialEnVivo(jugadores, torneos,resultadosOnline);
         const elos = new Map(enVivo.map((j) => [j.id, j.eloAtlantida]));
         const siguienteNumero = torneo.rondas.length + 1;
         const nuevaRonda =

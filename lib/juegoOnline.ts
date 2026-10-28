@@ -22,11 +22,11 @@ export async function listarOnline(usuario:string){
  if(propias.error||abiertas.error)throw Error('No pudimos cargar las mesas. Volvé a intentar.');
  return [...new Map([...(propias.data??[]),...(abiertas.data??[])].map(p=>[p.id,p as PartidaOnline])).values()];
 }
-export type PerfilEloOnline={elo:number;partidas:number;victorias:number;tablas:number;derrotas:number};
-export async function leerMiEloOnline(usuario:string):Promise<PerfilEloOnline>{
- const {data,error}=await supabase.from('online_elo').select('elo,partidas,victorias,tablas,derrotas').eq('usuario_id',usuario).maybeSingle();
- if(error)throw Error('No pudimos consultar tu Elo online. Volvé a intentar.');
- return data??{elo:1400,partidas:0,victorias:0,tablas:0,derrotas:0};
+export type PerfilEloClub={elo:number|null;partidas:number;victorias:number;tablas:number;derrotas:number;vinculado:boolean;jugadorId?:string};
+export async function leerMiEloClub():Promise<PerfilEloClub>{
+ const {data,error}=await supabase.rpc('mi_elo_club');
+ if(error)throw Error('No pudimos consultar tu Elo Atlántida. Volvé a intentar.');
+ return data;
 }
 export function descargarOnline(p:PartidaOnline){
  const url=URL.createObjectURL(new Blob([p.estado.pgn],{type:'application/x-chess-pgn;charset=utf-8'}));

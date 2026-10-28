@@ -72,8 +72,8 @@ export function VisorPartidaOnline({ partida, color, volver }: { partida: Partid
     <aside className={styles.resumen}>
       <p className={styles.sello}>Tu partida, jugada a jugada</p><h2>{e.blancas} <span>contra</span> {e.negras}</h2>
       <p className={styles.resultado}><strong>{e.resultado}</strong><span>{e.motivo}</span></p>
-      <p className={styles.detalle}>{e.ritmo} · {e.porElo ? 'Por Elo online' : 'Amistosa'} · {new Date(partida.creada).toLocaleDateString('es-UY', { timeZone: 'America/Montevideo', day: 'numeric', month: 'short' })}</p>
-      {elo && <p className={styles.elo}>Tu Elo online: <strong>{elo.antes} → {elo.despues}</strong> ({elo.variacion >= 0 ? '+' : ''}{elo.variacion})</p>}
+      <p className={styles.detalle}>{e.ritmo} · {e.porElo ? 'Por Elo Atlántida' : 'Amistosa'} · {new Date(partida.creada).toLocaleDateString('es-UY', { timeZone: 'America/Montevideo', day: 'numeric', month: 'short' })}</p>
+      {elo && <p className={styles.elo}>Tu Elo Atlántida: <strong>{elo.antes} → {elo.despues}</strong> ({elo.variacion >= 0 ? '+' : ''}{elo.variacion})</p>}
       <p className={styles.ayuda}>Usá las flechas o tocá una jugada para volver a esa posición. No hace falta descargar nada.</p>
       {recorrido && <div ref={lista} className={styles.jugadas} role="group" aria-label="Jugadas de la partida online">{recorrido.jugadas.length ? recorrido.jugadas.map((j, i) => <button key={i} aria-current={indice === i + 1 ? 'step' : undefined} onClick={() => ir(i + 1)}>{j.texto}</button>) : <p>La partida terminó sin movimientos.</p>}</div>}
       <div className={styles.acciones}><Link className="button-primary" href={`/entrenamiento?modo=online&partidaOnline=${partida.id}`}>Analizar con el motor →</Link><button className="button-secondary" disabled={!e.pgn} onClick={() => descargarOnline(partida)}>Descargar PGN</button></div>

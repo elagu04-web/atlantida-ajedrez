@@ -1,5 +1,6 @@
 import { Jugador, Partida, Resultado, nombreVisible } from "./players";
 import { Torneo } from "./tournaments";
+import type { ResultadoClubOnline } from './resultadosClubOnline';
 
 export const K_FACTOR = 20;
 export const ELO_MINIMO = 1400;
@@ -26,6 +27,7 @@ export type JugadorEnVivo = Jugador & {
 };
 
 type PartidaOrdenada = {
+  partidaOnlineId?: string;
   orden: number;
   torneoIndex: number;
   torneoNombre: string;
@@ -43,7 +45,8 @@ type PartidaOrdenada = {
  */
 export function calcularEloYHistorialEnVivo(
   jugadoresBase: Jugador[],
-  torneos: Torneo[]
+  torneos: Torneo[],
+  resultadosOnline: ResultadoClubOnline[] = []
 ): JugadorEnVivo[] {
   const elo = new Map<string, number>();
   const historialExtra = new Map<string, Partida[]>();
@@ -53,8 +56,11 @@ export function calcularEloYHistorialEnVivo(
   }
 
   const partidas: PartidaOrdenada[] = [];
-  const torneosOrdenados = [...torneos].sort((a, b) => (a.iniciadoEn ?? a.creadoEn).localeCompare(b.iniciadoEn ?? b.creadoEn) || a.id.localeCompare(b.id));
+  const onlinePorId=new Map(resultadosOnline.map(p=>['online:'+p.id,p]));
+  const virtuales:Torneo[]=resultadosOnline.map(p=>({id:'online:'+p.id,nombre:p.torneo,formato:'match',desempates:[],jugadoresIds:[p.blancasId,p.negrasId],rondas:[{numero:1,emparejamientos:[{numero:1,blancasId:p.blancasId,negrasId:p.negrasId,resultado:p.resultado}]}],estado:'finalizado',rondasObjetivo:1,creadoEn:p.fecha,iniciadoEn:p.fecha,inscriptosIds:[],asistieronIds:[],pagaronIds:[]}));
+  const torneosOrdenados = [...torneos,...virtuales].sort((a,b)=>Date.parse(a.iniciadoEn??a.creadoEn)-Date.parse(b.iniciadoEn??b.creadoEn)||a.id.localeCompare(b.id));
   torneosOrdenados.forEach((t, torneoIndex) => {
+    const online=onlinePorId.get(t.id);
     t.rondas.forEach((ronda) => {
       ronda.emparejamientos.forEach((e, i) => {
         if (!e.negrasId || !e.resultado) return;
@@ -62,7 +68,8 @@ export function calcularEloYHistorialEnVivo(
           orden: torneoIndex * 1_000_000 + ronda.numero * 1_000 + i,
           torneoIndex,
           torneoNombre: t.nombre,
-          torneoFecha: (t.iniciadoEn ?? t.creadoEn).slice(0, 10),
+          torneoFecha: online?.dia ?? (t.iniciadoEn ?? t.creadoEn).slice(0, 10),
+          partidaOnlineId: online?.id,
           blancasId: e.blancasId,
           negrasId: e.negrasId,
           resultado: e.resultado,
@@ -109,6 +116,7 @@ export function calcularEloYHistorialEnVivo(
       p.resultado === "1-0" ? "derrota" : p.resultado === "0-1" ? "victoria" : "empate";
 
     historialExtra.get(p.blancasId)?.push({
+      ...(p.partidaOnlineId?{partidaOnlineId:p.partidaOnlineId}:{}),
       rival: nombrePorId.get(p.negrasId) ?? "?",
       color: "blancas",
       resultado: resultadoBlancas,
@@ -117,6 +125,7 @@ export function calcularEloYHistorialEnVivo(
       torneo: p.torneoNombre,
     });
     historialExtra.get(p.negrasId)?.push({
+      ...(p.partidaOnlineId?{partidaOnlineId:p.partidaOnlineId}:{}),
       rival: nombrePorId.get(p.blancasId) ?? "?",
       color: "negras",
       resultado: resultadoNegras,

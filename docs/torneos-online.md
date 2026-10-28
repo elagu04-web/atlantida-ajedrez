@@ -8,7 +8,7 @@ pueden inscribirse cuentas normales de Google o de usuario y contraseña.
 - Suizo o round robin a una vuelta, entre 2 y 32 jugadores; 10+3, 5+3 o 3+2.
 - Inscripción abierta hasta publicar la primera ronda. El Elo de inscripción
   queda como referencia para ordenar el primer suizo. El Elo que se liquida
-  al jugar es el online vigente, mediante el mecanismo ya existente.
+  al jugar es el Elo Atlántida vigente, compartido con el club presencial.
 - El organizador publica una ronda cuando no quedan partidas pendientes.
   Round robin reutiliza el calendario Berger del club. El suizo utiliza los
   emparejamientos existentes con historial de rivales, puntos y colores.
@@ -21,7 +21,7 @@ pueden inscribirse cuentas normales de Google o de usuario y contraseña.
   confirmaciones vigentes crean una mesa asignada y arrancan el reloj. La
   sala redirige al tablero si el usuario sigue esperando con ella abierta.
 - Las partidas se juegan con el servidor online existente: movimientos
-  legales, relojes, rendición, tablas, PGN, historial y Elo online.
+  legales, relojes, rendición, tablas, PGN, historial y Elo Atlántida.
   El PGN incluye nombre y ronda del torneo.
 - Las posiciones se calculan sobre resultados del servidor. En suizo el
   BYE automático suma 1; el descanso de round robin suma 0. Una adjudicación

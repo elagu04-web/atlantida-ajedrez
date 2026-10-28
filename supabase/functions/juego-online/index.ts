@@ -38,7 +38,7 @@ Deno.serve(async(req:Request)=>{
    if(vencida)await db.from('online_partidas').update({estado:{...vencida.estado,fase:'cancelada',motivo:'Invitación vencida'},actualizada:new Date(ahora).toISOString()}).eq('id',vencida.id).eq('version',vencida.version);
    const color=b.color==='w'||b.color==='b'?b.color:crypto.getRandomValues(new Uint8Array(1))[0]%2?'w':'b';
    const {data,error}=await db.from('online_partidas').insert({id:b.id,creador_id:user.id,estado:crearEstadoOnline(b.ritmo as RitmoOnline,color,nombre,b.porElo===true)}).select().single();
-   if(error)return respuesta({error:error.code==='23505'?'Ya tenés una invitación abierta. Entrá a tu mesa o cancelala.':'No se pudo crear la mesa.'},409);
+   if(error)return respuesta({error:error.code==='P0001'?error.message:error.code==='23505'?'Ya tenés una invitación abierta. Entrá a tu mesa o cancelala.':'No se pudo crear la mesa.'},error.code==='P0001'?400:409);
    return respuesta({partida:data,ahora});
   }
   if(!fila)return respuesta({error:'Esta mesa no existe o ya no está disponible.'},404);
@@ -69,7 +69,7 @@ Deno.serve(async(req:Request)=>{
    if(p.estado.porElo&&b.aceptaElo!==true)return respuesta({error:'Esta mesa es por Elo. Confirmá la modalidad antes de entrar.'},400);
    const estado=unirEstadoOnline(p.estado,nombre,ahora);
    const {data,error}=await db.from('online_partidas').update({rival_id:user.id,estado,version:p.version+1,actualizada:new Date(ahora).toISOString()}).eq('id',p.id).eq('version',p.version).is('rival_id',null).select().maybeSingle();
-   if(error)return respuesta({error:'No se pudo entrar a la mesa.'},503);
+   if(error)return respuesta({error:error.code==='P0001'?error.message:'No se pudo entrar a la mesa.'},error.code==='P0001'?400:503);
    if(!data)return respuesta({error:'Otra persona se sentó primero. Elegí otra mesa.'},409);
    return respuesta({partida:data,ahora});
   }
@@ -84,7 +84,7 @@ Deno.serve(async(req:Request)=>{
   try{estado=b.accion==='ver'&&p.estado.fase!=='activa'?p.estado:aplicarAccionOnline(p.estado,color!,accion as AccionOnline,ahora);}catch(e){return respuesta({error:e instanceof Error?e.message:'Acción no válida.'},400);}
   if(estado===p.estado)return respuesta({partida:p,ahora});
   const {data,error}=await db.from('online_partidas').update({estado,version:p.version+1,ultima_accion:b.accion==='jugar'?b.peticion:p.ultima_accion,actualizada:new Date(ahora).toISOString()}).eq('id',p.id).eq('version',p.version).select().maybeSingle();
-  if(error)return respuesta({error:'No pudimos confirmar la jugada. El tablero conserva la última posición confirmada.'},503);
+  if(error)return respuesta({error:error.code==='P0001'?error.message:'No pudimos confirmar la jugada. El tablero conserva la última posición confirmada.'},error.code==='P0001'?400:503);
   if(!data){const {data:actual}=await db.from('online_partidas').select('*').eq('id',p.id).single();return respuesta({error:'La partida cambió. Revisá el tablero actualizado.',partida:actual,ahora},409);}
   return respuesta({partida:data,ahora});
  }catch{return respuesta({error:'No se pudo conectar con la sala. Volvé a intentar.'},503);}

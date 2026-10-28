@@ -22,7 +22,9 @@ export class SonidoTablero {
     }catch{/* Sin audio disponible, la partida sigue funcionando. */}
   }
   golpe(captura=false){
-    const ctx=this.contexto;if(!this.habilitado||!ctx||ctx.state!=="running"||!this.salida||!this.ruido)return;
+    const ctx=this.contexto;if(!this.habilitado||!ctx||!this.salida||!this.ruido)return;
+    if(ctx.state==='suspended'){void ctx.resume().then(()=>{if(this.contexto===ctx&&ctx.state==='running')this.golpe(captura);}).catch(()=>{});return;}
+    if(ctx.state!=='running')return;
     const t=ctx.currentTime;this.salida.gain.setValueAtTime(this.volumen,t);
     const fuente=ctx.createBufferSource();fuente.buffer=this.ruido;
     const filtro=ctx.createBiquadFilter();filtro.type="bandpass";filtro.frequency.value=captura?1500:1900;filtro.Q.value=.7;

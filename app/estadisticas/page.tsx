@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTorneos } from "@/context/TorneosContext";
 import { useJugadores } from "@/context/JugadoresContext";
 import { useJugadoresEnVivo } from "@/context/useJugadoresEnVivo";
+import {useResultadosClubOnline} from '@/context/ResultadosClubOnlineContext';
 import { determinarCampeon } from "@/lib/tournaments";
 import { agruparTorneosPorPeriodo, calcularTablaGeneral, etiquetaPeriodo, evolucionEloPorPeriodo } from "@/lib/tablaGeneral";
 import { filasRendimiento, resumenClub } from "@/lib/rendimiento";
@@ -33,27 +34,30 @@ function ContenidoEstadisticas() {
   const { torneos, cargando: cargandoTorneos, errorCarga } = useTorneos();
   const { jugadores: bases, cargando: cargandoJugadores, errorCarga: errorJugadores } = useJugadores();
   const jugadores = useJugadoresEnVivo();
+  const {resultados:resultadosOnline,cargando:cargandoOnline,error:errorOnline}=useResultadosClubOnline();
   const [modo, setModo] = useState<"mes"|"anio">("mes");
   const [periodo, setPeriodo] = useState<string|null>(null);
   const [minimo, setMinimo] = useState(5);
   const [orden, setOrden] = useState<"puntos"|"rendimiento"|"elo"|"partidas">("puntos");
   const [comparacion, setComparacion] = useState<string[]|null>(null);
   const [jugadorElegido, setJugadorElegido] = useState<string|null>(null);
-  const cargando = cargandoTorneos || cargandoJugadores;
+  const cargando = cargandoTorneos || cargandoJugadores || cargandoOnline;
   const grupos = agruparTorneosPorPeriodo(torneos.filter(t=>resumenClub([t]).partidas>0),modo);
-  const periodos = [...grupos.keys()].sort().reverse();
+  const periodos = [...new Set([...grupos.keys(),...resultadosOnline.map(p=>p.dia.slice(0,modo==='mes'?7:4))])].sort().reverse();
   const partidasSolicitadas = jugadores.find(j => j.id === jugadorSolicitado)?.partidas;
   const ultimoPeriodoJugador = partidasSolicitadas ? periodos.find(p => partidasSolicitadas.some(partida => partida.fecha.startsWith(p))) : undefined;
   const activo = periodo && periodos.includes(periodo) ? periodo : ultimoPeriodoJugador ?? periodos[0];
   const delPeriodo = (activo ? grupos.get(activo) ?? [] : []);
-  const resumen = resumenClub(delPeriodo);
+  const resumenPresencial=resumenClub(delPeriodo),onlineDelPeriodo=resultadosOnline.filter(p=>activo&&p.dia.startsWith(activo));
+  const participantes=new Set([...delPeriodo.flatMap(t=>t.rondas.flatMap(r=>r.emparejamientos.filter(e=>e.negrasId&&e.resultado).flatMap(e=>[e.blancasId,e.negrasId!]))),...onlineDelPeriodo.flatMap(p=>[p.blancasId,p.negrasId])]);
+  const resumen = {...resumenPresencial,partidas:resumenPresencial.partidas+onlineDelPeriodo.length,jugadores:participantes.size,tablas:resumenPresencial.tablas+onlineDelPeriodo.filter(p=>p.resultado==='1/2-1/2').length};
   const tabla = calcularTablaGeneral(delPeriodo);
   const filas = (activo ? filasRendimiento(jugadores,bases,activo) : []);
   const ordenadas = [...filas].sort((a,b)=>(orden==="rendimiento" ? (b.rendimiento??0)-(a.rendimiento??0) : orden==="elo" ? b.variacion-a.variacion : orden==="partidas" ? b.partidas-a.partidas : b.puntos-a.puntos) || b.partidas-a.partidas || a.nombre.localeCompare(b.nombre,"es"));
   const elegibles = filas.filter(f=>f.partidas>=minimo);
   const subidas = [...elegibles].filter(f=>f.variacion>0).sort((a,b)=>b.variacion-a.variacion).slice(0,5);
   const elegido = filas.find(f=>f.jugadorId===(jugadorElegido ?? jugadorSolicitado)) ?? filas.find(f=>f.jugadorId==="d1c933d4-197b-434a-924c-d404421e02a6") ?? ordenadas[0];
-  const meses = [...agruparTorneosPorPeriodo(torneos,"mes").keys()].filter(m=>activo && m.slice(0,activo.length)<=activo).sort().slice(-12);
+  const meses = [...new Set([...agruparTorneosPorPeriodo(torneos,"mes").keys(),...resultadosOnline.map(p=>p.dia.slice(0,7))])].filter(m=>activo && m.slice(0,activo.length)<=activo).sort().slice(-12);
   const ids = comparacion ?? jugadores.filter(j=>j.jugadas>0).slice(0,3).map(j=>j.id);
   const comparados = jugadores.filter(j=>ids.includes(j.id));
   const series = evolucionEloPorPeriodo(comparados,meses);
@@ -67,7 +71,7 @@ function ContenidoEstadisticas() {
     const a=document.createElement("a");a.href=url;a.download=`atlantida-${activo}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   return <div ref={motionRef} className={`${visual.page} flex flex-col gap-6`}>
-    {(errorCarga||errorJugadores)&&<p role="status" className="panel p-4 text-sm text-amber-300">{errorCarga||errorJugadores}</p>}
+    {(errorCarga||errorJugadores||errorOnline)&&<p role="status" className="panel p-4 text-sm text-amber-300">{errorCarga||errorJugadores||errorOnline}</p>}
     <div className="panel flex flex-wrap items-center justify-between gap-4 p-4">
       <div className="flex flex-wrap items-center gap-3"><div className="segmented-control" aria-label="Agrupar estadísticas" role="group">{(["mes","anio"] as const).map(m=><button key={m} aria-pressed={modo===m} onClick={()=>{setModo(m);setPeriodo(null);}}>{m==="mes"?"Por mes":"Por año"}</button>)}</div><select aria-label="Período de estadísticas" value={activo??""} onChange={e=>setPeriodo(e.target.value)} disabled={!periodos.length}>{!periodos.length&&<option value="">Sin resultados</option>}{periodos.map(p=><option key={p} value={p}>{etiquetaPeriodo(p)}</option>)}</select></div>
       <button className="button-secondary" disabled={!filas.length} onClick={exportar}>Descargar CSV</button>
@@ -75,11 +79,11 @@ function ContenidoEstadisticas() {
     <section id="tabla-mensual" className="panel p-5" aria-labelledby="titulo-tabla-mensual">
       <h2 id="titulo-tabla-mensual" className="font-semibold">{modo==="mes"?"Tabla del mes":"Tabla del año"}</h2>
       <p className="mt-1 text-sm text-blue-200">{activo?etiquetaPeriodo(activo):cargando?"Cargando período…":"Sin período disponible"}</p>
-      <p className="my-4 text-xs leading-relaxed text-zinc-400">Puntos oficiales acumulados en los torneos del período, incluidos byes suizos. PJ y rendimiento cuentan partidas contra un rival. No incluye la final de desempate registrada aparte.</p>
+      <p className="my-4 text-xs leading-relaxed text-zinc-400">Puntos oficiales acumulados en los torneos presenciales del período, incluidos byes suizos. PJ y rendimiento cuentan partidas contra un rival. No incluye la final de desempate registrada aparte.</p>
       {cargando?<p role="status" className="py-5 text-sm text-zinc-400">Cargando la tabla…</p>:tabla.filas.length?<><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr><th className="px-3 py-2">#</th><th className="px-3 py-2 text-left">Jugador</th>{tabla.columnas.map((c,i)=><th key={c.id} className="px-3 py-2" title={c.nombre}>T{i+1}</th>)}<th className="px-3 py-2">Total oficial</th><th className="px-3 py-2">PJ</th><th className="px-3 py-2">Rendimiento</th></tr></thead><tbody>{tabla.filas.map(f=><tr key={f.jugadorId}><td className="px-3 py-2 text-center">{f.posicion}</td><td className="px-3 py-2"><Link href={`/jugadores/${f.jugadorId}`} className="flex items-center gap-3 whitespace-nowrap"><FotoEstadisticas jugador={jugadores.find(j=>j.id===f.jugadorId)} />{nombreDe(f.jugadorId)}</Link></td>{f.puntosPorTorneo.map((p,i)=><td key={i} className="px-3 py-2 text-center">{p??"—"}</td>)}<td className="px-3 py-2 text-center">{f.total}</td><td className="px-3 py-2 text-center">{f.partidasJugadas}</td><td className="px-3 py-2 text-center">{f.partidasJugadas?porcentaje(f.rendimiento):"—"}</td></tr>)}</tbody></table></div><ul className="mt-4 flex flex-wrap gap-3 text-xs text-zinc-400">{tabla.columnas.map((c,i)=><li key={c.id}><Link href={`/torneos/${c.id}`} className="hover:text-blue-300">T{i+1} · {c.nombre}</Link></li>)}</ul></>:<p className="py-5 text-sm text-zinc-400">Todavía no hay resultados en este período.</p>}
     </section>
-    <p className="text-xs leading-relaxed text-zinc-400">{activo?etiquetaPeriodo(activo):"Sin período disponible"} · Las partidas se agrupan por la fecha de inicio del torneo. El rendimiento usa resultados contra un rival: los descansos y byes no cuentan como partidas jugadas.</p>
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[{valor:resumen.partidas,texto:"Partidas jugadas"},{valor:resumen.jugadores,texto:"Jugadores con actividad"},{valor:resumen.torneos,texto:"Torneos con resultados"},{valor:resumen.partidas?resumen.tablas/resumen.partidas*100:null,sufijo:"%",texto:`Tablas · ${resumen.tablas} partidas`}].map(m=><div key={m.texto} data-stats-motion className={`panel p-4 sm:p-5 ${visual.metricCard}`}><p className="text-2xl font-semibold tabular-nums">{cargando?"…":m.valor===null?"—":<NumeroEstadistico valor={m.valor} sufijo={m.sufijo} />}</p><p className="mt-2 text-xs text-zinc-400">{m.texto}</p></div>)}</div>
+    <p className="text-xs leading-relaxed text-zinc-400">{activo?etiquetaPeriodo(activo):"Sin período disponible"} · El Elo y el rendimiento reúnen partidas presenciales y online. Los premios y la tabla oficial siguen los torneos presenciales. Las partidas online se agrupan por su fecha en Uruguay. El rendimiento usa resultados contra un rival: los descansos y byes no cuentan como partidas jugadas.</p>
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[{valor:resumen.partidas,texto:"Partidas jugadas"},{valor:resumen.jugadores,texto:"Jugadores con actividad"},{valor:resumen.torneos,texto:"Torneos presenciales"},{valor:resumen.partidas?resumen.tablas/resumen.partidas*100:null,sufijo:"%",texto:`Tablas · ${resumen.tablas} partidas`}].map(m=><div key={m.texto} data-stats-motion className={`panel p-4 sm:p-5 ${visual.metricCard}`}><p className="text-2xl font-semibold tabular-nums">{cargando?"…":m.valor===null?"—":<NumeroEstadistico valor={m.valor} sufijo={m.sufijo} />}</p><p className="mt-2 text-xs text-zinc-400">{m.texto}</p></div>)}</div>
     {!cargando&&activo&&filas.length>0&&<EstadisticasVisuales jugadores={jugadores} filas={filas} periodo={activo} etiqueta={etiquetaPeriodo(activo)} minimo={minimo} jugadorElegido={elegido?.jugadorId??null} onElegir={setJugadorElegido} />}
     {!cargando&&!filas.length?<div className="empty-state"><h2>Sin partidas para analizar</h2><p>Las estadísticas aparecerán cuando haya resultados contra un rival.</p></div>:<>
       <section className="panel overflow-hidden" aria-labelledby="titulo-rendimiento">

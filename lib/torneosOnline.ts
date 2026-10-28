@@ -2,7 +2,7 @@ import {generarRoundRobin,generarRondaUnoDutch,generarRondaSuiza,standingsConDes
 import type {RitmoOnline} from './partidaOnline';
 
 export type TorneoOnline={id:string;organizador_id:string;nombre:string;formato:'suizo'|'round-robin';ritmo:RitmoOnline;por_elo:boolean;estado:'abierto'|'en_curso'|'finalizado'|'cancelado';max_rondas:number;dias_ronda:number;ronda_actual:number;version:number;limite_ronda:string|null;creada:string;inscriptos?:number;anotado?:boolean};
-export type InscriptoOnline={usuario_id:string;nombre:string;elo:number};
+export type InscriptoOnline={usuario_id:string;nombre:string;elo:number;jugador_id?:string|null};
 export type CoordinacionOnline={propuesta:string|null;propuesta_por:string|null;aceptada:boolean;listo_w:string|null;listo_b:string|null;mensajes:{usuario:string;nombre:string;texto:string;fecha:string}[]};
 export type CruceOnline={ronda:number;mesa:number;blancasId:string;negrasId:string|null;partidaId:string|null;resultado:'1-0'|'0-1'|'1/2-1/2'|'0-0'|null;manual:boolean;fase:string;vence:number|null;coordinacion:CoordinacionOnline|null};
 export type DatosTorneoOnline={torneo:TorneoOnline;jugadores:InscriptoOnline[];cruces:CruceOnline[]};
