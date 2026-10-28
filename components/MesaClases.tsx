@@ -38,10 +38,12 @@ export function MesaClases(){
     const id=d.id==='menu'?null:typeof d.id==='string'&&catalogoRef.current.some(m=>m.id===d.id)?d.id:null;juegoActual.current=id;setJuego(id);
    }else if(d.tipo==='alto'&&Number.isFinite(d.alto))setAlto(Math.max(200,Math.min(20000,Math.ceil(d.alto))));
    else if(d.tipo==='sonido'&&typeof d.activo==='boolean')setSonido(d.activo);
+   else if(d.tipo==='enfocar')requestAnimationFrame(()=>panel.current?.scrollIntoView({block:'start',behavior:'instant'}));
   }
   window.addEventListener('message',mensaje);window.addEventListener('resize',medir);return()=>{window.removeEventListener('message',mensaje);window.removeEventListener('resize',medir);};
  },[enviar,medir]);
  useEffect(()=>{medir();},[concentrado,juego,medir]);
+ useEffect(()=>{const seguirEnlace=()=>abrir(window.location.hash.slice(1)||null);window.addEventListener('hashchange',seguirEnlace);window.addEventListener('popstate',seguirEnlace);return()=>{window.removeEventListener('hashchange',seguirEnlace);window.removeEventListener('popstate',seguirEnlace);};},[abrir]);
  useEffect(()=>{if(!listo||catalogo.length)return;const espera=setTimeout(()=>setError('La mesa está tardando en cargar. Podés volver a intentar sin perder tus clases guardadas.'),25000);return()=>clearTimeout(espera);},[listo,catalogo.length,reintento]);
  if(cargando)return <p role="status">Preparando tus clases…</p>;
  if(!session)return <section className={s.acceso}><p className="eyebrow">TU ESPACIO PARA ENSEÑAR</p><h1>Mis clases</h1><p>Iniciá sesión con tu cuenta de profesor.</p><AuthWidget/></section>;
@@ -53,7 +55,7 @@ export function MesaClases(){
   {!juego&&<>
    <header className={s.hero}><div><p className="eyebrow">MIS CLASES · SOLO VOS</p><h1>Un tablero.<br/><em>Mil formas de aprender.</em></h1><p>Elegí un juego, reuní al grupo y empezá a explorar.</p><div className={s.heroDatos}><span>{catalogo.length||'…'} actividades</span><span>Piezas con sonido</span><span>Listo para proyectar</span></div></div><div className={s.mundo} role="img" aria-label="Un mundo de ajedrez para descubrir"/></header>
    <div className={s.filtros}><div className={s.pestanas} role="group" aria-label="Tipo de actividad">{grupos.map(g=><button type="button" key={g.id} aria-pressed={!busqueda&&categoria===g.id} onClick={()=>{setCategoria(g.id);setBusqueda('');}}>{g.nombre}<span>{catalogo.filter(m=>m.category===g.id).length}</span></button>)}</div><label className={s.buscar}><span aria-hidden="true">⌕</span><span className="sr-only">Buscar una actividad</span><input type="search" placeholder="Buscá un juego…" value={busqueda} onChange={e=>setBusqueda(e.target.value)}/></label></div>
-   <div className={s.tituloGrupo}><div><p className="eyebrow">{busqueda?'TU BÚSQUEDA':grupo.nombre.toUpperCase()}</p><h2>{busqueda?`Resultados para «${busqueda}»`:grupo.descripcion}</h2></div><span>{visibles.length} actividades</span></div>
+   <div className={s.tituloGrupo}><div><p className="eyebrow">{busqueda?'TU BÚSQUEDA':grupo.nombre.toUpperCase()}</p><h2>{busqueda?`Resultados para «${busqueda}»`:grupo.descripcion}</h2></div><span>{visibles.length} {visibles.length===1?'actividad':'actividades'}</span></div>
    {!catalogo.length&&!error&&<p role="status" className={s.cargando}>Preparando el catálogo de tu mesa…</p>}
    {!!catalogo.length&&!visibles.length&&<p role="status">No encontramos esa actividad. Probá con «caballo», «cartas» o «rey».</p>}
    <div className={s.catalogo}>{visibles.map(m=><button type="button" key={m.id} className={s.tarjeta} onClick={()=>abrir(m.id)} aria-label={`Abrir ${m.title}`}><PortadaJuegoClase juego={m}/><div className={s.tarjetaTexto}><span className={s.etiqueta}>{m.tag}</span><h3>{m.title}</h3><p>{m.description}</p><div className={s.tarjetaPie}><span>{m.meta||`${m.size} × ${m.rows} · Personas o IA`}</span><b>{m.category==='story'?'Explorar':m.category==='teacher'?'Preparar clase':'Abrir juego'} <span aria-hidden="true">↗</span></b></div></div></button>)}</div>

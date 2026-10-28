@@ -55,3 +55,7 @@ body .side-panel>.voice-panel{margin:0;padding:0;border-radius:12px;font-size:12
 body .side-panel>.voice-panel summary{padding:14px;font-size:12px}
 body .side-panel .voice-content{padding:14px}
 @media(max-width:680px){html{--clase-tablero:600px}body .game-grid{width:100%}body .side-panel>.voice-panel{grid-column:1/-1}}
+body .board-actions .secondary{font-size:11px;padding:8px 10px;min-height:40px;white-space:nowrap}
+body .clase-ayuda{padding:14px 18px;background:#13263b;border:1px solid #8aa8cd24;border-radius:12px}
+body .clase-ayuda .instruction{margin:0;font-size:12px;line-height:1.7}
+@media(max-width:680px){body .clase-ayuda{grid-column:1/-1}body .board-actions .secondary{min-height:44px;font-size:11px;padding:9px 7px}}

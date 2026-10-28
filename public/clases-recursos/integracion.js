@@ -11,6 +11,8 @@
   if(!screen)return;
   const voice=screen.querySelector('.voice-panel'),side=screen.querySelector('.side-panel');
   if(voice&&side&&!side.contains(voice))side.prepend(voice);
+  const instruction=screen.querySelector('.board-panel > .instruction');
+  if(instruction&&side){const help=document.createElement('div');help.className='clase-ayuda';help.append(instruction);side.prepend(help);}
  }
  function catalog(){
   if(!root.Mesa)return;
@@ -31,6 +33,9 @@
   ready=true;document.body.dataset.claseActual=root.Mesa?.current()||'menu';arrange();
   new ResizeObserver(measure).observe(document.body);
   new MutationObserver(measure).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','open','class']});
+  // Legacy starts focus their game section. Restore the host toolbar after that scroll,
+  // without interfering with piece clicks, dragging, history or saved class state.
+  document.addEventListener('click',e=>{const button=e.target.closest?.('button');if(button&&/(^start$|-start$)/.test(button.id))requestAnimationFrame(()=>send('enfocar'));});
   document.addEventListener('load',measure,true);root.addEventListener('resize',measure);catalog();
  });
 })(globalThis);

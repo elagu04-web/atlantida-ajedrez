@@ -7,3 +7,6 @@
 .hero{min-height:240px;margin-bottom:25px;padding:4px 0 20px}.mundo{height:250px}.hero h1{font-size:clamp(34px,3.7vw,50px)}.heroDatos{margin-top:20px}.filtros{margin-bottom:25px}
 @media(min-width:1400px){.mundo{height:280px}}
 @media(max-width:650px){.hero{min-height:235px}.mundo{height:190px}.hero h1{font-size:34px}}
+.barra{min-height:64px;padding:8px 0 12px;margin-bottom:12px}
+.barra{position:sticky;top:80px;z-index:20;background:#080f1bf7}
+.espacio:fullscreen .barra{top:0}
