@@ -11,6 +11,31 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  "slug": "gabi-campeon-octubre-remontada",
+  "titulo": "Gabi remontó y es el campeón de octubre",
+  "tituloTarjeta": "Gabi se quedó con octubre",
+  "bajada": "Otro 6 de 6 para Gabriel Coronel, doce victorias en los últimos dos torneos y una remontada que lo dejó primero en la tabla mensual. Sus admiradores lo siguieron de cerca.",
+  "categoria": "Vida del club",
+  "fecha": "2026-10-27",
+  "imagen": "/imagenes/gabi-campeon-octubre-27-2026.jpg",
+  "imagenAlt": "Gabriel Coronel concentrado frente al tablero, con dos compañeros siguiendo la partida de pie",
+  "imagenPosicion": "50% 38%",
+  "imagenVertical": true,
+  "imagenAspecto": "4 / 3",
+  "imagenAncho": 960,
+  "imagenCalidad": 90,
+  "imagenSinCompresion": true,
+  "pieFoto": "Gabi, bajo la mirada de sus admiradores. Dentro de poco va a tener que firmar los tableros.",
+  "parrafos": [
+    "Gabi lo hizo de nuevo. **Seis partidas, seis victorias** en el torneo de hoy, 27 de octubre, y otro primer puesto. La semana pasada se había llevado todos los puntos y hoy parece que tampoco encontró motivos para repartirlos.",
+    "Esta vez fueron cuatro jugadores, todos contra todos, ida y vuelta. Gabi les ganó dos veces a cada uno de sus rivales: **tres triunfos con blancas y tres con negras**. La tabla quedó con Gabi primero, con 6 puntos; Jorge, con 3; Camilo, con 2; y Yamandú Martínez, con 1.",
+    "Pero había algo más en juego. Gabi llegó a esta última fecha **tres puntos detrás de Fonchi en la tabla de octubre**. Con el 6 de 6 dio vuelta la clasificación y terminó arriba: **16½ puntos contra 13½**. Tremenda remontada para convertirse en el **campeón de octubre**.",
+    "Lo que viene haciendo merece una pausa: **dos torneos seguidos con puntaje perfecto, doce victorias en doce partidas**. Y en el Elo Atlántida también se nota: empezó octubre con 1675 y lo cierra en **1764, una subida de 89 puntos**. Nosotros seguimos buscando dónde se le acaba la racha.",
+    "Mientras tanto, ya le apareció público. Miren la foto: Gabi pensando y sus admiradores siguiendo cada jugada. Arrancó persiguiendo la punta y termina el mes con campeonato y club de fans. Como siga así, para analizar una partida con él vamos a tener que pedir número.",
+    "¡Felicitaciones, Gabi! Ya tenías tu lugar en la **Copa de Campeones de fin de año** y ahora cerrás octubre de esta manera. A los que lo van a enfrentar les queda un poco de tiempo para estudiar. Aprovechen.",
+    "[Mirá los resultados del torneo](https://atlantida-ajedrez.vercel.app/torneos/56ba97fd-47e0-4cf4-85ed-85ed525ecf2e), [la tabla de octubre](https://atlantida-ajedrez.vercel.app/estadisticas) y [el recorrido de Gabi en el club](https://atlantida-ajedrez.vercel.app/jugadores/d1c933d4-197b-434a-924c-d404421e02a6)."
+  ]
+}, {
   slug: "gabi-campeon-invicto-copa-de-campeones",
   titulo: "Gabi, campeón invicto y a la Copa de Campeones",
   tituloTarjeta: "Gabi, campeón con puntaje perfecto",
