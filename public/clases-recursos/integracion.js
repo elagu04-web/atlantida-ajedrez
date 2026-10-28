@@ -6,6 +6,12 @@
  let scheduled=false,lastHeight=0,ready=false;
  const send=(tipo,datos={})=>root.parent.postMessage({canal,tipo,...datos},origin);
  function measure(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;const height=Math.ceil(document.body.getBoundingClientRect().height);if(height!==lastHeight){lastHeight=height;send('alto',{alto:height});}});}
+ function arrange(){
+  const id=root.Mesa?.current(),mode=root.Mesa?.mode(id),screen=mode&&document.getElementById(mode.screen);
+  if(!screen)return;
+  const voice=screen.querySelector('.voice-panel'),side=screen.querySelector('.side-panel');
+  if(voice&&side&&!side.contains(voice))side.prepend(voice);
+ }
  function catalog(){
   if(!root.Mesa)return;
   const juegos=root.Mesa.modes().map(m=>({id:m.id,title:m.title,description:m.description,tag:m.tag||'',meta:m.meta||'',category:m.category||'game',size:m.size,rows:m.rows||m.size,order:m.order,preview:m.preview||[]}));
@@ -19,10 +25,10 @@
   else if(d.tipo==='viewport'&&Number.isFinite(d.alto)){document.documentElement.style.setProperty('--clase-alto',Math.max(360,Math.min(2400,d.alto))+'px');measure();}
   else if(d.tipo==='sonido'&&typeof d.activo==='boolean')root.MesaSound?.setEnabled(d.activo);
  });
- root.addEventListener('mesa:modechange',e=>{document.body.dataset.claseActual=e.detail.id;send('modo',{id:e.detail.id});measure();});
+ root.addEventListener('mesa:modechange',e=>{document.body.dataset.claseActual=e.detail.id;arrange();send('modo',{id:e.detail.id});measure();});
  root.addEventListener('atlantida:sonido',e=>send('sonido',e.detail));
  document.addEventListener('DOMContentLoaded',()=>{
-  ready=true;document.body.dataset.claseActual=root.Mesa?.current()||'menu';
+  ready=true;document.body.dataset.claseActual=root.Mesa?.current()||'menu';arrange();
   new ResizeObserver(measure).observe(document.body);
   new MutationObserver(measure).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','open','class']});
   document.addEventListener('load',measure,true);root.addEventListener('resize',measure);catalog();

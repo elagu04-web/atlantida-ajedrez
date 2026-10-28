@@ -47,3 +47,11 @@ body .haunt-screen{--light:#f0e6ce;--dark:#638480;--ink:#edf3fc;--muted:#9fb5cb;
 @media(max-width:680px){html{--clase-tablero:600px}body .game-grid,body #profe-screen>.game-grid{grid-template-columns:1fr;gap:16px}body .game-screen>.intro{margin-bottom:12px!important}body .game-screen>.intro .subtitle{font-size:12px!important}body .board-panel{padding:12px 9px;border-radius:12px}body .board-wrap,body .classic-board-wrap{max-width:100%}body .board-actions{justify-content:stretch;gap:6px}body .board-actions .secondary{flex:1;padding:10px 8px;font-size:11px;min-height:44px}body .board-top>div{font-size:12px}body .phase{font-size:9px;padding:5px 7px}body .instruction{font-size:11px}body .side-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px}body .side-panel>.goal-card{grid-column:1/-1}body .history-card{padding:15px}body .goal-card .tiny-line{display:none}body :is(.classic-setup,#setup,#four-setup){padding:20px 15px}body .match-options{padding:14px;flex-direction:column;gap:14px}body .team-grid{grid-template-columns:1fr}body .team-card{padding:17px}body .prof-class-bar{padding:14px}body .prof-teacher-tabs{overflow-x:auto}body .prof-game-host .side-panel{max-height:none;overflow:visible}}
 @media(max-width:430px){body .side-panel{grid-template-columns:1fr}body .board-actions{margin-top:12px}body .prof-coordinate-frame{--coordinate-space:22px}body .prof-coordinate-files,body .prof-coordinate-ranks{font-size:14px}}
 
+/* Keep the playable area together, with the full board and its actions in view. */
+html{--clase-tablero:clamp(280px,calc(var(--clase-alto) - 135px),720px)}
+body .game-screen>.intro{display:none!important}
+body .game-grid{width:min(100%,calc(var(--clase-tablero) + 350px));margin-inline:auto}
+body .side-panel>.voice-panel{margin:0;padding:0;border-radius:12px;font-size:12px}
+body .side-panel>.voice-panel summary{padding:14px;font-size:12px}
+body .side-panel .voice-content{padding:14px}
+@media(max-width:680px){html{--clase-tablero:600px}body .game-grid{width:100%}body .side-panel>.voice-panel{grid-column:1/-1}}
