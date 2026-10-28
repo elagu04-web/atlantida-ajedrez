@@ -25,10 +25,11 @@ test('Las piezas de clase usan SVG locales cburnett sin sustituir el dragón ni 
  assert.ok(root.PieceArt.html('n','w','reserve-art').includes('/piezas/cburnett/wN.svg'));assert.ok(root.PieceArt.fromGlyph('♛').includes('/piezas/cburnett/bQ.svg'));assert.ok(root.PieceArt.html('d','w').includes('dragon.svg'));assert.equal(root.PieceArt.html('<script>','w'),'');
  for(const color of ['w','b'])for(const p of ['K','Q','R','B','N','P'])assert.ok(fs.readFileSync(require.resolve('../public/piezas/cburnett/'+color+p+'.svg'),'utf8').includes('<svg'));
 });
-test('El sonido de madera se emite una vez por movimiento y respeta silenciar',()=>{
- const counts={sources:0},events={},listeners={},button={dataset:{},setAttribute(){},addEventListener(){}},param=()=>({value:0,setValueAtTime(){},exponentialRampToValueAtTime(){}}),node=()=>({gain:param(),frequency:param(),Q:param(),connect(){},disconnect(){},start(){},stop(){}});
- class Audio{constructor(){this.state='running';this.currentTime=0;this.sampleRate=48000;}createGain(){return node()}createDynamicsCompressor(){return {threshold:param(),ratio:param(),connect(){}}}createBuffer(){return {getChannelData:()=>new Float32Array(100)}}createBufferSource(){counts.sources++;return node()}createBiquadFilter(){return node()}createOscillator(){return node()}}
- const root={AudioContext:Audio,addEventListener:(n,fn)=>listeners[n]=fn,dispatchEvent(){}},storage=new Map();
- vm.runInNewContext(fs.readFileSync(require.resolve('../public/clases-recursos/sonidos.js'),'utf8'),{globalThis:root,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},document:{hidden:false,createElement:()=>button,getElementById:()=>({before(){}}),addEventListener:(n,fn)=>events[n]=fn},CustomEvent:class{},Math});
- assert.equal(counts.sources,0);events.pointerdown();root.MesaSound.play('move');assert.equal(counts.sources,1);assert.equal(button.dataset.soundCount,'1');root.MesaSound.setEnabled(false);root.MesaSound.play('capture');assert.equal(counts.sources,1);root.MesaSound.setEnabled(true);root.MesaSound.play('capture');assert.equal(counts.sources,2);
+test('El adaptador de clases usa grabaciones reales y respeta silenciar',async()=>{
+ const counts={golpes:0},events={},listeners={},button={dataset:{},setAttribute(){},addEventListener(){}},storage=new Map();
+ class Player{configurar(activo){this.activo=activo;}activar(){}golpe(){if(this.activo)counts.golpes++;}}
+ const root={addEventListener:(n,fn)=>listeners[n]=fn,dispatchEvent(){}},exports={};
+ const codigo=ts.transpileModule(fs.readFileSync(require.resolve('../public/clases-recursos/sonidos.js'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+ vm.runInNewContext(codigo,{globalThis:root,exports,require:()=>({SonidoMadera:Player}),localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},document:{hidden:false,createElement:()=>button,getElementById:()=>({before(){}}),addEventListener:(n,fn)=>events[n]=fn},CustomEvent:class{},Promise,Date});
+ await new Promise(r=>setImmediate(r));assert.equal(counts.golpes,0);events.pointerdown();root.MesaSound.play('move');assert.equal(counts.golpes,1);assert.equal(button.dataset.audioSource,'grabacion-real');root.MesaSound.setEnabled(false);root.MesaSound.play('capture');assert.equal(counts.golpes,1);root.MesaSound.setEnabled(true);root.MesaSound.play('capture');assert.equal(counts.golpes,2);
 });

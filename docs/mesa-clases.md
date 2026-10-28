@@ -71,7 +71,11 @@ La pantalla de proyección mantiene su documento independiente.
 Piezas: cburnett de Colin M. L. Burnett, desde el repositorio oficial de Lichess,
 SVG originales con atribución y GPL-2.0-or-later en public/piezas/cburnett/.
 El dragón y las marcas que expresan reglas de cada juego conservan su significado.
-El sonido de madera es síntesis local, se puede silenciar y conserva mesa-sound.
+El sonido usa tres grabaciones reales de piezas de simone_ds (CC0), servidas desde
+public/audio/madera-real/. El reproductor compartido madera.js conserva el tono
+y la velocidad, alterna muestras, reutiliza buffers y respeta silenciar/mesa-sound.
+El mismo reproductor se usa en bots, online y las prácticas del club.
+Fuente y recortes documentados en public/audio/madera-real/CREDITOS.txt.
 
 Pruebas: clases-integradas.test.cjs (protocolo, piezas, sonido y transformación)
 y clases-privadas.test.cjs (autorización, cookie, RLS y rutas).

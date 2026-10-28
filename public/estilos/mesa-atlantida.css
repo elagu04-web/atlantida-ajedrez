@@ -121,3 +121,11 @@ body.class-audience :is(#class-info,#class-game-info,#class-waiting){color:#c5d8
 body .brand-icon{background:url('/imagenes/logo-club.png') center/32px 32px no-repeat,linear-gradient(145deg,#263b52,#111c2d)}
 body .brand-icon>*{visibility:hidden}
 @media(max-width:540px){body .catalog-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%}body .catalog-tab{min-width:0;flex-direction:column;gap:5px;padding:10px 4px}body .brand-icon{background-size:28px 28px,auto}}
+
+/* New automatic ghost powers retain the club palette. */
+body .ghost-auto-controls .ghost-switch{color:#e4eefb}
+body .ghost-switch-track{background:#334b64;border-color:#7899ba}
+body .ghost-switch input:checked+.ghost-switch-track{background:#337b8b;border-color:#82c5d3}
+body .spectral-inventory-power{background:#1b364b;border-color:#89b9cf40;color:#c2e1e9}
+body .spectral-carrier-title{color:#e0edf9}
+body .spectral-count,body .spectral-more{background:#ceeef5;color:#183f51}

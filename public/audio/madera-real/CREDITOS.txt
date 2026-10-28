@@ -1,0 +1,12 @@
+Grabaciones reales de piezas de ajedrez apoyadas sobre un tablero.
+Autor: simone_ds. Título original: chess pieces.wav (2016-10-31).
+Fuente primaria: https://freesound.org/people/simone_ds/sounds/366065/
+Grabación pública: https://cdn.freesound.org/previews/366/366065_6040409-hq.mp3
+Licencia: Creative Commons Zero 1.0 Universal (CC0-1.0).
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Adaptación para Atlántida Ajedrez, 2026-10-28:
+Tres recortes de 480 ms desde 1.085, 2.510 y 5.515 segundos; mezcla mono,
+PCM16 WAV a 44.1 kHz, pico 0.87, fundido de edición de 2 ms.
+Se mantienen la velocidad, el tono y el timbre originales. Sin síntesis ni IA.
+Los archivos se sirven desde el propio sitio. No se consulta Freesound al jugar.
