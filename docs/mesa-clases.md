@@ -49,3 +49,24 @@ Next.js 16.3.1 (next-devtools/server/font/geist-latin.woff2). Se conserva la lic
 SIL OFL 1.1 en public/fuentes/GEIST-OFL.txt; obtenida del repositorio oficial
 https://github.com/vercel/geist-font/blob/main/OFL.txt. No se agregan consultas
 a servicios de fuentes externos durante la clase.
+## Mesa integrada — octubre de 2026
+
+El catálogo se renderiza en React dentro de /clases: categorías, búsqueda y una
+portada SVG distinta por actividad, construida con su posición real y un motivo
+propio. La ilustración de cabecera está en public/imagenes/clases/mundo-ajedrez-v1.webp.
+
+Los motores originales siguen privados y sin modificar en Storage. El documento
+principal, al pedir integrado=1, incorpora un puente de presentación que comunica
+solo metadatos de catálogo, actividad elegida, altura y sonido. El contenedor se
+ajusta al contenido; no hay un segundo menú ni un segundo scroll de página. Los
+mensajes comprueban origen, ventana emisora y tipos admitidos en ambos sentidos.
+Las clases existentes conservan los mismos IDs, claves locales y BroadcastChannel.
+La pantalla de proyección mantiene su documento independiente.
+
+Piezas: cburnett de Colin M. L. Burnett, desde el repositorio oficial de Lichess,
+SVG originales con atribución y GPL-2.0-or-later en public/piezas/cburnett/.
+El dragón y las marcas que expresan reglas de cada juego conservan su significado.
+El sonido de madera es síntesis local, se puede silenciar y conserva mesa-sound.
+
+Pruebas: clases-integradas.test.cjs (protocolo, piezas, sonido y transformación)
+y clases-privadas.test.cjs (autorización, cookie, RLS y rutas).

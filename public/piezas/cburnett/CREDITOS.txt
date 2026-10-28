@@ -1,0 +1,5 @@
+Piezas cburnett, por Colin M. L. Burnett. Licencia GPL versión 2 o posterior.
+SVG originales sin modificar. El código fuente es el propio SVG distribuido.
+Fuente: https://github.com/lichess-org/lila/tree/master/public/piece/cburnett
+Atribución: https://github.com/lichess-org/lila/blob/master/COPYING.md
+Licencia completa: /piezas/cburnett/GPL-2.0.txt

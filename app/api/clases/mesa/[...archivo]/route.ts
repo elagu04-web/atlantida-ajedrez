@@ -19,6 +19,6 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{archivo:
  }
  const {data,error}=await recurso.download(nombre);
  if(error||!data)return new Response('No se pudo abrir el recurso. Volvé a Mis clases.',{status:403,headers:CABECERAS_CLASES});
- const contenido=ruta.endsWith('.html')?vestirMesaClases(await data.text()):await data.arrayBuffer();
+ const contenido=ruta.endsWith('.html')?vestirMesaClases(await data.text(),ruta==='index.html'&&request.nextUrl.searchParams.get('integrado')==='1'):await data.arrayBuffer();
  return new Response(contenido,{headers:{...CABECERAS_CLASES,'Content-Type':tipos[ruta.split('.').at(-1)!]??'application/octet-stream','Content-Security-Policy':"frame-ancestors 'self'; object-src 'none'; base-uri 'self'"}});
 }

@@ -845,3 +845,11 @@ button:not(:disabled), summary { cursor: pointer; }
 
 /* Controles de práctica al alcance del tablero. */
 .play-match-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:8px 10px;border:1px solid #93b9e22b;border-radius:12px;background:#122337}.play-match-actions>div:first-child>span{display:block;font-size:9px;color:#90abc3}.play-match-actions>div:first-child>strong{display:block;font-size:16px;color:#e1cfaa;margin-top:3px;font-variant-numeric:tabular-nums}.play-elo-result{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:11px;padding:10px 12px;margin-top:8px;border:1px solid #e4c58733;border-radius:10px;color:#adc4da}.play-elo-result strong{color:#e7d2ad}.play-elo-result>span{margin-left:auto;font-variant-numeric:tabular-nums;color:#e7d2ad}.play-history td button{width:100%;text-align:left;border-radius:5px;padding:3px 5px}.play-history td button:hover,.play-history td button[aria-current=step]{background:#e4c5871c;color:#e4c587}.play-layout[data-activa="true"]{--play-board-size:clamp(180px,calc(100dvh - 354px),720px)}.play-layout[data-activa="true"][data-terminada="true"]{--play-board-size:clamp(180px,calc(100dvh - 400px),720px)}@media(max-width:900px){.play-layout[data-activa="true"]:has(.play-rival-slot) .play-board{width:min(100%,max(160px,calc(100dvh - 427px)))}.play-layout[data-activa="true"][data-terminada="true"]:has(.play-rival-slot) .play-board{width:min(100%,max(160px,calc(100dvh - 480px)))}}
+/* Classroom catalog and games use the site's width, without nested page chrome. */
+.site-content:has([data-mesa-clases]){width:min(100%,1480px);padding-top:20px;padding-bottom:24px}
+.site-content:has([data-mesa-juego]){padding-top:10px}
+.site-shell:has([data-mesa-juego]) .site-header nav[aria-label="Gestión del club"]{display:none}
+.site-shell:has([data-mesa-juego]) .site-footer{display:none}
+.site-shell:has([data-concentrado="true"]) .site-header{display:none}
+.site-shell:has([data-concentrado="true"]) .site-content{padding-top:0}
+@media(max-width:650px){.site-content:has([data-mesa-juego]){padding-inline:12px}}
