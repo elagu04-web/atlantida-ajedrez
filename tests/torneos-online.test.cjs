@@ -6,7 +6,15 @@ test('Torneo completo: cuentas, coordinación privada, comienzo conjunto, result
  const db=new PGlite();try{
   await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;grant usage on schema auth to authenticated;create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb);create table public.jugadores(nombre text,apodo text,email text);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;`);
   for(const f of ['20261019205821_partidas_online.sql','20261019224336_elo_online.sql','20261028011711_torneos_online.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8').replace('alter publication supabase_realtime add table public.online_partidas;',''));
+  await db.exec("alter table public.online_torneo_jugadores add column jugador_id uuid;create schema club_online_privado;create function club_online_privado.jugador(uuid) returns uuid language sql as $$select null::uuid$$;");
+  // A game already in progress must not acquire a new clock rule.
+  const previa='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
   await db.query(`insert into auth.users select x::uuid,x||'@test.invalid',jsonb_build_object('full_name','Jugador '||left(x,1)) from unnest($1::text[])x`,[[admin,a,b,c,d]]);
+  await db.query('insert into public.online_partidas(id,creador_id,rival_id,estado) values($1,$2,$3,$4)',[previa,a,b,{...o.unirEstadoOnline(o.crearEstadoOnline('10+3','w','Uno'),'Dos',1000),inicioLibre:undefined}]);
+  await db.exec(fs.readFileSync('supabase/migrations/20261030224934_inicio_online_sin_reloj.sql','utf8'));
+  assert.equal((await db.query('select estado from online_partidas where id=$1',[previa])).rows[0].estado.inicioLibre,undefined);
+  await db.query("update online_partidas set estado=estado||'{\"fase\":\"cancelada\"}'::jsonb where id=$1",[previa]);
+  assert.equal((await db.query("select has_function_privilege('anon','online_reglas_privado.inicio()','execute') x")).rows[0].x,false);
   async function cuenta(id){await db.exec(`reset role;set role authenticated;set request.jwt.claim.sub='${id}';set request.jwt.claims='{}'`);}
   async function rpc(sql,args=[]){return (await db.query('select public.'+sql+' as dato',args)).rows[0]?.dato;}
   const id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -29,7 +37,9 @@ test('Torneo completo: cuentas, coordinación privada, comienzo conjunto, result
   assert.equal((await rpc('obtener_torneo_online($1)',[id])).cruces.find(x=>x.mesa===cr.mesa).partidaId,null);
   await cuenta(w);await coord('listo');
   datos=await rpc('obtener_torneo_online($1)',[id]);const gid=datos.cruces.find(x=>x.mesa===cr.mesa).partidaId;assert.ok(gid);
-  const p=(await db.query('select * from public.online_partidas where id=$1',[gid])).rows[0];assert.equal(p.estado.fase,'activa');assert.deepEqual(p.estado.eloInicio,{w:1400,b:1400});assert.ok(p.estado.desde>0);
+  const p=(await db.query('select * from public.online_partidas where id=$1',[gid])).rows[0];assert.equal(p.estado.fase,'activa');assert.deepEqual(p.estado.eloInicio,{w:1400,b:1400});assert.ok(p.estado.desde>0);assert.equal(p.estado.inicioLibre,2);assert.equal(Number(datos.cruces.find(x=>x.mesa===cr.mesa).vence),Number(p.estado.desde)+120000);
+  await db.exec('reset role');await db.query("update online_partidas set estado=estado||jsonb_build_object('movimientos',jsonb_build_array('e2e4','e7e5','g1f3','b8c6')) where id=$1",[gid]);await cuenta(w);const relojNormal=await rpc('obtener_torneo_online($1)',[id]);assert.equal(Number(relojNormal.cruces.find(x=>x.mesa===cr.mesa).vence),Number(p.estado.desde)+p.estado.blancasMs);
+  await db.exec('reset role');await db.query('update online_partidas set estado=$1 where id=$2',[p.estado,gid]);await cuenta(w);
   await assert.rejects(coord('listo'),/ya está creada/);
   await cuenta(admin);await assert.rejects(rpc('cancelar_torneo_online($1)',[id]),/terminar/);await assert.rejects(rpc('publicar_ronda_online($1,$2,$3)',[id,datos.torneo.version,[]]),/Faltan partidas/);await assert.rejects(rpc('resolver_cruce_online($1,1,$2,$3)',[id,cr.mesa,'1-0']),/no comenzaron/);
   await db.exec('reset role;set role service_role');await db.query('update public.online_partidas set estado=$1,version=version+1 where id=$2',[o.aplicarAccionOnline(p.estado,'b',{tipo:'rendirse'},Number(p.estado.desde)+1000),gid]);

@@ -3,6 +3,7 @@ import {Chess, type Color} from 'chess.js';
 export const RITMOS_ONLINE = {'10+3':{minutos:10,incremento:3},'5+3':{minutos:5,incremento:3},'3+2':{minutos:3,incremento:2}} as const;
 export type RitmoOnline=keyof typeof RITMOS_ONLINE;
 export type EstadoOnline={
+ inicioLibre?:2;
  eloTipo?:'club';clubBlancasId?:string;clubNegrasId?:string;
  torneoNombre?:string;torneoRonda?:number;
  porElo?:boolean;eloCreador?:number;eloInicio?:{w:number;b:number};elo?:{w:{antes:number;despues:number;variacion:number};b:{antes:number;despues:number;variacion:number}};
@@ -19,15 +20,20 @@ export function colorOnline(p:PartidaOnline,usuario:string):Color|null{
 }
 export function crearEstadoOnline(ritmo:RitmoOnline,color:Color,nombre:string,porElo=false):EstadoOnline{
  if(!Object.hasOwn(RITMOS_ONLINE,ritmo))throw Error('Elegí un ritmo disponible.');
- return {porElo,fase:'espera',ritmo,colorCreador:color,blancas:color==='w'?nombre:'Por confirmar',negras:color==='b'?nombre:'Por confirmar',fen:new Chess().fen(),movimientos:[],pgn:'',turno:'w',blancasMs:RITMOS_ONLINE[ritmo].minutos*60000,negrasMs:RITMOS_ONLINE[ritmo].minutos*60000,desde:null,oferta:null,resultado:'*',motivo:''};
+ return {inicioLibre:2,porElo,fase:'espera',ritmo,colorCreador:color,blancas:color==='w'?nombre:'Por confirmar',negras:color==='b'?nombre:'Por confirmar',fen:new Chess().fen(),movimientos:[],pgn:'',turno:'w',blancasMs:RITMOS_ONLINE[ritmo].minutos*60000,negrasMs:RITMOS_ONLINE[ritmo].minutos*60000,desde:null,oferta:null,resultado:'*',motivo:''};
 }
 export function unirEstadoOnline(e:EstadoOnline,nombre:string,ahora:number):EstadoOnline{
  if(e.fase!=='espera')throw Error('Esta mesa ya no está disponible.');
  return {...e,fase:'activa',blancas:e.colorCreador==='b'?nombre:e.blancas,negras:e.colorCreador==='w'?nombre:e.negras,desde:ahora};
 }
 export function tableroOnline(e:EstadoOnline){const c=new Chess();for(const uci of e.movimientos)c.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]});return c;}
+export const MARGEN_INICIO_ONLINE=120000;
+export function inicioLibreOnline(e:EstadoOnline){return e.inicioLibre===2&&e.movimientos.length<4;}
+export function margenInicioOnline(e:EstadoOnline,ahora:number):number|null{
+ return e.fase==='activa'&&inicioLibreOnline(e)&&e.desde!==null?Math.max(0,MARGEN_INICIO_ONLINE-Math.max(0,ahora-e.desde)):null;
+}
 export function relojesOnline(e:EstadoOnline,ahora:number){
- const transcurrido=e.fase==='activa'&&e.desde!==null?Math.max(0,ahora-e.desde):0;
+ const transcurrido=e.fase==='activa'&&!inicioLibreOnline(e)&&e.desde!==null?Math.max(0,ahora-e.desde):0;
  return {w:Math.max(0,e.blancasMs-(e.turno==='w'?transcurrido:0)),b:Math.max(0,e.negrasMs-(e.turno==='b'?transcurrido:0))};
 }
 function finalizar(e:EstadoOnline,resultado:EstadoOnline['resultado'],motivo:string,c:Chess,ahora:number):EstadoOnline{
@@ -54,6 +60,7 @@ export function aplicarAccionOnline(e:EstadoOnline,color:Color,accion:AccionOnli
  if(e.fase==='espera'&&accion.tipo==='cancelar'&&color===e.colorCreador)return {...e,fase:'cancelada',motivo:'Invitación cancelada'};
  if(e.fase!=='activa')throw Error('La partida no está en juego.');
  const c=tableroOnline(e),relojes=relojesOnline(e,ahora);
+ if(margenInicioOnline(e,ahora)===0)return finalizar(e,e.turno==='w'?'0-1':'1-0','Tiempo de inicio agotado (2 minutos)',c,ahora);
  if(relojes[e.turno]<=0){const ganador=e.turno==='w'?'b':'w';return finalizar(e,materialParaMate(c,ganador)?ganador==='w'?'1-0':'0-1':'1/2-1/2',materialParaMate(c,ganador)?'Tiempo agotado':'Tablas: tiempo y material insuficiente',c,ahora);}
  if(accion.tipo==='tiempo')return e;
  if(accion.tipo==='rendirse')return finalizar(e,color==='w'?'0-1':'1-0','Abandono',c,ahora);
@@ -70,7 +77,8 @@ export function aplicarAccionOnline(e:EstadoOnline,color:Color,accion:AccionOnli
  if(color!==e.turno)throw Error('Es el turno de tu rival.');
  if(!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(accion.uci))throw Error('Jugada no válida.');
  let mov;try{mov=c.move({from:accion.uci.slice(0,2),to:accion.uci.slice(2,4),promotion:accion.uci[4]});}catch{throw Error('Esa jugada no es legal.');}
- const siguiente:EstadoOnline={...e,movimientos:[...e.movimientos,mov.from+mov.to+(mov.promotion??'')],fen:c.fen(),turno:c.turn(),blancasMs:relojes.w+(color==='w'?RITMOS_ONLINE[e.ritmo].incremento*1000:0),negrasMs:relojes.b+(color==='b'?RITMOS_ONLINE[e.ritmo].incremento*1000:0),desde:ahora,oferta:e.oferta&&e.oferta!==color?null:e.oferta};
+ const incremento=inicioLibreOnline(e)?0:RITMOS_ONLINE[e.ritmo].incremento*1000;
+ const siguiente:EstadoOnline={...e,movimientos:[...e.movimientos,mov.from+mov.to+(mov.promotion??'')],fen:c.fen(),turno:c.turn(),blancasMs:relojes.w+(color==='w'?incremento:0),negrasMs:relojes.b+(color==='b'?incremento:0),desde:ahora,oferta:e.oferta&&e.oferta!==color?null:e.oferta};
  if(c.isCheckmate())return finalizar(siguiente,color==='w'?'1-0':'0-1','Jaque mate',c,ahora);
  if(c.isStalemate())return finalizar(siguiente,'1/2-1/2','Ahogado',c,ahora);
  if(c.isInsufficientMaterial())return finalizar(siguiente,'1/2-1/2','Material insuficiente',c,ahora);

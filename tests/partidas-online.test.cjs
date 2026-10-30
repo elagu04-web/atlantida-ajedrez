@@ -3,10 +3,10 @@ require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f
 const {Chess}=require('chess.js');
 const o=require('../lib/partidaOnline.ts');
 const inicio=Date.parse('2026-10-19T18:00:00Z');
-function juego(ritmo='10+3'){return o.unirEstadoOnline(o.crearEstadoOnline(ritmo,'w','Blancas de prueba'),'Negras de prueba',inicio);}
+function juego(ritmo='10+3'){const e=o.crearEstadoOnline(ritmo,'w','Blancas de prueba');delete e.inicioLibre;return o.unirEstadoOnline(e,'Negras de prueba',inicio);}
 function mover(e,color,uci,ms=1000){return o.aplicarAccionOnline(e,color,{tipo:'mover',uci},(e.desde??inicio)+ms);}
-test('Los tres ritmos conservan el incremento acordado y el reloj empieza al entrar el rival',()=>{
- for(const ritmo of ['10+3','5+3','3+2']){const e=o.crearEstadoOnline(ritmo,'w','Uno'),r=o.RITMOS_ONLINE[ritmo];assert.equal(e.desde,null);assert.equal(o.relojesOnline(e,inicio).w,r.minutos*60000);const activa=o.unirEstadoOnline(e,'Dos',inicio);const jugada=mover(activa,'w','e2e4',2000);assert.equal(jugada.blancasMs,r.minutos*60000-2000+r.incremento*1000);assert.equal(jugada.negrasMs,r.minutos*60000);assert.equal(jugada.turno,'b');}
+test('Las partidas anteriores conservan sus tres ritmos e incremento acordado',()=>{
+ for(const ritmo of ['10+3','5+3','3+2']){const e=o.crearEstadoOnline(ritmo,'w','Uno'),r=o.RITMOS_ONLINE[ritmo];assert.equal(e.desde,null);assert.equal(o.relojesOnline(e,inicio).w,r.minutos*60000);delete e.inicioLibre;const activa=o.unirEstadoOnline(e,'Dos',inicio);const jugada=mover(activa,'w','e2e4',2000);assert.equal(jugada.blancasMs,r.minutos*60000-2000+r.incremento*1000);assert.equal(jugada.negrasMs,r.minutos*60000);assert.equal(jugada.turno,'b');}
  assert.throws(()=>o.crearEstadoOnline('1+0','w','Uno'));
 });
 test('No acepta jugadas ilegales ni mover por el rival; incluye promoción obligatoria',()=>{
