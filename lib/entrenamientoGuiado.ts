@@ -10,6 +10,7 @@ import { analizarTemas, elegirNuevosTematicos, observarTema, perfilTemaAnterior,
 import bancoLichess from "../data/entrenamiento-lichess.json";
 import bancoDecisiones from "../data/entrenamiento-decisiones.json";
 import { nuevosSegunPareto } from "./entrenamientoPareto";
+import { leerHistorial, unirHistorial, type IntentoEntrenamiento } from "./historialEntrenamiento";
 
 export type ActividadGuiada = "tactica" | "candidatas" | "evaluacion";
 export type RutaGuiada = "base" | "club" | "competencia";
@@ -46,7 +47,7 @@ export type PrimerResultado = {fecha:string;acierto:boolean};
 export type NivelInicial = {elo:number;jugadorId:string|null;fecha:string};
 export type AvanceGuiado = { perfilTema?:PerfilTemaEjercicio; practica?: PracticaError; actualizada?: string; nota?: string; notaActualizada?: string; razonamiento?: RazonamientoGuiado; razonamientoActualizada?: string; primerResultado?:PrimerResultado };
 export type SesionGuiada = { id: string; dia: string; ruta: RutaGuiada; items: string[]; indice: number; terminada: boolean; actualizada: string };
-export type ProgresoGuiado = { version: 1; desdeCero?:ProgresoDesdeCero; matesUno?:ProgresoMatesUno; ruta: RutaGuiada; rutaActualizada: string; actividad: ActividadGuiada; actividadActualizada: string; ejercicios: Record<string, AvanceGuiado>; sesionEnCurso: SesionGuiada | null; sesionActualizada: string; nivelInicial?:NivelInicial; aperturas?:RepertorioAperturas };
+export type ProgresoGuiado = { version: 1; historial?:IntentoEntrenamiento[]; desdeCero?:ProgresoDesdeCero; matesUno?:ProgresoMatesUno; ruta: RutaGuiada; rutaActualizada: string; actividad: ActividadGuiada; actividadActualizada: string; ejercicios: Record<string, AvanceGuiado>; sesionEnCurso: SesionGuiada | null; sesionActualizada: string; nivelInicial?:NivelInicial; aperturas?:RepertorioAperturas };
 export const FECHA_INICIAL_GUIADO = "1970-01-01T00:00:00.000Z";
 export function progresoGuiadoInicial(): ProgresoGuiado { return { version: 1, ruta: "base", rutaActualizada: FECHA_INICIAL_GUIADO, actividad: "tactica", actividadActualizada: FECHA_INICIAL_GUIADO, ejercicios: {}, sesionEnCurso: null, sesionActualizada: FECHA_INICIAL_GUIADO }; }
 const isoValida = (s: unknown): s is string => typeof s === "string" && s.length <= 30 && Number.isFinite(Date.parse(s)) && /^\d{4}-\d\d-\d\dT/.test(s);
@@ -68,6 +69,7 @@ export function leerProgresoGuiado(texto: string): ProgresoGuiado {
   if (texto.length > 1400000) return inicial;
   try {
     const v: unknown = JSON.parse(texto); if (!esObjeto(v) || v.version !== 1) return inicial;
+    if(v.historial)inicial.historial=leerHistorial(v.historial,BANCO_ENTRENAMIENTO);
     if(v.aperturas)inicial.aperturas=leerRepertorio(v.aperturas);
     if(v.desdeCero)inicial.desdeCero=leerDesdeCero(v.desdeCero);
     if(v.matesUno||Object.entries(inicial.desdeCero??{}).some(([id,a])=>id.startsWith("mate-uno-")&&a.tablero&&a.pregunta))inicial.matesUno=conLegadoMates(leerMatesUno(v.matesUno),inicial.desdeCero);
@@ -124,6 +126,7 @@ export function combinarProgresoGuiado(a: ProgresoGuiado, b: ProgresoGuiado): Pr
   const ruta = masReciente(pa, pa.rutaActualizada, pb, pb.rutaActualizada), actividad = masReciente(pa, pa.actividadActualizada, pb, pb.actividadActualizada), sesion = masReciente(pa, pa.sesionActualizada, pb, pb.sesionActualizada);
   const iniciales=[pa.nivelInicial,pb.nivelInicial].filter((v):v is NivelInicial=>!!v).sort((a,b)=>a.fecha.localeCompare(b.fecha)||JSON.stringify(a).localeCompare(JSON.stringify(b)));
   if(iniciales.length)resultado.nivelInicial=iniciales[0];
+  if(pa.historial||pb.historial)resultado.historial=unirHistorial(pa.historial??[],pb.historial??[]);
   if(pa.matesUno||pb.matesUno)resultado.matesUno=combinarMatesUno(pa.matesUno,pb.matesUno);
   if(pa.desdeCero||pb.desdeCero)resultado.desdeCero=combinarDesdeCero(pa.desdeCero,pb.desdeCero);
   if(pa.aperturas||pb.aperturas)resultado.aperturas=combinarRepertorios(pa.aperturas,pb.aperturas);
@@ -155,7 +158,10 @@ export function registrarResultadoGuiado(p: ProgresoGuiado, id: string, acertado
   const e = p.ejercicios[id] ?? {}, practica = registrarPractica(e.practica, acertado, ayudado, ahora);
   const primerResultado=e.primerResultado??(ejercicioGuiado(id)?.rating?{fecha:ahora.toISOString(),acierto:acertado&&!ayudado}:undefined);
   const perfilTema=observarTema(ejercicioGuiado(id)!,e,acertado,ayudado,fechaMontevideo(ahora),ahora.toISOString(),origen);
-  return { ...p, ejercicios: { ...p.ejercicios, [id]: { ...e, practica, primerResultado,...(perfilTema?{perfilTema}:{}), actualizada: practica.actualizada ?? ahora.toISOString() } } };
+  const siguiente = { ...p, ejercicios: { ...p.ejercicios, [id]: { ...e, practica, primerResultado,...(perfilTema?{perfilTema}:{}), actualizada: practica.actualizada ?? ahora.toISOString() } } };
+  const actividad=ejercicioGuiado(id)!.actividad;
+  const observacion:IntentoEntrenamiento={id:crypto.randomUUID(),ejercicio:id,fecha:ahora.toISOString(),acierto:acertado,ayudado,origen:origen??(ayudado?"pista":"jugada"),temas:e.razonamiento?.temas.slice(0,3)??[],nivelAntes:nivelEntrenamiento(p,actividad),nivelDespues:nivelEntrenamiento(siguiente,actividad)};
+  return {...siguiente,historial:unirHistorial(p.historial??[],[observacion])};
 }
 export function iniciarNivel(p:ProgresoGuiado,elo:number|null,jugadorId:string|null,ahora=new Date()):ProgresoGuiado{
   if(p.nivelInicial)return p;

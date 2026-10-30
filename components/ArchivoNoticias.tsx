@@ -30,7 +30,7 @@ export function ArchivoNoticias({ noticias }: { noticias: Noticia[] }) {
     <p className={styles.resultados} role="status" aria-live="polite">{visibles.length} {visibles.length === 1 ? "noticia" : "noticias"}{categoria ? ` · ${categoria}` : ""}{busqueda.trim() ? ` para «${busqueda.trim()}»` : ""}</p>
     <div id={`${id}-resultados`} className={styles.grilla}>
       {visibles.map(n => <article key={n.slug} className={styles.nota}><Link href={`/noticias/${n.slug}`}>
-        <div className={styles.fotoArchivo}><Image src={n.imagen} alt={n.imagenAlt} fill quality={n.imagenCalidad ?? 75} sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 380px" style={{objectPosition:n.imagenPosicion ?? "50% 50%"}}/><span>{n.categoria}</span></div>
+        <div className={styles.fotoArchivo}><Image src={n.imagen} alt={n.imagenAlt} fill quality={n.imagenCalidad ?? 75} sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 380px" style={{objectPosition:n.imagenPosicion ?? "50% 50%",...(n.imagenZoom?{transform:`scale(${n.imagenZoom})`,transformOrigin:"61% 50%"}:{})}}/><span>{n.categoria}</span></div>
         <div className={styles.textoArchivo}><p className={styles.fecha}><time dateTime={n.fecha}>{fechaNoticia(n.fecha)}</time><span>· {minutosNoticia(n)} min</span></p><h3>{n.tituloTarjeta ?? n.titulo}</h3><p className={styles.bajada}>{n.bajada}</p><span className={styles.leer}>Leer historia<Icono nombre="flecha" className="h-4 w-4"/></span></div>
       </Link></article>)}
     </div>

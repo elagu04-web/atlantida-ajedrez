@@ -4,13 +4,35 @@ export type BloqueNoticia =
 
 export type Noticia = {
   slug: string; titulo: string; tituloTarjeta?: string; bajada: string; categoria: string; fecha: string;
-  imagen: string; imagenAlt: string; imagenPosicion?: string; pieFoto?: string; imagenVertical?: boolean; imagenAspecto?: string; imagenAncho?: number; imagenCalidad?: 75 | 90; imagenSinCompresion?: boolean;
+  imagen: string; imagenAlt: string; imagenPosicion?: string; imagenZoom?: number; pieFoto?: string; imagenVertical?: boolean; imagenAspecto?: string; imagenAncho?: number; imagenCalidad?: 75 | 90; imagenSinCompresion?: boolean;
   parrafos: string[]; bloques?: BloqueNoticia[];
   galeria?: {imagen: string; alt: string; pie?: string; ancho?: number; alto?: number; maxAncho?: number}[];
 };
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "sabados-ajedrez-ludoarte-epico-atlantida",
+  titulo: "Los sábados también nos encontramos para aprender ajedrez",
+  tituloTarjeta: "Los sábados, vení a aprender ajedrez",
+  bajada: "Abrimos un espacio para aprender y jugar en Ludoarte, Épico Atlántida. Nos juntamos los sábados a las 18:30. Sumate al grupo para enterarte de todo.",
+  categoria: "Aprendé con el club",
+  fecha: "2026-10-30",
+  imagen: "/imagenes/club-fondo.jpg",
+  imagenAlt: "Detalle de las piezas sobre un tablero compartido en el club",
+  imagenPosicion: "50% 63%",
+  imagenZoom: 2,
+  imagenSinCompresion: true,
+  imagenVertical: true,
+  imagenAspecto: "4 / 3",
+  imagenAncho: 960,
+  imagenCalidad: 90,
+  parrafos: [
+    "¡Sumamos los sábados! Vamos a abrir un espacio para **venir a aprender ajedrez en Ludoarte, Épico Atlántida, los sábados a las 18:30**.",
+    "Si tenías ganas de aprender y no sabías por dónde empezar, venite. La idea es juntarnos, ir entendiendo el juego y ponerlo en práctica frente al tablero. Y si ya sabés mover las piezas, también podés sumarte a seguir aprendiendo.",
+    "No hace falta llegar sabiendo una apertura con nombre raro. Con ganas de aprender alcanza; lo demás lo vamos viendo juntos.",
+    "Armamos un grupo de WhatsApp para compartir las novedades y coordinarnos. [Entrá al grupo de los sábados](https://chat.whatsapp.com/BVgxf0zdHvW74uEpWtNjnQ) y sumate. ¡Nos vemos frente al tablero!"
+  ]
+}, {
   "slug": "gabi-campeon-octubre-remontada",
   "titulo": "Gabi remontó y es el campeón de octubre",
   "tituloTarjeta": "Gabi se quedó con octubre",

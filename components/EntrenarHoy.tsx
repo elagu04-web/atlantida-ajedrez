@@ -11,6 +11,7 @@ import { sanPractica } from "@/lib/partidaPractica";
 import { ayudaEnDia, resumenEntrenamiento, type SesionEntrenamiento } from "@/lib/entrenamientoPersonal";
 import { BANCO_ENTRENAMIENTO, ejercicioGuiado, interpretarJugada, prepararSesionGuiada, puntuarEvaluacion, razonamientoInicial, recomendacionGuiada, registrarResultadoGuiado, resumenTemasGuiado, validarCandidatas, iniciarNivel, nivelEntrenamiento, toleranciaNivel, puntuarCandidatas, pasoTactico, type ActividadGuiada, type EjercicioGuiado, type ProgresoGuiado, type RazonamientoGuiado, type RutaGuiada } from "@/lib/entrenamientoGuiado";
 import { SelectorTemasTacticos, RevisionTemasTacticos } from "./SelectorTemasTacticos";
+import { PerfilEntrenamiento } from "./PerfilEntrenamiento";
 import { FocoEntrenamiento } from "./FocoEntrenamiento";
 import type { OrigenIntentoTactico } from "@/lib/entrenamientoTemas";
 import { obtenerTema } from "@/lib/temasTacticos";
@@ -69,6 +70,12 @@ export function EntrenarHoy({ sesiones, progreso, pareto, alGuardarProgreso, alR
     guardar(p); setAbierto(!!p.sesionEnCurso);
     setAviso(p.sesionEnCurso ? "" : "No hay posiciones nuevas ni repasos para este modo hoy. Podés revisar una partida propia o elegir otra práctica.");
   }
+  function reforzarTema(tema:string) {
+    if(esperandoNivel)return;
+    if(progresoRef.current.sesionEnCurso&&!progresoRef.current.sesionEnCurso.terminada){comenzar();return;}
+    const ahora=new Date(),p=prepararSesionGuiada(iniciarNivel({...progresoRef.current,actividad:"tactica",actividadActualizada:ahora.toISOString()},eloClub,jugadorId,ahora),ahora,[tema]);
+    guardar(p);setAbierto(!!p.sesionEnCurso);setAviso(p.sesionEnCurso?"":"No hay más posiciones disponibles de este tema. Seguimos con tus repasos y otras ideas a tu nivel.");
+  }
   function volverOpciones(){
     setAbierto(false);
     requestAnimationFrame(()=>requestAnimationFrame(()=>{mostrarPanel(panelRef.current);}));
@@ -104,6 +111,7 @@ export function EntrenarHoy({ sesiones, progreso, pareto, alGuardarProgreso, alR
     {!continuar&&<div className={styles.empezar}><div><span className={styles.eyebrow}>TU SIGUIENTE PASO</span><h3>{actividadActual.titulo}</h3><p>Hasta 5 repasos y 2 posiciones nuevas. Pensá a tu ritmo, sin reloj.</p><span className={styles.nivel}>{esperandoNivel?"Comprobando tu nivel…":`Nivel ${niveles[progreso.actividad]} · ${nivel}`}</span></div>{!continuar&&<button type="button" className="button-primary" disabled={esperandoNivel} onClick={comenzar}>{sesion?.terminada?"Seguir practicando":"Empezar a practicar"}<Icono nombre="flecha" className="h-4 w-4"/></button>}</div>}
     <div className={styles.modos} role="group" aria-label="Elegir tipo de entrenamiento">{ACTIVIDADES.map(a=><button type="button" key={a.id} aria-pressed={progreso.actividad===a.id} className={`${styles.modo} ${progreso.actividad===a.id?styles.modoActivo:""}`} onClick={()=>elegirModo(a.id)}><span className={styles.modoIcono}><Icono nombre={a.id==="tactica"?"idea":a.id==="candidatas"?"actividad":"grafico"} className="h-6 w-6"/></span><strong>{a.titulo}</strong><small>{a.descripcion}</small><span className={styles.modoPie}>{progreso.actividad===a.id?"Seleccionado":"Elegir práctica"}<span aria-hidden="true">{progreso.actividad===a.id?"✓":"↗"}</span></span></button>)}</div>
     <div className={styles.recomendacion}><Icono nombre="idea" className="h-4 w-4"/><div><strong>Una sugerencia para tu práctica</strong><p>{recomendacion.razon}</p></div><button type="button" className="text-link" onClick={()=>elegirModo(recomendacion.actividad)}>Elegir {ACTIVIDADES.find(a=>a.id===recomendacion.actividad)?.titulo.toLowerCase()} ↗</button></div>
+    <PerfilEntrenamiento progreso={progreso} alReforzar={reforzarTema} esperando={esperandoNivel}/>
     {progreso.actividad==="tactica"&&<FocoEntrenamiento resumen={resumenTemasGuiado(progreso)}/>}
     <details className={styles.ajustes}><summary>Nivel y enfoque de la práctica <span aria-hidden="true">+</span></summary><p>{progreso.nivelInicial?.jugadorId?`Tu punto de partida fue tu Elo del club: ${progreso.nivelInicial.elo}.`:eloClub!==null?`Empezamos desde tu Elo del club: ${eloClub}.`:"Sin un Elo vinculado, empezamos en 1400."} Cada habilidad se ajusta según tus primeras respuestas sin ayuda. Tu Elo de torneos no cambia.</p><label className={styles.ruta}>En qué fijarme al pensar<select value={progreso.ruta} onChange={e=>cambiarRuta(e.target.value as RutaGuiada)}><option value="base">Ver amenazas</option><option value="club">Pensar antes de mover</option><option value="competencia">Valorar y comparar</option></select></label><small>{retenidos} posiciones recordadas en repasos de días distintos · {BANCO_ENTRENAMIENTO.length} posiciones en el banco.</small></details>
     </>}

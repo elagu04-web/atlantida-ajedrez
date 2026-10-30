@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { nombreVisible } from "@/lib/players";
 import { ELO_MINIMO } from "@/lib/elo";
+import { posicionesElo } from "@/lib/rendimiento";
 import { GraficoElo } from "@/components/GraficoElo";
 import { RetratoJugadorMotion } from "@/components/RetratoJugadorMotion";
 import { NavegadorJugadores } from "@/components/NavegadorJugadores";
@@ -32,6 +33,7 @@ export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
+  const puestoRanking = posicionesElo(jugadoresEnVivo.filter(j => j.jugadas > 0)).get(id);
   const { actualizarFoto, actualizarDescripcion, actualizarJugador, actualizarFideId, obtenerJugador, cargando } =
     useJugadores();
   const { esAdmin } = useAuth();
@@ -269,7 +271,7 @@ export default function JugadorPage() {
             </div>
           </div>
         </div>
-        <><p className={retrato.intro}>EL CLUB, JUGADA A JUGADA</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? (rachaActual.cantidad === 1 ? "victoria consecutiva" : "victorias consecutivas") : "en su historial"}</small></div></div><Link href={jugador.jugadas ? `/estadisticas?jugador=${jugador.id}` : "/estadisticas"} className={retrato.detailsLink}>{jugador.jugadas ? "Ver su rendimiento en Estadísticas ↗" : "Explorar las estadísticas del club ↗"}</Link></>
+        <><p className={retrato.intro}>{puestoRanking ? <Link href="/jugadores" className={retrato.rankingBadge} aria-label={`Puesto ${puestoRanking} en el ranking de Elo del club`}><span>RANKING DEL CLUB</span><strong>#{puestoRanking}</strong><span aria-hidden="true">↗</span></Link> : <span>RANKING · SIN PARTIDAS TODAVÍA</span>}</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? (rachaActual.cantidad === 1 ? "victoria consecutiva" : "victorias consecutivas") : "en su historial"}</small></div></div><Link href={jugador.jugadas ? `/estadisticas?jugador=${jugador.id}` : "/estadisticas"} className={retrato.detailsLink}>{jugador.jugadas ? "Ver su rendimiento en Estadísticas ↗" : "Explorar las estadísticas del club ↗"}</Link></>
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
         </div>
       </div>
