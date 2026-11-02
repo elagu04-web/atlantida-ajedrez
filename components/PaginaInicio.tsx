@@ -16,6 +16,7 @@ import { MesaEstudioClub } from "@/components/MesaEstudioClub";
 import { PrimeraVisitaClub } from "@/components/PrimeraVisitaClub";
 import { CompartirInvitacion } from "@/components/CompartirInvitacion";
 import { MovimientoPortada, CaballoPortada } from "@/components/MovimientoPortada";
+import { InvitacionMembresias } from "@/components/InvitacionMembresias";
 export function PaginaInicio() {
   const jugadores=useJugadoresEnVivo();
   const {cargando:cargandoJugadores,errorCarga:errorJugadores}=useJugadores();
@@ -47,6 +48,7 @@ export function PaginaInicio() {
     </div>
     <CarruselNoticias noticias={noticiasRecientes()} portada/>
     <MesaEstudioClub/>
+    <InvitacionMembresias/>
     <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
       <section className="panel ranking-panel" aria-labelledby="titulo-ranking"><div className="section-heading"><div><p className="eyebrow mb-2 text-zinc-500">Los protagonistas</p><h2 id="titulo-ranking">Ranking Atlántida</h2></div><Link href="/jugadores" className="text-link">Ver todos<Icono nombre="flecha" className="h-4 w-4" /></Link></div><ol className="ranking-list">{jugadores.slice(0,5).map((j,i)=><li key={j.id}><Link href={`/jugadores/${j.id}`}><span className={`ranking-position ${i===0?"ranking-first":""}`}>{String(i+1).padStart(2,"0")}</span><span className="player-avatar">{j.fotoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
