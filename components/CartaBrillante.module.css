@@ -84,6 +84,21 @@
 .card[data-foil-tone=gold] .glare{background:radial-gradient(ellipse at var(--foil-x) var(--foil-y),#ffeaa055,#d2b76a0e 35%,transparent 65%)}
 .card[data-foil-tone=gold] .sweep{background:linear-gradient(110deg,transparent 20%,#d2ac3c0a 35%,#fff0b566 48%,#ffe37d77 50%,#d9b54233 54%,transparent 72%)}
 .card[data-foil-tone=gold][data-foil-active]{box-shadow:0 25px 50px #10090088,0 0 35px #e0b34123}
+/* Edición Mate: yerba esmeralda, cobre y una virola de metal trabajado. */
+.card[data-foil-tone=mate]{border-color:#d6ad72!important;background:radial-gradient(ellipse at 90% 0,#49b28d35,transparent 60%),linear-gradient(125deg,#20473c,#0c241e 47%,#4b3923)!important;box-shadow:0 12px 35px #061a1755,inset 0 0 0 7px #b9925b33;--foil-mask:linear-gradient(#000,#000)}
+.card[data-foil-tone=mate] .rim{padding:7px;opacity:1;background-image:repeating-conic-gradient(from 45deg,#ffe2b544 0% 20%,#295a4866 25% 35%,#bf844f44 40% 50%),linear-gradient(120deg,#614129,#f1d1a1 14%,#a46a38 25%,#e9c486 36%,#6aa28c 49%,#ffe7b8 58%,#b2743f 70%,#dcb47c 85%,#3b6856);background-size:5px 7px,200% 200%;background-position:center,var(--foil-x) var(--foil-y)}
+.card[data-foil-tone=mate] .finish{inset:9px;border-radius:18px}
+.card[data-foil-tone=mate] .foil{opacity:.3;background:repeating-linear-gradient(115deg,#a9d2b900 0%,#7bd7b680 10%,#daa16877 20%,#ffe8be88 27%,#94d2bc77 36%,#b6e8d866 43%,transparent 50%);background-size:180% 180%;background-position:var(--foil-x) var(--foil-y)}
+.card[data-foil-tone=mate][data-foil-active] .foil{opacity:.7}
+.card[data-foil-tone=mate] .foil::after{opacity:.18}
+.card[data-foil-tone=mate] .glare{background:radial-gradient(ellipse at var(--foil-x) var(--foil-y),#d0ffdf44,#d9a97112 35%,transparent 65%)}
+.card[data-foil-tone=mate] .sweep{background:linear-gradient(110deg,transparent 20%,#9ed3b80a 35%,#f5e6c166 48%,#8ee1b966 52%,transparent 72%)}
+.card[data-foil-tone=mate][data-foil-active]{box-shadow:0 25px 50px #04191199,0 0 35px #6bc59a25}
+.card[data-foil-tone=mate] .distinciones span{background:linear-gradient(115deg,#123b2fed,#32523aed);border-color:#d9b279a6;color:#f7dfb4}
+.distinciones svg{width:18px;height:21px;flex:none;color:#edc890}
+.selloMate{position:absolute;top:76px;right:24px;z-index:1;display:grid;justify-items:center;gap:7px;color:#d9bb85;opacity:.2;pointer-events:none}
+.selloMate svg{width:70px;height:80px}
+.selloMate small{font-size:7px;letter-spacing:.15em}
 @media (hover: none), (pointer: coarse) {
   .card, .card[data-foil-active] { transform: none; }
   .foil { opacity: .18; }

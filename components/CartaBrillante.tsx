@@ -7,9 +7,14 @@ export function repetirBrilloCarta(desde: HTMLElement) {
   desde.closest("[data-foil-card]")?.dispatchEvent(new Event("repetir-brillo"));
 }
 
+function IconoMate() {
+  return <svg viewBox="0 0 32 36" fill="none" aria-hidden="true"><path d="m23 3-7 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><path d="M7 14h18l-2 13c-1 8-13 8-14 0L7 14Z" fill="currentColor" fillOpacity=".2" stroke="currentColor" strokeWidth="2"/><ellipse cx="16" cy="14" rx="9" ry="3" stroke="currentColor" strokeWidth="2"/><path d="M11 29h10M12 33h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
+}
+
 /** Luz sobre la superficie impresa; nunca intercepta enlaces ni gestos de scroll. */
 export function CartaBrillante({ children, className = "", inclinacion = 7, distinciones = [], ...props }: HTMLAttributes<HTMLDivElement> & { inclinacion?: number; distinciones?: string[] }) {
   const ref = useRef<HTMLDivElement>(null);
+  const mate = distinciones.includes("Cinturón del Mate");
 
   useEffect(() => {
     const card = ref.current;
@@ -90,9 +95,10 @@ export function CartaBrillante({ children, className = "", inclinacion = 7, dist
     };
   }, [inclinacion]);
 
-  return <div {...props} ref={ref} className={`${s.card} ${className}`} data-foil-card="true" data-foil-tone={distinciones.length ? "gold" : "blue"}>
+  return <div {...props} ref={ref} className={`${s.card} ${className}`} data-foil-card="true" data-foil-tone={mate ? "mate" : distinciones.length ? "gold" : "blue"}>
     {children}
-    {distinciones.length > 0 && <div className={s.distinciones} aria-label="Distinciones del jugador">{distinciones.map(d => <span key={d}><b aria-hidden="true">♛</b>{d}</span>)}</div>}
+    {mate && <span className={s.selloMate} aria-hidden="true"><IconoMate/><small>DUELO DEL MATE</small></span>}
+    {distinciones.length > 0 && <div className={s.distinciones} aria-label="Distinciones del jugador">{distinciones.map(d => <span key={d}>{d === "Cinturón del Mate" ? <IconoMate/> : <b aria-hidden="true">♛</b>}{d}</span>)}</div>}
     <div className={s.finish} aria-hidden="true">
       <i className={s.foil} /><i className={s.glare} /><i className={s.sweep} />
     </div>

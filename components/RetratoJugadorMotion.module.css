@@ -25,12 +25,16 @@
 @media(max-width:800px){.duo{gap:14px;grid-template-columns:1fr 1fr}.infoCard .numbers{gap:15px}.infoCard .numbers>div+div{padding-left:15px}.infoCard .numbers strong{font-size:46px}.infoCard .numbers>div+div strong{font-size:33px}}
 @media(max-width:620px){.duo{grid-template-columns:1fr}.portraitCard{order:-1;min-height:360px;padding:0!important}.portraitCard .art{height:100%}.portraitCard .photo{width:100%;right:0;height:105%;bottom:-5%}.portraitCard .caption{display:block;right:22px;bottom:20px}.portraitCard .halo{left:50%;top:30px}.infoCard{min-height:0}.infoCard .content :global(.mt-5){margin-top:27px}.infoCard .content h1{font-size:35px}.infoCard .numbers strong{font-size:53px}.infoCard .numbers>div+div strong{font-size:35px}}
 .infoCard{--foil-scale:1.02}
-.infoCard[data-foil-tone=gold]{padding-bottom:82px!important}
-.portraitCard[data-foil-tone=gold] .caption{bottom:75px;color:#ffe7ac}
-.portraitCard[data-foil-tone=gold] .frontLight{background:linear-gradient(0deg,#2d220f,transparent 33%)}
-.portraitCard[data-foil-tone=gold] .light{background:radial-gradient(ellipse at var(--light-x) var(--light-y),#f3d68144,transparent 52%)}
-.portraitCard[data-foil-tone=gold] .halo,.portraitCard[data-foil-tone=gold] .halo i{border-color:#f3d17a44}
-.infoCard[data-foil-tone=gold] .numbers span,.infoCard[data-foil-tone=gold] .numbers small{color:#d5c296}
-.infoCard[data-foil-tone=gold] .rankingBadge{background:#b7862526;border-color:#e9c86f99;color:#ffe8ae}
-@media(max-width:620px){.portraitCard[data-foil-tone=gold]{min-height:390px}.portraitCard[data-foil-tone=gold] .caption{bottom:74px}}
-.portraitCard[data-foil-tone=gold] .replay{background:#493210db;border-color:#eacb7e44;color:#ffe7ac}
+.infoCard:is([data-foil-tone=gold],[data-foil-tone=mate]){padding-bottom:82px!important}
+.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .caption{bottom:75px;color:#ffe7ac}
+.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .frontLight{background:linear-gradient(0deg,#2d220f,transparent 33%)}
+.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .light{background:radial-gradient(ellipse at var(--light-x) var(--light-y),#f3d68144,transparent 52%)}
+.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .halo,.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .halo i{border-color:#f3d17a44}
+.infoCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .numbers span,.infoCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .numbers small{color:#d5c296}
+.infoCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .rankingBadge{background:#b7862526;border-color:#e9c86f99;color:#ffe8ae}
+@media(max-width:620px){.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]){min-height:390px}.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .caption{bottom:74px}}
+.portraitCard:is([data-foil-tone=gold],[data-foil-tone=mate]) .replay{background:#493210db;border-color:#eacb7e44;color:#ffe7ac}
+.portraitCard[data-foil-tone=mate] .frontLight{background:linear-gradient(0deg,#102e24,transparent 33%)}
+.portraitCard[data-foil-tone=mate] .light{background:radial-gradient(ellipse at var(--light-x) var(--light-y),#85d8b43a,transparent 52%)}
+.portraitCard[data-foil-tone=mate] .halo,.portraitCard[data-foil-tone=mate] .halo i{border-color:#c5dcab44}
+.portraitCard[data-foil-tone=mate] .replay{background:#14392adb;border-color:#dac29855;color:#f1dfb6}
