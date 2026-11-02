@@ -4,6 +4,7 @@ export const RITMOS_ONLINE = {'10+3':{minutos:10,incremento:3},'5+3':{minutos:5,
 export type RitmoOnline=keyof typeof RITMOS_ONLINE;
 export type EstadoOnline={
  inicioLibre?:2;
+ inicioPausado?:boolean;listosInicio?:{w:boolean;b:boolean};
  eloTipo?:'club';clubBlancasId?:string;clubNegrasId?:string;
  torneoNombre?:string;torneoRonda?:number;
  porElo?:boolean;eloCreador?:number;eloInicio?:{w:number;b:number};elo?:{w:{antes:number;despues:number;variacion:number};b:{antes:number;despues:number;variacion:number}};
@@ -13,7 +14,7 @@ export type EstadoOnline={
  resultado:'*'|'1-0'|'0-1'|'1/2-1/2';motivo:string;
 };
 export type PartidaOnline={id:string;creador_id:string;rival_id:string|null;estado:EstadoOnline;version:number;creada:string;actualizada:string;expira:string;ultima_accion:string|null;torneo_id?:string|null};
-export type AccionOnline={tipo:'mover';uci:string}|{tipo:'rendirse'|'ofrecer'|'aceptar'|'rechazar'|'tiempo'|'cancelar'};
+export type AccionOnline={tipo:'mover';uci:string}|{tipo:'rendirse'|'ofrecer'|'aceptar'|'rechazar'|'tiempo'|'cancelar'|'listo_inicio'};
 export function colorOnline(p:PartidaOnline,usuario:string):Color|null{
  if(usuario===p.creador_id)return p.estado.colorCreador;
  if(usuario===p.rival_id)return p.estado.colorCreador==='w'?'b':'w';return null;
@@ -29,6 +30,7 @@ export function unirEstadoOnline(e:EstadoOnline,nombre:string,ahora:number):Esta
 export function tableroOnline(e:EstadoOnline){const c=new Chess();for(const uci of e.movimientos)c.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]});return c;}
 export const MARGEN_INICIO_ONLINE=120000;
 export function inicioLibreOnline(e:EstadoOnline){return e.inicioLibre===2&&e.movimientos.length<4;}
+export function inicioPausadoOnline(e:EstadoOnline){return e.fase==='activa'&&inicioLibreOnline(e)&&e.inicioPausado===true;}
 export function margenInicioOnline(e:EstadoOnline,ahora:number):number|null{
  return e.fase==='activa'&&inicioLibreOnline(e)&&e.desde!==null?Math.max(0,MARGEN_INICIO_ONLINE-Math.max(0,ahora-e.desde)):null;
 }
@@ -59,8 +61,20 @@ export function materialParaMate(c:Chess,color:Color){
 export function aplicarAccionOnline(e:EstadoOnline,color:Color,accion:AccionOnline,ahora:number):EstadoOnline{
  if(e.fase==='espera'&&accion.tipo==='cancelar'&&color===e.colorCreador)return {...e,fase:'cancelada',motivo:'Invitación cancelada'};
  if(e.fase!=='activa')throw Error('La partida no está en juego.');
+ // El margen de entrada organiza el arranque; nunca adjudica puntos ni Elo.
+ const pausada=inicioPausadoOnline(e)?e:margenInicioOnline(e,ahora)===0?
+  {...e,inicioPausado:true,listosInicio:{w:false,b:false},desde:null,oferta:null,motivo:'Arranque en pausa. Los dos jugadores deben confirmar para retomar.'}:null;
+ if(pausada){
+  if(accion.tipo==='tiempo')return pausada;
+  if(accion.tipo!=='listo_inicio')return pausada;
+  if(pausada.listosInicio?.[color])return pausada;
+  const listosInicio={w:false,b:false,...pausada.listosInicio,[color]:true};
+  return listosInicio.w&&listosInicio.b?
+   {...pausada,inicioPausado:false,listosInicio,desde:ahora,motivo:''}:
+   {...pausada,listosInicio};
+ }
+ if(accion.tipo==='listo_inicio')return e;
  const c=tableroOnline(e),relojes=relojesOnline(e,ahora);
- if(margenInicioOnline(e,ahora)===0)return finalizar(e,e.turno==='w'?'0-1':'1-0','Tiempo de inicio agotado (2 minutos)',c,ahora);
  if(relojes[e.turno]<=0){const ganador=e.turno==='w'?'b':'w';return finalizar(e,materialParaMate(c,ganador)?ganador==='w'?'1-0':'0-1':'1/2-1/2',materialParaMate(c,ganador)?'Tiempo agotado':'Tablas: tiempo y material insuficiente',c,ahora);}
  if(accion.tipo==='tiempo')return e;
  if(accion.tipo==='rendirse')return finalizar(e,color==='w'?'0-1':'1-0','Abandono',c,ahora);

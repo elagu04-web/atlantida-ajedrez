@@ -15,14 +15,37 @@ test('Dos jugadas por jugador sin descuento ni incremento; el reloj empieza exac
   e=mover(e,'d2d4',4000);assert.equal(e.blancasMs,base-4000+o.RITMOS_ONLINE[ritmo].incremento*1000);
  }
 });
-test('El margen vence a los 2 minutos, sin aceptar una jugada tardía, incluso luego de cerrar o recargar',()=>{
+test('El margen pausa sin derrota ni cambios de posición o relojes, incluso luego de cerrar o recargar',()=>{
  for(let n=0;n<4;n++){
   let e=juego();for(const u of ['e2e4','e7e5','g1f3'].slice(0,n))e=mover(e,u,1000);
   e=JSON.parse(JSON.stringify(e));const fin=o.aplicarAccionOnline(e,e.turno,{tipo:'tiempo'},e.desde+120000);
-  assert.equal(fin.fase,'terminada');assert.equal(fin.resultado,e.turno==='w'?'0-1':'1-0');assert.equal(fin.movimientos.length,n);assert.match(fin.motivo,/inicio/);assert.equal(fin.blancasMs,600000);assert.equal(fin.negrasMs,600000);
+  assert.equal(fin.fase,'activa');assert.equal(fin.resultado,'*');assert.equal(fin.movimientos.length,n);assert.equal(fin.fen,e.fen);assert.equal(fin.desde,null);assert.equal(fin.inicioPausado,true);assert.equal(fin.pgn,'');assert.equal(fin.blancasMs,600000);assert.equal(fin.negrasMs,600000);
+  assert.deepEqual(o.relojesOnline(fin,inicio+9999999),{w:600000,b:600000});
+  assert.strictEqual(o.aplicarAccionOnline(fin,'b',{tipo:'tiempo'},inicio+9999999),fin);
  }
  let e=juego();e=o.aplicarAccionOnline(e,'b',{tipo:'ofrecer'},inicio+110000);assert.equal(e.desde,inicio);
  assert.equal(o.aplicarAccionOnline(e,'w',{tipo:'mover',uci:'e2e4'},inicio+120000).movimientos.length,0);
+});
+
+test('Una sola persona no puede reactivar el reloj ni confirmar por los dos; el turno se conserva',()=>{
+ let e=mover(juego(),'e2e4',1000),pausa=e.desde+120000;
+ e=o.aplicarAccionOnline(e,'w',{tipo:'listo_inicio'},pausa);
+ assert.equal(e.inicioPausado,true);assert.deepEqual(e.listosInicio,{w:true,b:false});
+ assert.strictEqual(o.aplicarAccionOnline(e,'w',{tipo:'listo_inicio'},pausa+10000),e);
+ const quieta=o.aplicarAccionOnline(e,'b',{tipo:'mover',uci:'e7e5'},pausa+20000);
+ assert.strictEqual(quieta,e);assert.equal(quieta.turno,'b');
+ e=o.aplicarAccionOnline(JSON.parse(JSON.stringify(e)),'b',{tipo:'listo_inicio'},pausa+60000);
+ assert.equal(e.inicioPausado,false);assert.equal(e.desde,pausa+60000);assert.equal(e.turno,'b');
+ e=mover(e,'e7e5',119999);assert.deepEqual(e.movimientos,['e2e4','e7e5']);assert.equal(e.negrasMs,600000);
+ e=o.aplicarAccionOnline(e,'w',{tipo:'tiempo'},e.desde+120000);
+ assert.equal(e.inicioPausado,true);assert.deepEqual(e.listosInicio,{w:false,b:false});
+});
+
+test('La pausa no se habilita después de las cuatro medias jugadas; el reloj principal sigue definiendo partidas',()=>{
+ let e=juego('5+3');for(const u of ['e2e4','e7e5','g1f3','b8c6'])e=mover(e,u,1000);
+ assert.strictEqual(o.aplicarAccionOnline(e,'w',{tipo:'listo_inicio'},e.desde+120000),e);
+ const fin=o.aplicarAccionOnline(e,'b',{tipo:'tiempo'},e.desde+300000);
+ assert.equal(fin.fase,'terminada');assert.equal(fin.resultado,'0-1');assert.equal(fin.motivo,'Tiempo agotado');
 });
 test('Partidas anteriores sin la marca conservan su reloj y sus incrementos',()=>{
  const e=juego();delete e.inicioLibre;assert.equal(o.margenInicioOnline(e,inicio+1000),null);assert.equal(o.relojesOnline(e,inicio+1000).w,599000);

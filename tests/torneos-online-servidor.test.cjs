@@ -1,9 +1,10 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,f);
 const logica=require('../lib/partidaOnline.ts');
-function servidor({miembro=true,organizador=false,participante=false,expirada=true,cambio=false,torneo=true,sinSesion=false}={}){
+function servidor({miembro=true,organizador=false,participante=false,expirada=true,cambio=false,torneo=true,sinSesion=false,inicioLibre=false}={}){
  const usuario='11111111-1111-4111-8111-111111111111',id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',ahora=Date.now(),actualizaciones=[];
  const fila={id,creador_id:participante?usuario:'22222222-2222-4222-8222-222222222222',rival_id:'33333333-3333-4333-8333-333333333333',torneo_id:torneo?'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb':null,version:3,estado:logica.unirEstadoOnline(logica.crearEstadoOnline('3+2','w','Uno'),'Dos',expirada?ahora-200000:ahora)};
+ if(!inicioLibre)delete fila.estado.inicioLibre;
  function from(tabla){let modificacion=null;const q={select(){return q;},eq(){return q;},update(data){modificacion=data;return q;},async maybeSingle(){
   if(tabla==='online_torneos')return {data:{organizador_id:organizador?usuario:'44444444-4444-4444-8444-444444444444'}};
   if(tabla==='online_torneo_jugadores')return {data:miembro?{usuario_id:usuario}:null};
@@ -24,4 +25,11 @@ test('Solo miembros u organizador pueden arbitrar; no se pisa una jugada concurr
  for(const opts of [{miembro:false},{torneo:false},{sinSesion:true}]){const s=servidor(opts);assert.ok((await s.pedir()).status>=400);assert.equal(s.actualizaciones.length,0);}
  assert.equal((await servidor({miembro:false,organizador:true}).pedir()).status,200);
  assert.equal((await servidor({cambio:true}).pedir()).status,409);
+});
+
+test('Actualizar una ronda con margen inicial agotado pausa la mesa y no adjudica victoria ni devuelve sus jugadas',async()=>{
+ const s=servidor({inicioLibre:true}),r=await s.pedir();
+ assert.equal(r.status,200);assert.equal(r.body.fase,'activa');assert.equal(r.body.resultado,'*');assert.equal('partida' in r.body,false);
+ assert.equal(s.actualizaciones.length,1);const e=s.actualizaciones[0].estado;
+ assert.equal(e.inicioPausado,true);assert.equal(e.desde,null);assert.equal(e.blancasMs,180000);assert.equal(e.negrasMs,180000);assert.deepEqual(e.movimientos,[]);
 });

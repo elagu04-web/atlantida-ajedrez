@@ -79,7 +79,7 @@ Deno.serve(async(req:Request)=>{
   if(b.accion==='jugar'&&p.ultima_accion===b.peticion)return respuesta({partida:p,ahora});
   if(b.accion==='jugar'&&p.version!==b.version)return respuesta({error:'La partida cambió. Ya actualizamos el tablero.',partida:p,ahora},409);
   const accion=b.accion==='ver'?{tipo:'tiempo'}:b.jugada;
-  if(!accion||!['mover','rendirse','ofrecer','aceptar','rechazar','tiempo','cancelar'].includes(accion.tipo))return respuesta({error:'Acción no válida.'},400);
+  if(!accion||!['mover','rendirse','ofrecer','aceptar','rechazar','tiempo','cancelar','listo_inicio'].includes(accion.tipo))return respuesta({error:'Acción no válida.'},400);
   let estado;
   try{estado=b.accion==='ver'&&p.estado.fase!=='activa'?p.estado:aplicarAccionOnline(p.estado,color!,accion as AccionOnline,ahora);}catch(e){return respuesta({error:e instanceof Error?e.message:'Acción no válida.'},400);}
   if(estado===p.estado)return respuesta({partida:p,ahora});
