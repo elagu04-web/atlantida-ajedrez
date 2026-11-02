@@ -18,3 +18,11 @@
 
 /* El acabado foil queda detrás de los nombres y enlaces. */
 .portraitLabel,.portraitName{z-index:4}
+/* Foto y rendimiento se presentan como dos cartas independientes. */
+.spotlight{overflow:visible;gap:20px;border:0;border-radius:0;background:transparent}
+.portrait{border:1px solid #91bbeb38;border-radius:24px}
+.analysis{position:relative;isolation:isolate;overflow:hidden;border:1px solid #91bbeb2b;border-radius:24px;background:linear-gradient(135deg,#15263b,#101e30);--foil-mask:linear-gradient(120deg,transparent 55%,#0004)}
+.analysis>header,.analysis>.scoreRow,.analysis>.results,.analysis>.chartTitle,.analysis>.note{position:relative;z-index:4}
+@media(max-width:760px){.spotlight{gap:14px}}
+@media(max-width:600px){.spotlight{border-radius:0}.portrait,.analysis{border-radius:20px}}
+.analysis{--foil-scale:1.015}

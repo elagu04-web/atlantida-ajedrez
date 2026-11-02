@@ -111,7 +111,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
           <div className={s.noPortrait}><span>♟</span><p>El próximo movimiento<br />también cuenta.</p></div>}
         <div className={s.portraitName}><span>EN PRIMERA PERSONA</span><h3>{jugador.id === GABI ? "Gabi" : nombreVisible(jugador)}</h3><Link href={`/jugadores/${jugador.id}`}>Ver su perfil ↗</Link></div>
       </CartaBrillante>
-      <div className={s.analysis}>
+      <CartaBrillante inclinacion={2.5} className={s.analysis}>
         <header className={s.analysisHeader}><span className={s.eyebrow}>SU PERÍODO EN JUEGO</span><button onClick={() => setRepeticion(n => n + 1)} aria-label="Repetir animación de las estadísticas">↻ Repetir</button></header>
         <div className={s.scoreRow}>
           <div><span className={s.smallLabel}>ELO AL CIERRE</span><strong className={s.elo}><NumeroEstadistico valor={fila.eloFinal} desde={fila.eloInicial} /></strong><span className={fila.variacion < 0 ? s.negative : s.positive}><NumeroEstadistico valor={fila.variacion} signo /> <small>en el período</small></span></div>
@@ -127,7 +127,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
         {puntos.length > 1 ? <RecorridoElo puntos={puntos} nombre={nombreVisible(jugador)} /> : <p className={s.gameDetail}>Sin cambios de Elo registrados para graficar en este período.</p>}
         {puntos.length > 1 && puntos.length - 1 < fila.partidas && <p className={s.note}>El gráfico incluye las {puntos.length - 1} partidas con Elo registrado.</p>}
         <p className={s.note}>Rendimiento = puntos obtenidos / partidas. Las tablas valen ½ punto. No incluye descansos.</p>
-      </div>
+      </CartaBrillante>
     </section>
     <section data-stats-motion className={s.ranking} aria-labelledby="ranking-visual-titulo">
       <div className={s.rankingHeader}><div><span className={s.eyebrow}>EL PULSO DEL CLUB</span><h3 id="ranking-visual-titulo">{ranking === "rendimiento" ? "Quién está jugando más fuerte" : "Quién está creciendo más"}</h3><p>Mínimo {minimo} partidas. Tocá un jugador para ver su ficha arriba.</p></div><div className="segmented-control" role="group" aria-label="Métrica del gráfico de jugadores"><button aria-pressed={ranking === "rendimiento"} onClick={() => setRanking("rendimiento")}>Rendimiento</button><button aria-pressed={ranking === "elo"} onClick={() => setRanking("elo")}>Cambio de Elo</button></div></div>

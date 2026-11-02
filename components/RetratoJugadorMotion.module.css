@@ -11,3 +11,17 @@
 .rankingBadge{display:inline-flex;align-items:center;gap:14px;min-height:44px;padding:6px 13px;border:1px solid #e5c78f55;border-radius:9px;background:linear-gradient(110deg,#e5c78f12,#e5c78f04);color:#e5c78f;letter-spacing:.12em}.rankingBadge strong{font-size:22px;letter-spacing:-.6px;line-height:1.2;font-variant-numeric:tabular-nums}.rankingBadge:hover{background:#e5c78f1b;border-color:#e5c78f99}.rankingBadge:focus-visible{outline:2px solid #bbd9ff;outline-offset:4px}
 
 @media(max-width:540px){.hero{--foil-mask:linear-gradient(#000 0px,#000 210px,transparent 350px)}}
+.duo{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px;min-width:0;perspective:1200px}
+.infoCard{--foil-mask:linear-gradient(120deg,transparent 45%,#0005);min-width:0}
+.infoCard .content{width:100%;padding-top:0;padding-bottom:0}
+.infoCard .content>a:first-child{position:static;display:inline-flex}
+.infoCard .content :global(.mt-5){margin-top:42px}
+.infoCard .content h1{font-size:clamp(32px,3.6vw,48px)}
+.portraitCard{--foil-mask:linear-gradient(#000,#000);min-width:0}
+.portraitCard .art{width:100%;height:100%;top:0;left:0;bottom:0}
+.portraitCard .photo{width:108%;right:-4%;height:102%;bottom:-2%}
+.portraitCard .frontLight{background:linear-gradient(0deg,#10233a,transparent 28%)}
+.portraitCard .halo{left:50%;top:30px}
+@media(max-width:800px){.duo{gap:14px;grid-template-columns:1fr 1fr}.infoCard .numbers{gap:15px}.infoCard .numbers>div+div{padding-left:15px}.infoCard .numbers strong{font-size:46px}.infoCard .numbers>div+div strong{font-size:33px}}
+@media(max-width:620px){.duo{grid-template-columns:1fr}.portraitCard{order:-1;min-height:360px;padding:0!important}.portraitCard .art{height:100%}.portraitCard .photo{width:100%;right:0;height:105%;bottom:-5%}.portraitCard .caption{display:block;right:22px;bottom:20px}.portraitCard .halo{left:50%;top:30px}.infoCard{min-height:0}.infoCard .content :global(.mt-5){margin-top:27px}.infoCard .content h1{font-size:35px}.infoCard .numbers strong{font-size:53px}.infoCard .numbers>div+div strong{font-size:35px}}
+.infoCard{--foil-scale:1.02}

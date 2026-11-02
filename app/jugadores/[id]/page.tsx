@@ -188,8 +188,8 @@ export default function JugadorPage() {
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <NavegadorJugadores jugadores={jugadoresEnVivo} actual={jugador.id} />
-      <CartaBrillante key={jugador.id} className={`panel p-6 sm:p-8 ${retrato.hero}`}>
-        <RetratoJugadorMotion jugador={jugador} />
+      <div key={jugador.id} className={retrato.duo}>
+      <CartaBrillante inclinacion={3} className={`panel p-6 sm:p-8 ${retrato.hero} ${retrato.infoCard}`}>
         <div className={retrato.content}>
         <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
           ← Volver a jugadores
@@ -276,6 +276,10 @@ export default function JugadorPage() {
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
         </div>
       </CartaBrillante>
+      <CartaBrillante className={`panel ${retrato.hero} ${retrato.portraitCard}`}>
+        <RetratoJugadorMotion jugador={jugador} />
+      </CartaBrillante>
+      </div>
 
       {(editandoDescripcion || jugador.descripcion || puedeEditar) && (
       <div className="panel p-4">

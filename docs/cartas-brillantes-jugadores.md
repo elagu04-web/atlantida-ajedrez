@@ -1,6 +1,6 @@
 # Acabado de las fichas de jugadores
 
-Las fichas individuales del ranking y el retrato destacado en Estadísticas comparten `CartaBrillante`: borde metalizado, reflejo tornasolado, luz de entrada y una inclinación máxima de un grado por eje con mouse. Conserva las fotografías y los datos existentes.
+Las fichas individuales del ranking y el retrato destacado en Estadísticas comparten `CartaBrillante`: borde metalizado, reflejo tornasolado y luz de entrada. Foto e información forman dos cartas separadas. Con mouse, la foto se amplía un 4,5% y se inclina hasta siete grados por eje; la carta de datos usa un movimiento menor para facilitar la lectura. Conserva las fotografías y los datos existentes.
 
 - Los eventos de movimiento se agrupan con `requestAnimationFrame`; no actualizan estado de React.
 - Las capas de luz no reciben clics. Los enlaces, controles de gráficas y el scroll siguen disponibles.

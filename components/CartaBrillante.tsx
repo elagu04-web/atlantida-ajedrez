@@ -8,7 +8,7 @@ export function repetirBrilloCarta(desde: HTMLElement) {
 }
 
 /** Luz sobre la superficie impresa; nunca intercepta enlaces ni gestos de scroll. */
-export function CartaBrillante({ children, className = "", ...props }: HTMLAttributes<HTMLDivElement>) {
+export function CartaBrillante({ children, className = "", inclinacion = 7, ...props }: HTMLAttributes<HTMLDivElement> & { inclinacion?: number }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,8 +42,8 @@ export function CartaBrillante({ children, className = "", ...props }: HTMLAttri
         card!.dataset.foilActive = "true";
         card!.style.setProperty("--foil-x", `${pending.x * 100}%`);
         card!.style.setProperty("--foil-y", `${pending.y * 100}%`);
-        card!.style.setProperty("--foil-rx", `${(.5 - pending.y) * 2}deg`);
-        card!.style.setProperty("--foil-ry", `${(pending.x - .5) * 2}deg`);
+        card!.style.setProperty("--foil-rx", `${(.5 - pending.y) * 2 * inclinacion}deg`);
+        card!.style.setProperty("--foil-ry", `${(pending.x - .5) * 2 * inclinacion}deg`);
       });
     }
     function shine() {
@@ -88,7 +88,7 @@ export function CartaBrillante({ children, className = "", ...props }: HTMLAttri
       motion.removeEventListener("change", preference);
       mouse.removeEventListener("change", preference);
     };
-  }, []);
+  }, [inclinacion]);
 
   return <div {...props} ref={ref} className={`${s.card} ${className}`} data-foil-card="true">
     {children}
