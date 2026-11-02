@@ -71,6 +71,19 @@
   transition: opacity .5s;
 }
 .card[data-foil-active] .rim { opacity: 1; }
+.distinciones{position:absolute;z-index:7;left:21px;right:21px;top:var(--distincion-top,auto);bottom:var(--distincion-bottom,18px);display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.distinciones span{display:inline-flex;align-items:center;gap:7px;border:1px solid #f8d66a8c;border-radius:6px;padding:6px 9px;background:linear-gradient(115deg,#3e2909ed,#6c4914ed);box-shadow:inset 0 1px #fff2dc25,0 2px 8px #0003;color:#ffe7a3;font-size:9px;font-weight:600;letter-spacing:.02em}
+.distinciones b{font-size:14px;line-height:1;color:#ffdf75}
+/* Una lámina dorada completa, con relieve y granulado; no sólo un halo amarillo. */
+.card[data-foil-tone=gold]{border-color:#e8c45a!important;background:radial-gradient(ellipse at 90% 0,#d4a8374d,transparent 60%),linear-gradient(125deg,#493210,#201a0f 47%,#654a1e)!important;box-shadow:0 12px 35px #100b0755,inset 0 0 0 7px #c9a14733;--foil-mask:linear-gradient(#000,#000)}
+.card[data-foil-tone=gold] .rim{padding:7px;opacity:1;background-image:repeating-conic-gradient(from 35deg,#fff1a633 0% 20%,#5f380b66 25% 35%,#e4b64633 40% 50%),linear-gradient(120deg,#50310a,#fce5a0 14%,#8f5c13 24%,#f7d36f 36%,#b88724 48%,#fff3b6 58%,#9e6b18 70%,#edd17a 85%,#66400c);background-size:5px 7px,200% 200%;background-position:center,var(--foil-x) var(--foil-y)}
+.card[data-foil-tone=gold] .finish{inset:9px;border-radius:18px}
+.card[data-foil-tone=gold] .foil{opacity:.3;mix-blend-mode:screen;background:repeating-linear-gradient(115deg,#f7cc4c00 0%,#ffe39780 8%,#aa771a55 16%,#f9dfaa99 24%,#b6a85a66 32%,#e6bd6e88 40%,#f7cc4c00 49%);background-size:180% 180%;background-position:var(--foil-x) var(--foil-y)}
+.card[data-foil-tone=gold][data-foil-active] .foil{opacity:.7}
+.card[data-foil-tone=gold] .foil::after{opacity:.22}
+.card[data-foil-tone=gold] .glare{background:radial-gradient(ellipse at var(--foil-x) var(--foil-y),#ffeaa055,#d2b76a0e 35%,transparent 65%)}
+.card[data-foil-tone=gold] .sweep{background:linear-gradient(110deg,transparent 20%,#d2ac3c0a 35%,#fff0b566 48%,#ffe37d77 50%,#d9b54233 54%,transparent 72%)}
+.card[data-foil-tone=gold][data-foil-active]{box-shadow:0 25px 50px #10090088,0 0 35px #e0b34123}
 @media (hover: none), (pointer: coarse) {
   .card, .card[data-foil-active] { transform: none; }
   .foil { opacity: .18; }

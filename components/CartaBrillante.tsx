@@ -8,7 +8,7 @@ export function repetirBrilloCarta(desde: HTMLElement) {
 }
 
 /** Luz sobre la superficie impresa; nunca intercepta enlaces ni gestos de scroll. */
-export function CartaBrillante({ children, className = "", inclinacion = 7, ...props }: HTMLAttributes<HTMLDivElement> & { inclinacion?: number }) {
+export function CartaBrillante({ children, className = "", inclinacion = 7, distinciones = [], ...props }: HTMLAttributes<HTMLDivElement> & { inclinacion?: number; distinciones?: string[] }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,8 +90,9 @@ export function CartaBrillante({ children, className = "", inclinacion = 7, ...p
     };
   }, [inclinacion]);
 
-  return <div {...props} ref={ref} className={`${s.card} ${className}`} data-foil-card="true">
+  return <div {...props} ref={ref} className={`${s.card} ${className}`} data-foil-card="true" data-foil-tone={distinciones.length ? "gold" : "blue"}>
     {children}
+    {distinciones.length > 0 && <div className={s.distinciones} aria-label="Distinciones del jugador">{distinciones.map(d => <span key={d}><b aria-hidden="true">♛</b>{d}</span>)}</div>}
     <div className={s.finish} aria-hidden="true">
       <i className={s.foil} /><i className={s.glare} /><i className={s.sweep} />
     </div>

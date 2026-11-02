@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import type { JugadorEnVivo } from "@/lib/elo";
 import { nombreVisible } from "@/lib/players";
@@ -9,6 +9,8 @@ import { rendimientoPeriodo } from "@/lib/rendimiento";
 import { NumeroEstadistico } from "./NumeroEstadistico";
 import { RecorridoElo } from "./RecorridoElo";
 import { CartaBrillante } from "./CartaBrillante";
+import { cartasEspeciales } from "@/lib/cartasEspeciales";
+import { useTorneos } from "@/context/TorneosContext";
 import s from "./EstadisticasVisuales.module.css";
 
 const GABI = "d1c933d4-197b-434a-924c-d404421e02a6";
@@ -81,6 +83,8 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
   jugadores: JugadorEnVivo[]; filas: Fila[]; periodo: string; etiqueta: string; minimo: number; jugadorElegido: string | null; onElegir: (id: string) => void;
 }) {
   const seleccion = jugadorElegido ?? GABI;
+  const { torneos } = useTorneos();
+  const especiales = useMemo(() => cartasEspeciales(jugadores, torneos), [jugadores, torneos]);
   const [repeticion, setRepeticion] = useState(0);
   const [ranking, setRanking] = useState<"rendimiento" | "elo">("rendimiento");
   const rankingRef = useClasificacionMotion(`${periodo}-${ranking}-${minimo}-${filas.map(f => `${f.jugadorId}:${f.partidas}:${f.rendimiento}:${f.variacion}`).join(",")}`);
@@ -100,7 +104,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
       return <button key={f.jugadorId} aria-pressed={f.jugadorId === fila.jugadorId} onClick={() => onElegir(f.jugadorId)}><FotoEstadisticas jugador={j} /><span>{j ? nombreVisible(j) : f.nombre}</span></button>;
     })}</div>
     <section key={`${periodo}-${jugador.id}-${repeticion}`} data-stats-motion className={s.spotlight} aria-label={`Rendimiento de ${nombreVisible(jugador)}`}>
-      <CartaBrillante className={s.portrait}>
+      <CartaBrillante distinciones={especiales.get(jugador.id)} className={s.portrait}>
         <div className={s.orbit} aria-hidden="true" /><div className={s.orbitSmall} aria-hidden="true" />
         <span className={s.portraitLabel}>ATLÁNTIDA · {etiqueta}</span>
         {retrato.transparente && retrato.src ?
@@ -111,7 +115,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
           <div className={s.noPortrait}><span>♟</span><p>El próximo movimiento<br />también cuenta.</p></div>}
         <div className={s.portraitName}><span>EN PRIMERA PERSONA</span><h3>{jugador.id === GABI ? "Gabi" : nombreVisible(jugador)}</h3><Link href={`/jugadores/${jugador.id}`}>Ver su perfil ↗</Link></div>
       </CartaBrillante>
-      <CartaBrillante inclinacion={2.5} className={s.analysis}>
+      <CartaBrillante inclinacion={2.5} distinciones={especiales.get(jugador.id)} className={s.analysis}>
         <header className={s.analysisHeader}><span className={s.eyebrow}>SU PERÍODO EN JUEGO</span><button onClick={() => setRepeticion(n => n + 1)} aria-label="Repetir animación de las estadísticas">↻ Repetir</button></header>
         <div className={s.scoreRow}>
           <div><span className={s.smallLabel}>ELO AL CIERRE</span><strong className={s.elo}><NumeroEstadistico valor={fila.eloFinal} desde={fila.eloInicial} /></strong><span className={fila.variacion < 0 ? s.negative : s.positive}><NumeroEstadistico valor={fila.variacion} signo /> <small>en el período</small></span></div>

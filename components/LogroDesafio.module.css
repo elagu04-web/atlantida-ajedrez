@@ -1,0 +1,8 @@
+.logro{display:flex;align-items:center;gap:15px;padding:19px 21px;margin:14px 0;border:1px solid #7cdbb657;border-radius:18px;background:radial-gradient(ellipse at 0 0,#4fc39826,transparent 70%),linear-gradient(120deg,#142e30,#112233);box-shadow:0 8px 28px #0002;animation:entrada .5s ease-out both}
+.check{display:grid;place-items:center;flex:none;width:43px;height:43px;border-radius:50%;background:#91e4b920;color:#aeefc9;border:1px solid #aeefc95e;font-size:25px;font-weight:600}
+.eyebrow{font-size:8px;letter-spacing:.15em;color:#a3e8c5;font-weight:600}
+.logro h2{font-size:clamp(18px,2vw,24px);line-height:1.25;letter-spacing:-.5px;margin:5px 0;color:#ecfff4;font-weight:600}
+.logro p{font-size:12px;line-height:1.65;color:#b4d0c6;margin:0}
+@keyframes entrada{from{opacity:0;translate:0 9px}to{opacity:1;translate:0 0}}
+@media(max-width:540px){.logro{padding:16px 14px;gap:11px}.check{width:35px;height:35px;font-size:21px}.logro p{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.logro{animation:none}}

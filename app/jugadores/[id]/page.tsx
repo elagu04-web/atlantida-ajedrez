@@ -15,6 +15,8 @@ import { RetratoJugadorMotion } from "@/components/RetratoJugadorMotion";
 import { CartaBrillante } from "@/components/CartaBrillante";
 import { NavegadorJugadores } from "@/components/NavegadorJugadores";
 import retrato from "@/components/RetratoJugadorMotion.module.css";
+import { useTorneos } from "@/context/TorneosContext";
+import { cartasEspeciales } from "@/lib/cartasEspeciales";
 
 const FOTOS_BUCKET = "fotos-jugadores";
 
@@ -33,6 +35,8 @@ const resultadoLabel: Record<string, string> = {
 export default function JugadorPage() {
   const { id } = useParams<{ id: string }>();
   const jugadoresEnVivo = useJugadoresEnVivo();
+  const { torneos } = useTorneos();
+  const distinciones = useMemo(() => cartasEspeciales(jugadoresEnVivo, torneos).get(id) ?? [], [jugadoresEnVivo, torneos, id]);
   const jugador = jugadoresEnVivo.find((j) => j.id === id);
   const puestoRanking = posicionesElo(jugadoresEnVivo.filter(j => j.jugadas > 0)).get(id);
   const { actualizarFoto, actualizarDescripcion, actualizarJugador, actualizarFideId, obtenerJugador, cargando } =
@@ -189,7 +193,7 @@ export default function JugadorPage() {
     <div className="flex min-w-0 flex-col gap-6">
       <NavegadorJugadores jugadores={jugadoresEnVivo} actual={jugador.id} />
       <div key={jugador.id} className={retrato.duo}>
-      <CartaBrillante inclinacion={3} className={`panel p-6 sm:p-8 ${retrato.hero} ${retrato.infoCard}`}>
+      <CartaBrillante inclinacion={3} distinciones={distinciones} className={`panel p-6 sm:p-8 ${retrato.hero} ${retrato.infoCard}`}>
         <div className={retrato.content}>
         <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
           ← Volver a jugadores
@@ -276,7 +280,7 @@ export default function JugadorPage() {
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
         </div>
       </CartaBrillante>
-      <CartaBrillante className={`panel ${retrato.hero} ${retrato.portraitCard}`}>
+      <CartaBrillante distinciones={distinciones} className={`panel ${retrato.hero} ${retrato.portraitCard}`}>
         <RetratoJugadorMotion jugador={jugador} />
       </CartaBrillante>
       </div>

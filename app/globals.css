@@ -853,3 +853,7 @@ button:not(:disabled), summary { cursor: pointer; }
 .site-shell:has([data-concentrado="true"]) .site-header{display:none}
 .site-shell:has([data-concentrado="true"]) .site-content{padding-top:0}
 @media(max-width:650px){.site-content:has([data-mesa-juego]){padding-inline:12px}}
+/* El logro usa todo el ancho y deja el tablero completo a la vista. */
+.puzzle-logro{grid-column:1/-1;min-width:0}
+.puzzle-logro>[data-desafio-logrado]{margin:0}
+@media(min-width:901px){.puzzle-layout[data-logrado=true]{--play-board-size:clamp(180px,calc(100dvh - 450px),620px)}}

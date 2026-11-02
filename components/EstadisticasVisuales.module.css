@@ -26,3 +26,10 @@
 @media(max-width:760px){.spotlight{gap:14px}}
 @media(max-width:600px){.spotlight{border-radius:0}.portrait,.analysis{border-radius:20px}}
 .analysis{--foil-scale:1.015}
+.portrait[data-foil-tone=gold]{--distincion-top:20px;--distincion-bottom:auto}
+.portrait[data-foil-tone=gold] .portraitLabel{top:78px;color:#edd69c}
+.portrait[data-foil-tone=gold]:after{background:linear-gradient(transparent,#2b210fed)}
+.portrait[data-foil-tone=gold] .orbit,.portrait[data-foil-tone=gold] .orbitSmall{border-color:#f2d5834d}
+.analysis[data-foil-tone=gold]{padding-bottom:82px}
+@media(max-width:600px){.portrait[data-foil-tone=gold]:after{background:linear-gradient(90deg,#2b210f66,transparent),linear-gradient(0deg,#2b210f,transparent 65%)}}
+.analysis[data-foil-tone=gold] .analysisHeader button{background:#49321077;border-color:#eacb7e44;color:#ffe7ac}

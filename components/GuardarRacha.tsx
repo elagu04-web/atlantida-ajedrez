@@ -7,12 +7,16 @@ import { IdentidadJugador } from "./IdentidadJugador";
 import { useMiJugador } from "@/context/useMiJugador";
 import { nombreVisible } from "@/lib/players";
 import { claveIntentoDesafio } from "@/lib/identidadJugador";
+import { fechaMontevideo } from "@/lib/desafios";
+import { rpcDeCuenta } from "@/lib/rpcCuenta";
 
-export function GuardarRacha({desafio,resuelto,fallado}:{desafio:Desafio;resuelto:boolean;fallado:boolean}) {
+export type EstadoRacha = { resuelto: boolean; fallado: boolean };
+type Props = {desafio:Desafio;resuelto:boolean;fallado:boolean;onEstado?:(estado:EstadoRacha)=>void};
+export function GuardarRacha({desafio,resuelto,fallado,onEstado}:Props) {
   const {session}=useAuth();
-  return <div className="racha-identity"><IdentidadJugador/><RegistroRacha key={claveIntentoDesafio(session?.user.id,desafio.fecha,desafio.id)} desafio={desafio} resuelto={resuelto} fallado={fallado}/></div>;
+  return <div className="racha-identity"><IdentidadJugador/><RegistroRacha key={claveIntentoDesafio(session?.user.id,desafio.fecha,desafio.id)} desafio={desafio} resuelto={resuelto} fallado={fallado} onEstado={onEstado}/></div>;
 }
-function RegistroRacha({desafio,resuelto,fallado}:{desafio:Desafio;resuelto:boolean;fallado:boolean}) {
+function RegistroRacha({desafio,resuelto,fallado,onEstado}:Props) {
   const {session,cargando}=useAuth();
   const {jugador,cargando:cargandoJugador,error:errorJugador,ambigua}=useMiJugador();
   const claveError=`atlantida-desafio-error:${session?.user.id??"anon"}:${desafio.fecha}:${desafio.id}`;
@@ -25,7 +29,25 @@ function RegistroRacha({desafio,resuelto,fallado}:{desafio:Desafio;resuelto:bool
   const nombre=jugador?nombreVisible(jugador):"";
   const [enviando,setEnviando]=useState(false);const [mensaje,setMensaje]=useState("");
   const [cortada,setCortada]=useState(false),[reintentoError,setReintentoError]=useState(0);
-  useEffect(()=>{let cancelado=false;if(usuario&&desafio.registrable)void supabase.rpc("mi_desafio_resuelto").abortSignal(AbortSignal.timeout(10000)).then(({data})=>{if(!cancelado){if(data){setGuardado(actual=>actual||data.resuelto===true);setCortada(actual=>actual||data.fallado===true);}setRevisada(true);}});return()=>{cancelado=true;};},[usuario,desafio.registrable,desafio.fecha,desafio.id]);
+  useEffect(()=>{onEstado?.({resuelto:guardado,fallado:cortada||intentoFallado});},[guardado,cortada,intentoFallado,onEstado]);
+  useEffect(()=>{
+    if(!usuario||!desafio.registrable||desafio.fecha!==fechaMontevideo())return;
+    let cancelado=false,consultando=false;
+    const abort=new AbortController();
+    async function consultar(){
+      if(consultando||document.hidden)return;consultando=true;
+      try{
+        const {data,error}=await rpcDeCuenta(supabase,usuario!,"mi_desafio_resuelto",{},AbortSignal.any([abort.signal,AbortSignal.timeout(10000)]));
+        if(error)throw error;
+        if(!cancelado&&desafio.fecha===fechaMontevideo()){
+          setGuardado(actual=>actual||data?.resuelto===true);setCortada(actual=>actual||data?.fallado===true);setRevisada(true);
+        }
+      }catch{if(!cancelado)setMensaje("No pudimos comprobar el guardado. Revisá la conexión y reintentá.");}
+      finally{consultando=false;}
+    }
+    void consultar();window.addEventListener("focus",consultar);window.addEventListener("desafio-resuelto",consultar);document.addEventListener("visibilitychange",consultar);
+    return()=>{cancelado=true;abort.abort();window.removeEventListener("focus",consultar);window.removeEventListener("desafio-resuelto",consultar);document.removeEventListener("visibilitychange",consultar);};
+  },[usuario,desafio.registrable,desafio.fecha,desafio.id,reintentoGuardado]);
   useEffect(()=>{let cancelado=false;if(intentoFallado&&session&&desafio.registrable){try{localStorage.setItem(claveError,"1");}catch{}void supabase.rpc("registrar_desafio_error",{p_dia:desafio.fecha,p_puzzle_id:desafio.id}).then(({data,error})=>{if(cancelado)return;if(error){setMensaje("No se pudo guardar el error. Reintentá para actualizar la racha.");return;}setMensaje("");if(data===false)setGuardado(true);else {setCortada(true);window.dispatchEvent(new Event("desafio-resuelto"));}});}return()=>{cancelado=true;};},[intentoFallado,session,desafio.registrable,desafio.fecha,desafio.id,reintentoError,claveError]);
   useEffect(()=>{
     if(!usuario||!jugadorId||cargandoJugador||errorJugador||ambigua||!revisada||!resuelto||intentoFallado||cortada||guardado||!desafio.registrable)return;

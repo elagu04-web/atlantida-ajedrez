@@ -53,6 +53,12 @@ await assert.rejects(()=>db.query('select * from desafios_banco'));await assert.
 await db.exec('reset role;delete from desafios_fallados;');
 await db.query("select set_config('test.uid',$1,false)",[users[0]]);await db.exec('set role authenticated');
 assert.equal((await db.query('select registrar_desafio_resuelto($1,$2,$3,$4) ok',[today,daily.datos.puzzle.id,'Otro nombre',daily.datos.puzzle.solution])).rows[0].ok,true);checks++;
+// Al volver a entrar se recupera el logro, sin atribuirlo a otra cuenta.
+assert.equal((await db.query('select mi_desafio_resuelto() estado')).rows[0].estado.resuelto,true);checks++;
+await db.query("select set_config('test.uid',$1,false)",[users[1]]);
+assert.equal((await db.query('select mi_desafio_resuelto() estado')).rows[0].estado.resuelto,false);checks++;
+await db.query("select set_config('test.uid',$1,false)",[users[0]]);
+assert.equal((await db.query('select mi_desafio_resuelto() estado')).rows[0].estado.resuelto,true);checks++;
 assert.equal((await db.query('select nombre from tabla_rachas_desafios()')).rows[0].nombre,'Jugador 0');checks++;
 await db.exec('reset role');
 // Cuando se agota el nivel, recicla el menos reciente y no salta a un nivel ajeno.
@@ -64,5 +70,5 @@ assert.equal((await db.query('select obtener_desafio_diario() d')).rows[0].d.dat
 await db.query('delete from desafios_diarios where dia=$1',[today]);
 const earlier=(await db.query("select ((now() at time zone 'America/Montevideo')::date-i)::text d from generate_series(3,5) i")).rows;await seed(earlier.map(r=>r.d));
 const higher=(await db.query('select obtener_desafio_diario() d')).rows[0].d;assert.equal(higher.objetivo,2000);assert.ok(Math.abs(higher.datos.puzzle.rating-2000)<=25);checks++;
-assert.equal(checks,21);await db.close();
+assert.equal(checks,24);await db.close();
 });
