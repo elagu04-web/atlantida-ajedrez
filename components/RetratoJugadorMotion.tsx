@@ -4,6 +4,7 @@ import { useState, type PointerEvent } from "react";
 import s from "./RetratoJugadorMotion.module.css";
 import { nombreVisible, type Jugador } from "@/lib/players";
 import { retratoJugador } from "@/lib/retratosJugadores";
+import { repetirBrilloCarta } from "./CartaBrillante";
 
 /** La fotografía permanece intacta; el movimiento y la luz pertenecen a la interfaz. */
 export function RetratoJugadorMotion({ jugador }: { jugador: Pick<Jugador, "id" | "nombre" | "apodo" | "fotoUrl"> }) {
@@ -40,6 +41,6 @@ export function RetratoJugadorMotion({ jugador }: { jugador: Pick<Jugador, "id" 
       <div className={s.frontLight} aria-hidden="true" />
       <span className={s.caption} aria-hidden="true">{nombre} <small>ATLÁNTIDA AJEDREZ</small></span>
     </div>
-    <button className={s.replay} onClick={() => setRepeticion(n => n + 1)} aria-label={`Repetir efectos del retrato de ${nombre}`}>↻ <span>Repetir efectos</span></button>
+    <button className={s.replay} onClick={e => { setRepeticion(n => n + 1); repetirBrilloCarta(e.currentTarget); }} aria-label={`Repetir efectos del retrato de ${nombre}`}>↻ <span>Repetir efectos</span></button>
   </>;
 }

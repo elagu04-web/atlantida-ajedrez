@@ -8,6 +8,7 @@ import { retratoJugador } from "@/lib/retratosJugadores";
 import { rendimientoPeriodo } from "@/lib/rendimiento";
 import { NumeroEstadistico } from "./NumeroEstadistico";
 import { RecorridoElo } from "./RecorridoElo";
+import { CartaBrillante } from "./CartaBrillante";
 import s from "./EstadisticasVisuales.module.css";
 
 const GABI = "d1c933d4-197b-434a-924c-d404421e02a6";
@@ -99,7 +100,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
       return <button key={f.jugadorId} aria-pressed={f.jugadorId === fila.jugadorId} onClick={() => onElegir(f.jugadorId)}><FotoEstadisticas jugador={j} /><span>{j ? nombreVisible(j) : f.nombre}</span></button>;
     })}</div>
     <section key={`${periodo}-${jugador.id}-${repeticion}`} data-stats-motion className={s.spotlight} aria-label={`Rendimiento de ${nombreVisible(jugador)}`}>
-      <div className={s.portrait}>
+      <CartaBrillante className={s.portrait}>
         <div className={s.orbit} aria-hidden="true" /><div className={s.orbitSmall} aria-hidden="true" />
         <span className={s.portraitLabel}>ATLÁNTIDA · {etiqueta}</span>
         {retrato.transparente && retrato.src ?
@@ -109,7 +110,7 @@ export function EstadisticasVisuales({ jugadores, filas, periodo, etiqueta, mini
           <img className={s.original} src={foto(jugador)!} alt={nombreVisible(jugador)} /> :
           <div className={s.noPortrait}><span>♟</span><p>El próximo movimiento<br />también cuenta.</p></div>}
         <div className={s.portraitName}><span>EN PRIMERA PERSONA</span><h3>{jugador.id === GABI ? "Gabi" : nombreVisible(jugador)}</h3><Link href={`/jugadores/${jugador.id}`}>Ver su perfil ↗</Link></div>
-      </div>
+      </CartaBrillante>
       <div className={s.analysis}>
         <header className={s.analysisHeader}><span className={s.eyebrow}>SU PERÍODO EN JUEGO</span><button onClick={() => setRepeticion(n => n + 1)} aria-label="Repetir animación de las estadísticas">↻ Repetir</button></header>
         <div className={s.scoreRow}>

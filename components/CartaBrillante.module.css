@@ -1,0 +1,82 @@
+.card {
+  position: relative;
+  isolation: isolate;
+  --foil-x: 65%;
+  --foil-y: 35%;
+  --foil-rx: 0deg;
+  --foil-ry: 0deg;
+  transform: perspective(1400px) rotateX(var(--foil-rx)) rotateY(var(--foil-ry));
+  transition: transform .65s cubic-bezier(.2,.7,.2,1), box-shadow .65s;
+}
+.card[data-foil-active] {
+  transition-duration: .16s;
+  box-shadow: 0 18px 45px #020b1866, 0 0 30px #79bbff0c;
+}
+.finish, .rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  user-select: none;
+}
+.finish {
+  z-index: 3;
+  overflow: hidden;
+  mask-image: var(--foil-mask, linear-gradient(#000, #000));
+}
+.finish i { position: absolute; inset: 0; display: block; }
+.foil {
+  background: repeating-linear-gradient(118deg,
+    #80bfff00 0%, #67dbff99 8%, #aa8fff99 15%, #f6b8d880 21%,
+    #f9d58b99 27%, #9be6ba88 33%, #75dbeea0 40%, #80bfff00 48%);
+  background-size: 180% 180%;
+  background-position: var(--foil-x) var(--foil-y);
+  mix-blend-mode: screen;
+  opacity: .12;
+  transition: opacity .5s;
+  mask-image: radial-gradient(ellipse at var(--foil-x) var(--foil-y), #000 8%, #0008 38%, transparent 75%);
+}
+.foil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-radial-gradient(circle at 20% 30%, #fff8 0 .5px, transparent .8px 3px);
+  opacity: .08;
+  mix-blend-mode: overlay;
+}
+.glare {
+  background: radial-gradient(ellipse at var(--foil-x) var(--foil-y), #e9f7ff33, #b5dcff08 32%, transparent 65%);
+  mix-blend-mode: screen;
+  opacity: .18;
+  transition: opacity .5s;
+}
+.card[data-foil-active] .foil { opacity: .65; }
+.card[data-foil-active] .glare { opacity: .75; }
+.sweep {
+  background: linear-gradient(110deg, transparent 25%, #9acfff0a 37%, #d3eeff36 47%, #f6d9b542 50%, #a1b9ff21 53%, transparent 68%);
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+.rim {
+  z-index: 6;
+  padding: 1px;
+  background: linear-gradient(125deg, #9acfff38, #dfc5ff14 25%, #e9d7a978 48%, #a3e4d856 62%, #8ab6ff22 85%);
+  background-size: 200% 200%;
+  background-position: var(--foil-x) var(--foil-y);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: .6;
+  transition: opacity .5s;
+}
+.card[data-foil-active] .rim { opacity: 1; }
+@media (hover: none), (pointer: coarse) {
+  .card { transform: none; }
+  .foil { opacity: .18; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { transform: none !important; transition: none !important; }
+  .finish i, .rim { transition: none !important; }
+  .sweep { display: none; }
+  .foil { opacity: .12 !important; }
+  .glare { opacity: .18 !important; }
+}

@@ -12,6 +12,7 @@ import { ELO_MINIMO } from "@/lib/elo";
 import { posicionesElo } from "@/lib/rendimiento";
 import { GraficoElo } from "@/components/GraficoElo";
 import { RetratoJugadorMotion } from "@/components/RetratoJugadorMotion";
+import { CartaBrillante } from "@/components/CartaBrillante";
 import { NavegadorJugadores } from "@/components/NavegadorJugadores";
 import retrato from "@/components/RetratoJugadorMotion.module.css";
 
@@ -187,7 +188,7 @@ export default function JugadorPage() {
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <NavegadorJugadores jugadores={jugadoresEnVivo} actual={jugador.id} />
-      <div className={`panel p-6 sm:p-8 ${retrato.hero}`}>
+      <CartaBrillante key={jugador.id} className={`panel p-6 sm:p-8 ${retrato.hero}`}>
         <RetratoJugadorMotion jugador={jugador} />
         <div className={retrato.content}>
         <Link href="/jugadores" className="text-sm text-blue-400 hover:underline">
@@ -274,7 +275,7 @@ export default function JugadorPage() {
         <><p className={retrato.intro}>{puestoRanking ? <Link href="/jugadores" className={retrato.rankingBadge} aria-label={`Puesto ${puestoRanking} en el ranking de Elo del club`}><span>RANKING DEL CLUB</span><strong>#{puestoRanking}</strong><span aria-hidden="true">↗</span></Link> : <span>RANKING · SIN PARTIDAS TODAVÍA</span>}</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? (rachaActual.cantidad === 1 ? "victoria consecutiva" : "victorias consecutivas") : "en su historial"}</small></div></div><Link href={jugador.jugadas ? `/estadisticas?jugador=${jugador.id}` : "/estadisticas"} className={retrato.detailsLink}>{jugador.jugadas ? "Ver su rendimiento en Estadísticas ↗" : "Explorar las estadísticas del club ↗"}</Link></>
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
         </div>
-      </div>
+      </CartaBrillante>
 
       {(editandoDescripcion || jugador.descripcion || puedeEditar) && (
       <div className="panel p-4">
