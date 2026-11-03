@@ -5,6 +5,7 @@ import {useAuth} from '@/context/AuthContext';
 import {supabase} from '@/lib/supabase';
 import {fechaCuota,pesos} from '@/lib/membresias';
 import s from './PagoMembresia.module.css';
+import {useAccesosMembresia} from '@/context/AccesosMembresiaContext';
 
 type Cobro={pago:string;estado:string;importe:number;devuelto:number;desde:string;hasta:string};
 type Suscripcion={id:string;plan:'club'|'completo';importe:number;estado:string;checkout:string|null;proveedor_id:string|null;cobros:Cobro[]};
@@ -14,6 +15,7 @@ const estados:Record<string,string>={creando:'Verificando creación',pending:'Fa
 function urlCheckout(url:string|null,id:string|null){try{const u=new URL(url??'');return u.protocol==='https:'&&u.hostname==='www.mercadopago.com.uy'&&!u.username&&!u.password&&!u.port&&u.pathname==='/subscriptions/checkout'&&u.searchParams.get('preapproval_id')===id?u.href:null;}catch{return null;}}
 export function PagoMembresia(){const {session,esAdmin}=useAuth();return session?<Contenido key={session.user.id} cuenta={session.user.id} admin={esAdmin}/>:null;}
 function Contenido({cuenta,admin}:{cuenta:string;admin:boolean}){
+ const {datos:accesos}=useAccesosMembresia();
  const [datos,setDatos]=useState<Resumen|null>(null),[ocupado,setOcupado]=useState(false),[error,setError]=useState(''),[aviso,setAviso]=useState(''),[correo,setCorreo]=useState(''),[plan,setPlan]=useState<'club'|'completo'>('club'),[acepta,setAcepta]=useState(false),[cancelar,setCancelar]=useState<string|null>(null),[conexion,setConexion]=useState('');
  const vivo=useRef(false),bloqueo=useRef(false),peticion=useRef<AbortController|null>(null),nonce=useRef(crypto.randomUUID());
  const llamar=useCallback(async(accion:string,datos:Record<string,unknown>={})=>{
@@ -47,6 +49,6 @@ function Contenido({cuenta,admin}:{cuenta:string;admin:boolean}){
  {cancelar===x.id&&<div className={s.confirmar} role="group" aria-label="Confirmar cancelación"><p>¿Querés detener las próximas renovaciones de {planes[x.plan].nombre}? Esto no devuelve ni elimina las cuotas ya pagadas.</p><button className="button-secondary" disabled={ocupado} onClick={()=>setCancelar(null)}>Seguir con mi plan</button><button className="button-secondary" disabled={ocupado} onClick={async()=>{const r=await llamar('cancelar',{id:x.id,confirmar:true});if(r){setCancelar(null);setAviso('Mercado Pago confirmó la cancelación de las próximas renovaciones.');}}}>Sí, cancelar renovación</button></div>}
  {x.cobros.length>0?<div className={s.cobros}><h4>Historial de cobros</h4>{x.cobros.map(c=><div key={c.pago}><span><strong>{c.estado==='approved'?'Cobro aprobado':c.estado==='refunded'?'Devuelto':c.estado==='charged_back'?'Contracargo':c.estado==='rejected'?'Cobro rechazado':'Pago en revisión'}</strong><small>{fechaCuota(c.desde)} a {fechaCuota(c.hasta)} · MP {c.pago}</small>{c.devuelto>0&&<small>Devolución registrada: {pesos(c.devuelto)}</small>}</span><b>{pesos(c.importe)}</b></div>)}</div>:<p className={s.nota}>Todavía no hay un cobro confirmado en esta suscripción.</p>}</article>;})}
  {admin&&<details className={s.admin}><summary>Conexión de cobros · administración</summary><p>La activación requiere verificar la cuenta receptora y configurar las credenciales privadas en el servidor.</p><button className="button-secondary" disabled={ocupado} onClick={async()=>{const r=await llamar('conexion');if(r)setConexion(r.disponible?'Conexión habilitada y cuenta de Uruguay verificada.':r.configurado?'Credenciales configuradas. Los cobros públicos siguen deshabilitados.':'Falta completar la conexión de la cuenta de Mercado Pago.');}}>Comprobar conexión</button>{conexion&&<p role="status">{conexion}</p>}</details>}
- <p className={s.nota}>El torneo suelto de $150 se coordina por separado. El entrenamiento conserva su prueba gratuita hasta el lanzamiento de los planes.</p>
+ <p className={s.nota}>El torneo suelto de $150 se coordina por separado. {accesos?.entrenamiento.abierto?'El entrenamiento conserva su prueba gratuita.':'El entrenamiento requiere un acceso vigente en tu cuenta.'}</p>
  </section>;
 }

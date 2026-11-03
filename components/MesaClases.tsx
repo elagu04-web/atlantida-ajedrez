@@ -7,9 +7,14 @@ import {arteTarjetaClase} from '@/lib/tarjetasClase';
 import type {CSSProperties} from 'react';
 import {PortadaJuegoClase} from './PortadaJuegoClase';
 import s from './MesaClases.module.css';
+import {useAccesosMembresia} from '@/context/AccesosMembresiaContext';
+import {PuertaMembresia} from './PuertaMembresia';
 const grupos:{id:CategoriaClase;nombre:string;descripcion:string}[]=[{id:'game',nombre:'Juegos',descripcion:'Otra forma de pensar el tablero.'},{id:'challenge',nombre:'Desafíos',descripcion:'Una misión. Muchos caminos para resolverla.'},{id:'story',nombre:'Cuentos',descripcion:'Historias para leer, explorar y jugar.'},{id:'teacher',nombre:'Profe',descripcion:'Tus posiciones, tus ideas, tu clase.'}];
 export function MesaClases(){
- const {session,esAdmin,cargando}=useAuth();
+ const {session}=useAuth();return <PuertaMembresia recurso="docentes"><MesaClasesActiva key={session?.user.id??'invitado'}/></PuertaMembresia>;
+}
+function MesaClasesActiva(){
+ const {session,cargando}=useAuth();const {datos:accesos}=useAccesosMembresia();const permitido=accesos?.docentes.permitido===true;
  const [listo,setListo]=useState(false),[error,setError]=useState(''),[catalogo,setCatalogo]=useState<JuegoClase[]>([]),[categoria,setCategoria]=useState<CategoriaClase>('game'),[busqueda,setBusqueda]=useState(''),[juego,setJuego]=useState<string|null>(null),[alto,setAlto]=useState(700),[sonido,setSonido]=useState(true),[concentrado,setConcentrado]=useState(false),[reintento,setReintento]=useState(0);
  const frame=useRef<HTMLIFrameElement>(null),panel=useRef<HTMLDivElement>(null),proyeccion=useRef<HTMLDialogElement>(null),juegoActual=useRef<string|null>(null),primeraCarga=useRef(true),catalogoRef=useRef<JuegoClase[]>([]);
  const [aula,setAula]=useState<string|null>(null),[desdeIphone,setDesdeIphone]=useState(false);
@@ -23,12 +28,12 @@ export function MesaClases(){
   if(id)requestAnimationFrame(()=>{panel.current?.scrollIntoView({block:'start',behavior:'instant'});medir();});
  },[enviar,medir]);
  useEffect(()=>{
-  if(!token||!esAdmin){void fetch('/api/clases/acceso',{method:'DELETE'}).catch(()=>{});return;}
+  if(!token||!permitido){void fetch('/api/clases/acceso',{method:'DELETE'}).catch(()=>{});return;}
   let vivo=true;
   async function renovar(){try{const r=await fetch('/api/clases/acceso',{method:'POST',headers:{Authorization:'Bearer '+token}});if(!r.ok)throw new Error('No pudimos confirmar el acceso. Volvé a intentar o iniciá sesión otra vez.');if(vivo){setListo(true);setError('');}}catch(e){if(vivo)setError((e as Error).message);}}
   void renovar();const alVolver=()=>{if(document.visibilityState==='visible')void renovar();};window.addEventListener('focus',alVolver);document.addEventListener('visibilitychange',alVolver);const reloj=setInterval(()=>void renovar(),45000);
   return()=>{vivo=false;clearInterval(reloj);window.removeEventListener('focus',alVolver);document.removeEventListener('visibilitychange',alVolver);};
- },[token,esAdmin,reintento]);
+ },[token,permitido,reintento]);
  useEffect(()=>{
   function mensaje(e:MessageEvent){
    if(e.origin!==window.location.origin||e.source!==frame.current?.contentWindow||e.data?.canal!==CANAL_CLASES)return;
@@ -50,13 +55,13 @@ export function MesaClases(){
  useEffect(()=>{if(!listo||catalogo.length)return;const espera=setTimeout(()=>setError('La mesa está tardando en cargar. Podés volver a intentar sin perder tus clases guardadas.'),25000);return()=>clearTimeout(espera);},[listo,catalogo.length,reintento]);
  if(cargando)return <p role="status">Preparando tus clases…</p>;
  if(!session)return <section className={s.acceso}><p className="eyebrow">TU ESPACIO PARA ENSEÑAR</p><h1>Mis clases</h1><p>Iniciá sesión con tu cuenta de profesor.</p><AuthWidget/></section>;
- if(!esAdmin)return <section className={s.acceso}><h1>Esta mesa es privada.</h1><p>Los juegos de clase están disponibles para el profesor.</p></section>;
+ if(!permitido)return null;
  const elegido=catalogo.find(m=>m.id===juego),grupo=grupos.find(g=>g.id===categoria)!;
  const normalizar=(v:string)=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  const visibles=catalogo.filter(m=>(busqueda?normalizar(m.title+' '+m.description).includes(normalizar(busqueda)):m.category===categoria));
  return <section className={s.clases} data-mesa-clases data-mesa-juego={juego||undefined} data-concentrado={concentrado&&!!juego}>
   {!juego&&<>
-   <header className={s.hero}><div><p className="eyebrow">MIS CLASES · SOLO VOS</p><h1>Un tablero.<br/><em>Mil formas de aprender.</em></h1><p>Elegí un juego, reuní al grupo y empezá a explorar.</p><div className={s.heroDatos}><span>{catalogo.length||'…'} actividades</span><span>Piezas con sonido</span><span>Listo para proyectar</span></div></div><div className={s.mundo} role="img" aria-label="Un mundo de ajedrez para descubrir"/></header>
+   <header className={s.hero}><div><p className="eyebrow">TUS JUEGOS PARA ENSEÑAR</p><h1>Un tablero.<br/><em>Mil formas de aprender.</em></h1><p>Elegí un juego, reuní al grupo y empezá a explorar.</p><div className={s.heroDatos}><span>{catalogo.length||'…'} actividades</span><span>Piezas con sonido</span><span>Listo para proyectar</span></div></div><div className={s.mundo} role="img" aria-label="Un mundo de ajedrez para descubrir"/></header>
    <div className={s.filtros}><div className={s.pestanas} role="group" aria-label="Tipo de actividad">{grupos.map(g=><button type="button" key={g.id} aria-pressed={!busqueda&&categoria===g.id} onClick={()=>{setCategoria(g.id);setBusqueda('');}}>{g.nombre}<span>{catalogo.filter(m=>m.category===g.id).length}</span></button>)}</div><label className={s.buscar}><span aria-hidden="true">⌕</span><span className="sr-only">Buscar una actividad</span><input type="search" placeholder="Buscá un juego…" value={busqueda} onChange={e=>setBusqueda(e.target.value)}/></label></div>
    <div className={s.tituloGrupo}><div><p className="eyebrow">{busqueda?'TU BÚSQUEDA':grupo.nombre.toUpperCase()}</p><h2>{busqueda?`Resultados para «${busqueda}»`:grupo.descripcion}</h2></div><span>{visibles.length} {visibles.length===1?'actividad':'actividades'}</span></div>
    {!catalogo.length&&!error&&<p role="status" className={s.cargando}>Preparando el catálogo de tu mesa…</p>}

@@ -7,6 +7,7 @@ import { TorneosProvider } from "@/context/TorneosContext";
 import {ResultadosClubOnlineProvider} from '@/context/ResultadosClubOnlineContext';
 import { ActividadProvider } from "@/context/ActividadContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { AccesosMembresiaProvider } from "@/context/AccesosMembresiaContext";
 import { ColegioJugadoresProvider } from "@/context/ColegioJugadoresContext";
 import { ColegioTorneosProvider } from "@/context/ColegioTorneosContext";
 import { EpicoJugadoresProvider } from "@/context/EpicoJugadoresContext";
@@ -45,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100 font-sans">
-        <AvisosProvider><AuthProvider>
+        <AvisosProvider><AuthProvider><AccesosMembresiaProvider>
           <ActividadProvider>
             <JugadoresProvider>
               <ResultadosClubOnlineProvider><TorneosProvider>
@@ -61,7 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </TorneosProvider></ResultadosClubOnlineProvider>
             </JugadoresProvider>
           </ActividadProvider>
-        </AuthProvider></AvisosProvider>
+        </AccesosMembresiaProvider></AuthProvider></AvisosProvider>
       </body>
     </html>
   );

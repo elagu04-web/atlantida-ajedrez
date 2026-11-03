@@ -1,10 +1,11 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript'),Module=require('node:module'),path=require('node:path');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,f);
-const original=Module._load;let descarga=0;
+const original=Module._load;let descarga=0,docenteActivo=false;
 function clientePrueba(_url,_key,op){
- const autorizado=op?.global?.headers.Authorization==='Bearer profe';
+ const autorizado=op?.global?.headers.Authorization==='Bearer profe'||docenteActivo&&op?.global?.headers.Authorization==='Bearer docente';
  return {
-  auth:{getUser:async token=>({data:{user:token==='profe'?{id:'f2c0ea67-e4e3-454e-81ee-f3175df90b3d'}:token==='otro'?{id:'otro'}:null},error:token==='vencido'?new Error('expired'):null})},
+  auth:{getUser:async token=>({data:{user:token==='profe'?{id:'f2c0ea67-e4e3-454e-81ee-f3175df90b3d'}:token==='otro'||token==='docente'?{id:token}:null},error:token==='vencido'?new Error('expired'):null})},
+  rpc:async(n,p)=>{assert.equal(n,'tiene_acceso_membresia');assert.deepEqual(p,{p_recurso:'docentes'});return {data:autorizado,error:null};},
   storage:{from:bucket=>{
    assert.equal(bucket,'clases-mesa');
    return {
@@ -36,4 +37,12 @@ test('El modelo de voz grande se sirve con firma temporal, sin exponer el JWT',a
 });
 test('Cerrar acceso elimina la cookie de la misma ruta y rechaza solicitudes de otros orígenes',async()=>{
  const r=await Acceso.DELETE(peticion('/api/clases/acceso',{method:'DELETE',headers:{origin}}));assert.equal(r.status,200);assert.ok(r.headers.get('set-cookie').includes('Max-Age=0'));assert.ok(r.headers.get('set-cookie').includes('Path='+RUTA_MESA));assert.equal((await Acceso.DELETE(peticion('/api/clases/acceso',{method:'DELETE',headers:{origin:'https://otro.example'}}))).status,403);
+});
+test('Docente habilitado entra; al revocar no puede renovar cookie ni descargar archivos',async()=>{
+ docenteActivo=true;const args={params:Promise.resolve({archivo:['index.html']})};
+ assert.equal((await Acceso.POST(peticion('/api/clases/acceso',{method:'POST',headers:{origin,Authorization:'Bearer docente'}}))).status,200);
+ assert.equal((await Mesa.GET(peticion('/api/clases/mesa/index.html',{headers:{cookie:COOKIE_CLASES+'=docente'}}),args)).status,200);
+ docenteActivo=false;
+ assert.equal((await Acceso.POST(peticion('/api/clases/acceso',{method:'POST',headers:{origin,Authorization:'Bearer docente'}}))).status,403);
+ assert.equal((await Mesa.GET(peticion('/api/clases/mesa/index.html',{headers:{cookie:COOKIE_CLASES+'=docente'}}),args)).status,403);
 });
