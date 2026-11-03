@@ -18,6 +18,7 @@ export function PosterMembresias() {
         {i===0 ? <><ul><li><Icono nombre="check"/>Torneos habituales<br/>del club incluidos.</li><li><Icono nombre="check"/>Una cuota para<br/>jugar todo el mes.</li></ul><div className={s.ahorro}><span>SI JUGÁS 4 TORNEOS</span><p>Sueltos: <s>${oferta.torneo*4}</s><br/><strong>Con Club: ${p.precio}</strong></p></div></> : <><p className={s.todo}>Todo el plan Club, más:</p><ul><li><Icono nombre="check"/>Táctica a tu nivel</li><li><Icono nombre="check"/>Cálculo y evaluación</li><li><Icono nombre="check"/>Análisis de tus partidas</li><li><Icono nombre="check"/>Aperturas y finales</li><li><Icono nombre="check"/>Repasos de tus errores</li><li><Icono nombre="check"/>Progreso en tu cuenta</li></ul></>}
       </section>)}
     </div>
+    <section className={s.docentes}><div><strong>{oferta.docentes.nombre}</strong><p>{oferta.docentes.descripcion}</p></div><span><b>${oferta.docentes.precio}</b> UYU por mes</span></section>
     <div className={s.suelto}><span>SIN MEMBRESÍA</span><strong><b>${oferta.torneo}</b> UYU por torneo</strong></div>
     <footer><div><span>CONSULTÁ CON AGUSTÍN</span><strong><Icono nombre="whatsapp"/>099 861 116</strong></div><p>atlantida-ajedrez.vercel.app</p></footer>
     <p className={s.nota}>{oferta.borrador ? "BORRADOR · Precios propuestos, todavía no vigentes." : "Cuota mensual en pesos uruguayos. Activación con el club."}<br/>Torneos habituales durante tu vigencia. Eventos especiales: consultar.{oferta.borrador && " El entrenamiento sigue en prueba gratuita."}</p>

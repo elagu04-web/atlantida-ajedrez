@@ -31,6 +31,12 @@ export function PresentacionMembresias() {
       </article>)}
     </section>
 
+    <section className={s.docentes} aria-labelledby="recursos-docentes">
+      <div className={s.docentesTexto}><p className={s.ceja}>PARA ENSEÑAR AJEDREZ</p><h2 id="recursos-docentes">{oferta.docentes.nombre}</h2><p>{oferta.docentes.descripcion}</p></div>
+      <div className={s.docentesPrecio}><strong>${oferta.docentes.precio}</strong><span>UYU<br/>por mes</span></div>
+      <a className="button-secondary" href={contactoPlan(oferta.docentes.nombre)} target="_blank" rel="noopener noreferrer">Consultar <Icono nombre="whatsapp"/></a>
+    </section>
+
     <section className={s.comparador} aria-labelledby="comparar-cuota">
       <div><p className={s.ceja}>HACÉ TUS CUENTAS</p><h2 id="comparar-cuota">¿Cuánto venís a jugar?</h2><p>Compará la cuota Club con pagar cada torneo por separado.</p>
         <label className={s.control}>Torneos por mes <output htmlFor="cantidad-torneos">{torneos}</output><input id="cantidad-torneos" type="range" min="1" max="5" step="1" value={torneos} onChange={e => setTorneos(Number(e.target.value))}/></label>
@@ -42,6 +48,6 @@ export function PresentacionMembresias() {
 
     <div className={s.suelto}><Icono nombre="trofeo"/><div><strong>Torneo sin membresía</strong><p>Para venir a jugar de vez en cuando.</p></div><span><strong>${oferta.torneo}</strong> UYU por torneo</span></div>
     <section className={s.pasos} aria-label="Cómo sumarte"><h2>Nos escribís. Lo coordinamos.<br/><span>Y nos vemos en el tablero.</span></h2><div><p><b>01</b> Elegí tu plan</p><p><b>02</b> Consultá por WhatsApp</p><p><b>03</b> Confirmamos tu vigencia</p></div><a href={contactoPlan("membresías")} className="button-primary" target="_blank" rel="noopener noreferrer"><Icono nombre="whatsapp"/> Hablar con Agustín</a></section>
-    <section className={s.aclaraciones} aria-label="Sobre los planes"><p><strong>La misma cuenta, siempre.</strong> Tus partidas y tu progreso se conservan. La cuota se coordina con el club, sin débito automático.</p><p>{oferta.borrador ? "Esta es una propuesta para revisar. Los torneos mantienen su precio actual y el entrenamiento sigue en prueba gratuita hasta que el club anuncie el lanzamiento." : "El entrenamiento continúa en prueba gratuita hasta que anunciemos el inicio de los planes. Consultá por la fecha de activación y los torneos incluidos."}</p><Link href="/membresia">Ya tengo membresía: consultar mi vigencia →</Link><a href="/imagenes/membresias-whatsapp-20261102.png" download="membresias-atlantida.png">Descargar la imagen para compartir →</a></section>
+    <section className={s.aclaraciones} aria-label="Sobre los planes"><p><strong>La misma cuenta, siempre.</strong> Tus partidas y tu progreso se conservan. La cuota se coordina con el club, sin débito automático.</p><p>{oferta.borrador ? "Esta es una propuesta para revisar. Los torneos mantienen su precio actual y el entrenamiento sigue en prueba gratuita hasta que el club anuncie el lanzamiento." : "El entrenamiento continúa en prueba gratuita hasta que anunciemos el inicio de los planes. Consultá por la fecha de activación y los torneos incluidos."}</p><Link href="/membresia">Ya tengo membresía: consultar mi vigencia →</Link><a href="/imagenes/membresias-whatsapp-20261103.png" download="membresias-atlantida.png">Descargar imagen para WhatsApp →</a><a href="/imagenes/membresias-instagram-20261103.png" download="membresias-instagram.png">Descargar imagen para Instagram →</a></section>
   </div>;
 }

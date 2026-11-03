@@ -10,6 +10,10 @@ También pidió mostrar el costo por torneo. Ambas piezas explican el ejemplo de
 
 ## Piezas
 
+Actualización del 3/11/2026: Agustín pidió un espacio adicional «Recursos para docentes» a $200 UYU mensuales. Se presenta como opción independiente, con juegos y actividades para las clases; no se le calcula un costo por torneo ni se promete inscripción incluida. Se incorpora en la página, en la invitación de la portada y en las imágenes de WhatsApp e Instagram. La presentación conserva el estado «Próximamente» y no modifica permisos privados de clases ni activa cobros.
+
+Las descargas vigentes se publican con fecha 20261103 para evitar que el navegador reutilice la imagen anterior. Instagram conserva 1080 × 1350; WhatsApp pasa a 1080 × 1620 para dar espacio al bloque docente.
+
 - `/membresias`: presentación adaptable, dos planes, beneficios, comparador de uno a cinco torneos y contacto de WhatsApp por plan. Conserva el enlace a la consulta privada de la membresía existente.
 - `/membresias/compartir/pantalla`: composición vertical de 1080 × 1440 para exportar a PNG, sin navegación. Comparte precios y nombres con la página en `lib/presentacionMembresias.ts`.
 - Los PNG finales están en la carpeta `outputs` del chat: `membresias-web.png` y `membresias-whatsapp.png`. La pieza de WhatsApp también se ofrece como descarga pública en `/imagenes/membresias-whatsapp-20261102.png`.

@@ -4,6 +4,11 @@ export const PRESENTACION_MEMBRESIAS = {
   borrador: false,
   torneo: 150,
   referenciaTorneos: 4,
+  docentes: {
+    nombre: "Recursos para docentes",
+    precio: 200,
+    descripcion: "Juegos y actividades para tus clases de ajedrez.",
+  },
   planes: [
     { id: "club", nombre: "Club", precio: 400, bajada: "Para encontrarnos en el tablero.",
       beneficios: ["Torneos habituales del club incluidos", "Una cuota para jugar durante el mes", "Activación y renovación con el club"],
