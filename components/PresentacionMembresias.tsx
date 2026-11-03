@@ -28,6 +28,7 @@ export function PresentacionMembresias() {
         <ul>{p.beneficios.map(b => <li key={b}><Icono nombre="check"/><span>{b}</span></li>)}</ul>
         <p className={s.detalle}>{p.detalle}</p>
         <a className={i === 1 ? "button-primary" : "button-secondary"} href={contactoPlan(p.nombre)} target="_blank" rel="noopener noreferrer">Consultar por este plan <Icono nombre="whatsapp"/></a>
+        <Link href={`/membresia?plan=${p.id}`} className="text-link">Gestionar mi membresía y pagos →</Link>
       </article>)}
     </section>
 
@@ -48,6 +49,6 @@ export function PresentacionMembresias() {
 
     <div className={s.suelto}><Icono nombre="trofeo"/><div><strong>Torneo sin membresía</strong><p>Para venir a jugar de vez en cuando.</p></div><span><strong>${oferta.torneo}</strong> UYU por torneo</span></div>
     <section className={s.pasos} aria-label="Cómo sumarte"><h2>Nos escribís. Lo coordinamos.<br/><span>Y nos vemos en el tablero.</span></h2><div><p><b>01</b> Elegí tu plan</p><p><b>02</b> Consultá por WhatsApp</p><p><b>03</b> Confirmamos tu vigencia</p></div><a href={contactoPlan("membresías")} className="button-primary" target="_blank" rel="noopener noreferrer"><Icono nombre="whatsapp"/> Hablar con Agustín</a></section>
-    <section className={s.aclaraciones} aria-label="Sobre los planes"><p><strong>La misma cuenta, siempre.</strong> Tus partidas y tu progreso se conservan. La cuota se coordina con el club, sin débito automático.</p><p>{oferta.borrador ? "Esta es una propuesta para revisar. Los torneos mantienen su precio actual y el entrenamiento sigue en prueba gratuita hasta que el club anuncie el lanzamiento." : "El entrenamiento continúa en prueba gratuita hasta que anunciemos el inicio de los planes. Consultá por la fecha de activación y los torneos incluidos."}</p><Link href="/membresia">Ya tengo membresía: consultar mi vigencia →</Link><a href="/imagenes/membresias-whatsapp-20261103-v2.png" download="membresias-atlantida.png">Descargar imagen para WhatsApp →</a><a href="/imagenes/membresias-instagram-20261103.png" download="membresias-instagram.png">Descargar imagen para Instagram →</a></section>
+    <section className={s.aclaraciones} aria-label="Sobre los planes"><p><strong>La misma cuenta, siempre.</strong> Tus partidas y tu progreso se conservan. Podés coordinar la cuota con el club. Cuando habilitemos Mercado Pago, la renovación automática requerirá tu autorización expresa.</p><p>{oferta.borrador ? "Esta es una propuesta para revisar. Los torneos mantienen su precio actual y el entrenamiento sigue en prueba gratuita hasta que el club anuncie el lanzamiento." : "El entrenamiento continúa en prueba gratuita hasta que anunciemos el inicio de los planes. Consultá por la fecha de activación y los torneos incluidos."}</p><Link href="/membresia">Ya tengo membresía: consultar mi vigencia →</Link><a href="/imagenes/membresias-whatsapp-20261103-v2.png" download="membresias-atlantida.png">Descargar imagen para WhatsApp →</a><a href="/imagenes/membresias-instagram-20261103.png" download="membresias-instagram.png">Descargar imagen para Instagram →</a></section>
   </div>;
 }
