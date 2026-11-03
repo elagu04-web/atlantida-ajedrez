@@ -5,9 +5,9 @@ export const PRESENTACION_MEMBRESIAS = {
   torneo: 150,
   referenciaTorneos: 4,
   docentes: {
-    nombre: "Recursos para docentes",
+    nombre: "App de juegos para docentes",
     precio: 200,
-    descripcion: "Juegos y actividades para tus clases de ajedrez.",
+    descripcion: "Distintos juegos de ajedrez para usar en tus clases.",
   },
   planes: [
     { id: "club", nombre: "Club", precio: 400, bajada: "Para encontrarnos en el tablero.",
@@ -25,4 +25,8 @@ export function costoPorTorneo(precioMensual: number, torneos: number) {
 
 export function contactoPlan(nombre: string) {
   return `https://wa.me/59899861116?text=${encodeURIComponent(`Hola Agustín, quiero consultar por el plan ${nombre} de Atlántida Ajedrez.`)}`;
+}
+
+export function contactoPruebaDocente() {
+  return `https://wa.me/59899861116?text=${encodeURIComponent("Hola Agustín, quiero probar gratis la app de juegos para docentes.")}`;
 }

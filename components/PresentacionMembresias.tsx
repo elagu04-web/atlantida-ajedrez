@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Icono } from "./Icono";
-import { PRESENTACION_MEMBRESIAS as oferta, contactoPlan, costoPorTorneo } from "@/lib/presentacionMembresias";
+import { PRESENTACION_MEMBRESIAS as oferta, contactoPlan, contactoPruebaDocente, costoPorTorneo } from "@/lib/presentacionMembresias";
 import s from "./PresentacionMembresias.module.css";
 
 export function PresentacionMembresias() {
@@ -32,9 +32,9 @@ export function PresentacionMembresias() {
     </section>
 
     <section className={s.docentes} aria-labelledby="recursos-docentes">
-      <div className={s.docentesTexto}><p className={s.ceja}>PARA ENSEÑAR AJEDREZ</p><h2 id="recursos-docentes">{oferta.docentes.nombre}</h2><p>{oferta.docentes.descripcion}</p></div>
+      <div className={s.docentesTexto}><p className={s.ceja}>PARA ENSEÑAR AJEDREZ <span className={s.proximamente}>Próximamente</span></p><h2 id="recursos-docentes">{oferta.docentes.nombre}</h2><p>{oferta.docentes.descripcion}</p><p className={s.pruebaDocente}>¿Querés probarla gratis?</p></div>
       <div className={s.docentesPrecio}><strong>${oferta.docentes.precio}</strong><span>UYU<br/>por mes</span></div>
-      <a className="button-secondary" href={contactoPlan(oferta.docentes.nombre)} target="_blank" rel="noopener noreferrer">Consultar <Icono nombre="whatsapp"/></a>
+      <a className="button-secondary" href={contactoPruebaDocente()} target="_blank" rel="noopener noreferrer">Quiero probarla gratis <Icono nombre="whatsapp"/></a>
     </section>
 
     <section className={s.comparador} aria-labelledby="comparar-cuota">
@@ -48,6 +48,6 @@ export function PresentacionMembresias() {
 
     <div className={s.suelto}><Icono nombre="trofeo"/><div><strong>Torneo sin membresía</strong><p>Para venir a jugar de vez en cuando.</p></div><span><strong>${oferta.torneo}</strong> UYU por torneo</span></div>
     <section className={s.pasos} aria-label="Cómo sumarte"><h2>Nos escribís. Lo coordinamos.<br/><span>Y nos vemos en el tablero.</span></h2><div><p><b>01</b> Elegí tu plan</p><p><b>02</b> Consultá por WhatsApp</p><p><b>03</b> Confirmamos tu vigencia</p></div><a href={contactoPlan("membresías")} className="button-primary" target="_blank" rel="noopener noreferrer"><Icono nombre="whatsapp"/> Hablar con Agustín</a></section>
-    <section className={s.aclaraciones} aria-label="Sobre los planes"><p><strong>La misma cuenta, siempre.</strong> Tus partidas y tu progreso se conservan. La cuota se coordina con el club, sin débito automático.</p><p>{oferta.borrador ? "Esta es una propuesta para revisar. Los torneos mantienen su precio actual y el entrenamiento sigue en prueba gratuita hasta que el club anuncie el lanzamiento." : "El entrenamiento continúa en prueba gratuita hasta que anunciemos el inicio de los planes. Consultá por la fecha de activación y los torneos incluidos."}</p><Link href="/membresia">Ya tengo membresía: consultar mi vigencia →</Link><a href="/imagenes/membresias-whatsapp-20261103.png" download="membresias-atlantida.png">Descargar imagen para WhatsApp →</a><a href="/imagenes/membresias-instagram-20261103.png" download="membresias-instagram.png">Descargar imagen para Instagram →</a></section>
+    <section className={s.aclaraciones} aria-label="Sobre los planes"><p><strong>La misma cuenta, siempre.</strong> Tus partidas y tu progreso se conservan. La cuota se coordina con el club, sin débito automático.</p><p>{oferta.borrador ? "Esta es una propuesta para revisar. Los torneos mantienen su precio actual y el entrenamiento sigue en prueba gratuita hasta que el club anuncie el lanzamiento." : "El entrenamiento continúa en prueba gratuita hasta que anunciemos el inicio de los planes. Consultá por la fecha de activación y los torneos incluidos."}</p><Link href="/membresia">Ya tengo membresía: consultar mi vigencia →</Link><a href="/imagenes/membresias-whatsapp-20261103-v2.png" download="membresias-atlantida.png">Descargar imagen para WhatsApp →</a><a href="/imagenes/membresias-instagram-20261103.png" download="membresias-instagram.png">Descargar imagen para Instagram →</a></section>
   </div>;
 }

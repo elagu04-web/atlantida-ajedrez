@@ -10,6 +10,10 @@ También pidió mostrar el costo por torneo. Ambas piezas explican el ejemplo de
 
 ## Piezas
 
+Segunda versión del 3/11/2026, a pedido de Agustín para WhatsApp: tres tarifas principales en orden — torneos del mes $400, torneo suelto $150 y torneos con entrenamiento $550 — y debajo la app de juegos para docentes a $200/mes. El cartel «Próximamente» y la pregunta «¿Querés probarla gratis?» pertenecen al bloque docente. La prueba se solicita por WhatsApp; no habilita cuentas ni acceso de forma automática. La página conserva la protección privada de los juegos y el cobro no se activa con esta pieza.
+
+La imagen nueva es /imagenes/membresias-whatsapp-20261103-v2.png, en 1080 × 1350. Las versiones anteriores se conservan.
+
 Actualización del 3/11/2026: Agustín pidió un espacio adicional «Recursos para docentes» a $200 UYU mensuales. Se presenta como opción independiente, con juegos y actividades para las clases; no se le calcula un costo por torneo ni se promete inscripción incluida. Se incorpora en la página, en la invitación de la portada y en las imágenes de WhatsApp e Instagram. La presentación conserva el estado «Próximamente» y no modifica permisos privados de clases ni activa cobros.
 
 Las descargas vigentes se publican con fecha 20261103 para evitar que el navegador reutilice la imagen anterior. Instagram conserva 1080 × 1350; WhatsApp pasa a 1080 × 1620 para dar espacio al bloque docente.
