@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import Link from 'next/link';
 import { Chessboard } from 'react-chessboard';
+import { MarcoTablero } from './MarcoTablero';
 import type { PartidaOnline } from '@/lib/partidaOnline';
 import { recorridoOnline } from '@/lib/recorridoOnline';
 import { descargarOnline } from '@/lib/juegoOnline';
@@ -49,7 +50,7 @@ export function VisorPartidaOnline({ partida, color, volver }: { partida: Partid
   }, [indice]);
 
   return <section className={styles.visor} aria-label="Revisar partida online">
-    <div className={styles.mesa}>
+    <MarcoTablero reserva={290} nombre="tablero de revisión"><div className={styles.mesa}>
       <div className={styles.jugadores}><span>{girado ? color === 'w' ? e.blancas : e.negras : color === 'w' ? e.negras : e.blancas}</span><strong>{e.resultado}</strong></div>
       {recorrido ? <>
         <div className={`${styles.tablero} play-board`}><Chessboard options={{
@@ -68,7 +69,7 @@ export function VisorPartidaOnline({ partida, color, volver }: { partida: Partid
         <label className={styles.progreso}><span aria-live={auto ? 'off' : 'polite'}>{jugada?.texto ?? 'Posición inicial'}<small>{indice}/{ultimo}</small></span><input type="range" aria-label="Elegir jugada de la partida online" min={0} max={ultimo} value={indice} disabled={!ultimo} onChange={ev => ir(Number(ev.target.value))} /></label>
       </> : <p role="alert">No pudimos reconstruir las jugadas. Podés descargar el PGN para revisar la partida.</p>}
       <div className={styles.pieMesa}><span>{girado ? color === 'w' ? e.negras : e.blancas : color === 'w' ? e.blancas : e.negras}</span><button onClick={() => setGirado(v => !v)}>Girar tablero ↻</button></div>
-    </div>
+    </div></MarcoTablero>
     <aside className={styles.resumen}>
       <p className={styles.sello}>Tu partida, jugada a jugada</p><h2>{e.blancas} <span>contra</span> {e.negras}</h2>
       <p className={styles.resultado}><strong>{e.resultado}</strong><span>{e.motivo}</span></p>

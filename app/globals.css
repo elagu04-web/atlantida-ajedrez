@@ -857,3 +857,9 @@ button:not(:disabled), summary { cursor: pointer; }
 .puzzle-logro{grid-column:1/-1;min-width:0}
 .puzzle-logro>[data-desafio-logrado]{margin:0}
 @media(min-width:901px){.puzzle-layout[data-logrado=true]{--play-board-size:clamp(180px,calc(100dvh - 450px),620px)}}
+
+/* El tablero ajustable usa dimensiones reales; nunca zoom/transform sobre sus casillas. */
+.play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]){grid-template-columns:minmax(0,1fr) minmax(270px,340px);height:auto;grid-template-rows:auto auto;align-items:start}
+.play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]) .play-table{width:100%;max-width:100%;margin-inline:0}
+.play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]) .play-sidebar{height:auto;max-height:none}
+@media(max-width:900px){.play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]){grid-template-columns:minmax(0,1fr)}.play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]) .play-table{width:100%;max-width:100%}}

@@ -8,6 +8,7 @@ export const ARTES_CLASE:Record<string,ArteTarjetaClase>={
  cuatro:{acento:'#e4c487',habilidad:'LÍNEAS · PLANIFICACIÓN',lema:'Cuatro piezas, un mismo plan.'},
  dados:{acento:'#ecc295',habilidad:'AZAR · DECISIONES',lema:'Tirá. Elegí. Sorprendé.'},
  cartas:{acento:'#bdb1ef',habilidad:'ESTRATEGIA · PODERES',lema:'Una carta cambia la partida.'},
+ suerte:{acento:'#dfc388',habilidad:'AZAR · DECISIONES',lema:'Una carta. Tu próxima jugada.'},
  dragon:{acento:'#83c8b9',habilidad:'FANTASÍA · MOVIMIENTOS',lema:'Un nuevo poder entra al tablero.'},
  rey:{acento:'#e4bd7b',habilidad:'ATAQUE · CAPTURAS',lema:'El rey también puede caer.'},
  todas:{acento:'#e0ad9c',habilidad:'CAPTURAS · PLANIFICACIÓN',lema:'Hasta la última pieza.'},

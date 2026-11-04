@@ -1,4 +1,9 @@
 /* Atlántida's own presentation layer. Gameplay colors and illustrations retain their meaning. */
+body .fortune-public{background:linear-gradient(120deg,#1b3048,#132236);border-color:#dfc48840}
+body .fortune-live-copy strong{color:#ead3a5}
+body .fortune-live-copy>span,body .fortune-live-copy small{color:#b8ccdf}
+body .fortune-live-copy .fortune-deck-count{color:#92abc5}
+body .fortune-live-copy .fortune-army-summary{color:#dbc18d}
 @font-face{font-family:Geist;src:url('/fuentes/geist-latin.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
 :root{--paper:#080f1b;--ink:#f0f4fa;--muted:#a2b0c3;--green:#80a7f7;--line:#27374c;--gold:#dfc488;--light:#f0e6ce;--dark:#638480;--mesa-panel:#111e2e;--mesa-elevated:#182a40;--mesa-blue:#3268d7;--mesa-soft:#99b4d4;color-scheme:dark}
 html{min-height:100%;scrollbar-color:#354b66 #080f1b}
