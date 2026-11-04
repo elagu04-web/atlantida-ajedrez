@@ -11,6 +11,39 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "torneo-3-noviembre-caras-nuevas-fonchi-campeon",
+  titulo: "Caras nuevas, buenas partidas y Fonchi imparable",
+  tituloTarjeta: "Noviembre arrancó con caras nuevas",
+  bajada: "Once jugadores, cinco rondas y varios nuevos que se sumaron al club. Una noche muy entretenida que terminó con Fonchi campeón con puntaje perfecto.",
+  categoria: "Vida del club",
+  fecha: "2026-11-04",
+  imagen: "/imagenes/torneo-3-noviembre-2026-cristian.jpg",
+  imagenAlt: "Cristian González frente al tablero durante el torneo del 3 de noviembre en Atlántida Ajedrez",
+  imagenPosicion: "50% 42%",
+  imagenVertical: true,
+  imagenAspecto: "3 / 4",
+  imagenAncho: 840,
+  imagenCalidad: 90,
+  imagenSinCompresion: true,
+  pieFoto: "Cristian, una de las caras nuevas que se sumaron al torneo del martes.",
+  parrafos: [
+    "Ayer arrancamos noviembre con un torneo muy entretenido y algo que nos alegra mucho: **vinieron varios nuevos a jugar**. Fuimos once, mezclando a los habituales con quienes se sumaban por primera vez. Qué lindo ver que el grupo sigue creciendo.",
+    "Se sumaron **Cristian González, Agustín Núñez, Agustín Baudry y Ezequiel Núñez**. ¡Bienvenidos! Gracias por venir a compartir la jornada. Ya tenemos dos Agustines más, así que cuando alguien diga «te toca, Agustín» vamos a tener que empezar a aclarar el apellido.",
+    "Jugamos **cinco rondas por sistema suizo, a ritmo 10+5**. Entre las caras nuevas y los cruces con los de siempre, salió una linda noche de ajedrez. De esas en las que se compite con ganas y se pasa bien frente al tablero.",
+    "Y en medio de todo eso, **Fonchi se llevó el torneo con 5 puntos en 5 partidas**. Ganó las cinco, sin dejar ni medio punto por el camino. Parece que lo de compartir era solamente el rato. ¡Felicitaciones, campeón!",
+    "**Juan Diego Montenegro terminó segundo con 4 puntos**, con cuatro victorias en cinco partidas. Ale Visi y Agustín Núñez cerraron con 3 puntos cada uno. Buen arranque para Agustín en su primer torneo con nosotros, y Cristian también se llevó dos victorias y unas tablas.",
+    "Gracias a todos los que vinieron, a los que están siempre y a los que se animaron por primera vez. **Nos quedamos con las buenas partidas y con más gente para la próxima.** Ahora falta que alguno encuentre cómo hacerle soltar un punto a Fonchi.",
+    "[Mirá todos los resultados del torneo del 3 de noviembre](https://atlantida-ajedrez.vercel.app/torneos/2beddf7f-ee6c-4366-b251-4696a1fe9a50) y [cómo arrancó la tabla de noviembre](https://atlantida-ajedrez.vercel.app/estadisticas)."
+  ],
+  galeria: [{
+    imagen: "/imagenes/torneo-3-noviembre-2026-agustin-nunez.jpg",
+    alt: "Agustín Núñez concentrado frente al tablero, con otras partidas del torneo al fondo",
+    pie: "Agustín Núñez, concentrado en una de sus partidas. Terminó con tres victorias.",
+    ancho: 1200,
+    alto: 1600,
+    maxAncho: 720
+  }]
+}, {
   slug: "sabados-ajedrez-ludoarte-epico-atlantida",
   titulo: "Los sábados también nos encontramos para aprender ajedrez",
   tituloTarjeta: "Los sábados, vení a aprender ajedrez",
