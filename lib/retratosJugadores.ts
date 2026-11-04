@@ -5,6 +5,7 @@ const bucket = "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/publi
 const fotoRegistrada = (id: string, version: string) => `${bucket}${id}.png?v=${version}`;
 
 const preparados: Record<string, Preparado> = {
+  "3059d6c3-44f3-49f7-8b57-8156cae5d0f0": { archivo: "/imagenes/retratos/ismael-gonzalez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ismael-gonzalez-tablero-20261103-miniatura.webp" },
   "171197d2-fa9e-4a6a-ac3e-3139fbc7ff62": { archivo: "/imagenes/retratos/agustin-nunez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/agustin-nunez-tablero-20261103-miniatura.webp" },
   "3e6c34fb-23a2-4a15-8de0-009cf51493db": { archivo: "/imagenes/retratos/cristian-gonzalez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/cristian-gonzalez-tablero-20261103-miniatura.webp" },
   "20237542-c3f6-4ba4-8400-e9eb3b438101": { archivo: "/imagenes/retratos/agustin-baudry-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/agustin-baudry-tablero-20261103-miniatura.webp" },
@@ -15,7 +16,7 @@ const preparados: Record<string, Preparado> = {
   "49441026-0a70-4e0c-904c-8022c4a5fa3a": { archivo: "/imagenes/retratos/lara-transparente.webp", fotoRegistrada: null },
   "2cba15cf-586b-420b-a144-de5ee6d85031": { archivo: "/imagenes/retratos/camilo-tablero-20261027-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/camilo-tablero-20261027-transparente.webp" },
   "db7d23fa-0254-4d6a-91ac-9eb9b41c5c76": { archivo: "/imagenes/retratos/fernando-tablero-20261027-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/fernando-tablero-20261027-transparente.webp" },
-  "97fa10ca-29a9-4db7-8061-e39414e0c65f": { archivo: "/imagenes/retratos/jorge-transparente.webp", fotoRegistrada: fotoRegistrada("97fa10ca-29a9-4db7-8061-e39414e0c65f", "1787717166033"), pixel: true },
+  "97fa10ca-29a9-4db7-8061-e39414e0c65f": { archivo: "/imagenes/retratos/jorge-franquez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/jorge-franquez-tablero-20261103-miniatura.webp" },
   "44970cf2-4a55-4b9f-93b0-9c9c59ef2557": { archivo: "/imagenes/retratos/juan-diego-tablero-20261027-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/juan-diego-tablero-20261027-transparente.webp" },
   "0d188c7b-c5b7-4e75-852b-9a5d17379fdb": { archivo: "/imagenes/retratos/victor-tablero-20261027-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/victor-tablero-20261027-transparente.webp" },
   "f9cd88c1-b14f-4755-8d3d-90de781ea7d9": { archivo: "/imagenes/retratos/yamandu-foto-20261027-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/yamandu-foto-20261027-transparente.webp" },
