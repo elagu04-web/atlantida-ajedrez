@@ -5,6 +5,7 @@ const bucket = "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/publi
 const fotoRegistrada = (id: string, version: string) => `${bucket}${id}.png?v=${version}`;
 
 const preparados: Record<string, Preparado> = {
+  "3e6c34fb-23a2-4a15-8de0-009cf51493db": { archivo: "/imagenes/retratos/cristian-gonzalez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/cristian-gonzalez-tablero-20261103-miniatura.webp" },
   "20237542-c3f6-4ba4-8400-e9eb3b438101": { archivo: "/imagenes/retratos/agustin-baudry-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/agustin-baudry-tablero-20261103-miniatura.webp" },
   "67c27aa0-dda6-4825-a18c-9d5ee7c90c10": { archivo: "/imagenes/retratos/ernesto-blanco-tablero-20261101-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ernesto-blanco-tablero-20261101-transparente.webp" },
   "d1c933d4-197b-434a-924c-d404421e02a6": { archivo: "/imagenes/retratos/gabi-transparente.webp", fotoRegistrada: fotoRegistrada("d1c933d4-197b-434a-924c-d404421e02a6", "1788282055680") },
