@@ -1,6 +1,7 @@
 "use client";
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
+import {useSearchParams} from 'next/navigation';
 import {useAuth} from '@/context/AuthContext';
 import {supabase} from '@/lib/supabase';
 import {pedirOnline,listarOnline,leerMiEloClub,ErrorOnline,type RespuestaOnline,type PerfilEloClub} from '@/lib/juegoOnline';
@@ -26,7 +27,10 @@ export function SalaOnline(){
 }
 function SalaCuenta({usuario}:{usuario:string}){
  const identidad=useMiJugador();
- const [mesas,setMesas]=useState<PartidaOnline[]>([]),[partida,setPartida]=useState<PartidaOnline|null>(null),[id,setId]=useState<string|null>(()=>{if(typeof window==='undefined')return null;const q=new URLSearchParams(window.location.search).get('mesa');return q&&uuid.test(q)?q:null;});
+ const parametros=useSearchParams(),mesaSolicitada=parametros.get('mesa');
+ // Next Link and the History API can change only the query without remounting.
+ const id=mesaSolicitada&&uuid.test(mesaSolicitada)?mesaSolicitada:null;
+ const [mesas,setMesas]=useState<PartidaOnline[]>([]),[partida,setPartida]=useState<PartidaOnline|null>(null);
  const [ritmo,setRitmo]=useState<RitmoOnline>('5+3'),[color,setColor]=useState('azar'),[codigo,setCodigo]=useState('');
  const [porElo,setPorElo]=useState(false),[perfilElo,setPerfilElo]=useState<PerfilEloClub|null>(null);
  const [error,setError]=useState(''),[aviso,setAviso]=useState(''),[ocupado,setOcupado]=useState(false),[cargando,setCargando]=useState(true),[sincronizado,setSincronizado]=useState(false);
@@ -92,8 +96,8 @@ function SalaCuenta({usuario}:{usuario:string}){
   if(ultimoSonido.current.startsWith(partida.id+':')&&ultimoSonido.current!==clave)audio.current?.golpe();
   ultimoSonido.current=clave;
  },[partida]);
- const abrir=useCallback((p:PartidaOnline)=>{pendiente.current=null;setVistaPendiente(null);relojValidado.current=false;setIncierta(false);setError('');setAviso('');setSincronizado(false);aceptar(p);setId(p.id);window.history.replaceState(null,'','/jugar/online?mesa='+p.id);audio.current?.activar();},[aceptar]);
- function volver(){setId(null);actual.current=null;setPartida(null);pendiente.current=null;setVistaPendiente(null);relojValidado.current=false;setIncierta(false);setError('');window.history.replaceState(null,'','/jugar/online');void cargarMesas();}
+ const abrir=useCallback((p:PartidaOnline)=>{pendiente.current=null;setVistaPendiente(null);relojValidado.current=false;setIncierta(false);setError('');setAviso('');setSincronizado(false);aceptar(p);window.history.replaceState(null,'','/jugar/online?mesa='+p.id);audio.current?.activar();},[aceptar]);
+ function volver(){actual.current=null;setPartida(null);pendiente.current=null;setVistaPendiente(null);relojValidado.current=false;setIncierta(false);setError('');window.history.replaceState(null,'','/jugar/online');void cargarMesas();}
  const crear=useCallback(async()=>{
   if(enVuelo.current)return;enVuelo.current=true;setOcupado(true);setError('');audio.current?.activar();const inicio=performance.now();
   try{const r=await pedirOnline('crear',{id:crypto.randomUUID(),ritmo,color,porElo});if(viva.current){abrir(r.partida);respuesta(r,inicio);}}catch(e){if(viva.current)setError(e instanceof Error?e.message:'No se pudo crear la mesa.');}finally{enVuelo.current=false;if(viva.current)setOcupado(false);}

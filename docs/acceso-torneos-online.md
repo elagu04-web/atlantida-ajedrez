@@ -1,5 +1,13 @@
 # Acceso a la mesa de un torneo
 
+## Corrección del 6 de noviembre de 2026
+
+La mesa seleccionada se lee con `useSearchParams`, dentro de un límite `Suspense`, para responder a los enlaces de Next y a los cambios del historial sin recargar ni abrir otra pestaña. Antes se copiaba la consulta únicamente al montar el componente, por lo que «Entrar a mi mesa» cambiaba la dirección pero dejaba visible la sala anterior.
+
+Cuando termina una partida, el visor abre en la última posición y mantiene el resultado junto al tablero. No vuelve automáticamente a la posición inicial; el usuario recorre las jugadas y decide cuándo volver a sus mesas. No se modifican relojes, resultados, emparejamientos ni Elo.
+
+Verificación: pruebas de navegación en la misma instancia (sala → mesa, cambio de mesa, vuelta a la sala y código inválido) y prueba de transición a jaque mate con navegación del visor. Compilación de producción y lint de los componentes modificados.
+
 La sala online muestra primero los cruces de la cuenta en los torneos en curso. Cada tarjeta usa exclusivamente la ronda actual, el rival, el color y el ritmo configurados por la organización. Si existe partida, abre su tablero; si todavía no se creó, lleva a la preparación dentro del torneo. Un descanso no inventa un rival y una partida terminada conserva su acceso al visor.
 
 Las invitaciones independientes están dentro de «Crear o aceptar una partida suelta · fuera del torneo». Ese flujo no registra puntos en el torneo. No se mezclan mesas por coincidencia de nombres ni se vinculan partidas retrospectivamente desde el cliente.
