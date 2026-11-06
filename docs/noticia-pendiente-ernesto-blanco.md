@@ -1,5 +1,11 @@
 # Noticia pendiente: Ernesto Blanco en el Sudamericano
 
+## Cierre y publicación autorizada
+
+Resultados finales verificados el 6 de noviembre de 2026: Blanco, Rudemar Ernesto, FIDE 3011321, terminó con 3 puntos en nueve rondas (dos victorias, dos tablas, cinco derrotas), puesto 75. Fuente: https://s4.chess-results.com/tnr1499042.aspx?lan=2&art=9&fed=URU&turdet=YES&flag=30&snr=75 . La clasificación oficial quedó actualizada el 5 de noviembre a las 19:10:43. Se menciona solamente el Absoluto clásico.
+
+Agustín aprobó el borrador con «Subela» el 6 de noviembre. Noticia incorporada con slug `ernesto-blanco-sudamericano-2026` y fotografía `public/imagenes/ernesto-blanco-sudamericano-2026.jpg`, recortada de la imagen facilitada para excluir la interfaz de Instagram. El seguimiento automático ya fue eliminado.
+
 Pedido de Agustín, 1 de noviembre de 2026: añadir la fotografía de Ernesto a su perfil y esperar a que termine el torneo antes de hacer una noticia contando que representó al club Atlántida Ajedrez. No publicar una noticia con resultados parciales.
 
 Jugador del club: **Blanco Ernesto Rudemar**, ID `67c27aa0-dda6-4825-a18c-9d5ee7c90c10`. En la inscripción internacional puede aparecer como **Blanco, Rudemar Ernesto**, FIDE **3011321**; comprobar esa identidad en la fuente oficial antes de asignar resultados.

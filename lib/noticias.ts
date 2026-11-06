@@ -11,6 +11,26 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "ernesto-blanco-sudamericano-2026",
+  titulo: "Ernesto nos representó en el Sudamericano",
+  bajada: "Ernesto Blanco llevó el ajedrez de Atlántida al Sudamericano Absoluto de Montevideo. Nueve rondas, dos victorias y dos tablas para compartir después en el club.",
+  categoria: "Orgullo del club",
+  fecha: "2026-11-06",
+  imagen: "/imagenes/ernesto-blanco-sudamericano-2026.jpg",
+  imagenAlt: "Ernesto Blanco concentrado frente al tablero durante el Campeonato Sudamericano de Ajedrez en Montevideo",
+  imagenPosicion: "50% 40%",
+  imagenVertical: true,
+  imagenAspecto: "945 / 1258",
+  imagenAncho: 720,
+  imagenCalidad: 90,
+  imagenSinCompresion: true,
+  pieFoto: "Ernesto Blanco, de Atlántida Ajedrez, en el Sudamericano de Montevideo.",
+  parrafos: [
+    "Ernesto Blanco, de nuestro club Atlántida Ajedrez, estuvo jugando el Campeonato Sudamericano Absoluto en Montevideo, del 30 de octubre al 5 de noviembre.",
+    "Fueron nueve rondas de ajedrez clásico. Ernesto sumó **3 puntos, con dos victorias y dos tablas**. Después de un arranque difícil, consiguió ganar dos partidas seguidas y cerró el torneo con unas tablas.",
+    "Nos alegra mucho ver a un compañero del club animarse a jugar estos torneos y llevar el ajedrez de Atlántida a otras mesas. ¡Felicitaciones, Ernesto! Cuando vuelvas al club, habrá que mirar alguna de esas partidas juntos."
+  ]
+}, {
   slug: "torneo-3-noviembre-caras-nuevas-fonchi-campeon",
   titulo: "Caras nuevas, buenas partidas y Fonchi imparable",
   tituloTarjeta: "Noviembre arrancó con caras nuevas",
