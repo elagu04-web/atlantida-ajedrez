@@ -25,3 +25,6 @@ Las convocatorias históricas se distinguen de la agenda actual. No se convierte
 ## Uso y verificación
 
 Buscador sin distinguir tildes, filtros por año y tema, opción con imágenes, orden cronológico y carga de 24 entradas por tanda. El estado de los filtros está en la dirección, para poder compartir una búsqueda y volver con la navegación del navegador. Las imágenes se cargan de forma diferida y el movimiento de portada respeta `prefers-reduced-motion`.
+
+
+A pedido de Agustín, el archivo usa una estética propia de papel en tonos sepia, tinta marrón y tipografía editorial. Las fotos mantienen su color: sin filtros de sepia, desaturación ni escala de grises. La cabecera general del sitio conserva la identidad azul.
