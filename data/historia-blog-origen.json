@@ -1,0 +1,47 @@
+{
+  "fuente": "https://ajedrezenlifa.blogspot.com/",
+  "fechaRecuperacion": "2026-11-09",
+  "publicaciones": 403,
+  "porAnio": {
+    "2010": 26,
+    "2011": 29,
+    "2012": 85,
+    "2013": 97,
+    "2014": 52,
+    "2015": 43,
+    "2016": 17,
+    "2017": 2,
+    "2018": 10,
+    "2019": 14,
+    "2020": 19,
+    "2021": 3,
+    "2022": 3,
+    "2023": 3
+  },
+  "imagenes": 482,
+  "imagenesRecuperadas": 371,
+  "imagenesNoDisponibles": 111,
+  "publicacionesSinTitulo": 20,
+  "paginaSolicitada": {
+    "url": "https://ajedrezenlifa.blogspot.com/search?updated-max=2020-09-30T08:54:00-07:00&max-results=16",
+    "publicaciones": [
+      "https://ajedrezenlifa.blogspot.com/2020/09/reinicia-el-taller-semanal-en-el.html",
+      "https://ajedrezenlifa.blogspot.com/2020/09/video-uruguayo-ganador-de-un-concurso.html",
+      "https://ajedrezenlifa.blogspot.com/2020/09/encuentro-ajedrez-en-la-plaza-varela.html",
+      "https://ajedrezenlifa.blogspot.com/2020/05/abierto-blitz-online-domingo-24-de-mayo.html",
+      "https://ajedrezenlifa.blogspot.com/2020/04/match-costero-entre-peones-pasados-y.html",
+      "https://ajedrezenlifa.blogspot.com/2020/04/articulo-de-ultimas-noticias-del-12-de.html",
+      "https://ajedrezenlifa.blogspot.com/2020/03/torneo-atlantida-cancelado.html",
+      "https://ajedrezenlifa.blogspot.com/2020/03/abierto-atlantida-14-y-15-de-marzo.html",
+      "https://ajedrezenlifa.blogspot.com/2020/02/encuentro-de-arbitros-en-atlantida.html",
+      "https://ajedrezenlifa.blogspot.com/2020/02/guillermo-carvalho-clasificado-la-final.html",
+      "https://ajedrezenlifa.blogspot.com/2020/02/torneo-abierto-atlantida-alojados-en-el.html",
+      "https://ajedrezenlifa.blogspot.com/2020/01/torneo-abierto-atlantida-marzo-2020.html",
+      "https://ajedrezenlifa.blogspot.com/2019/12/alvaro-miranda-primer-puesto-categoria.html",
+      "https://ajedrezenlifa.blogspot.com/2019/11/torneo-abierto-atlantida-hotel.html",
+      "https://ajedrezenlifa.blogspot.com/2019/10/torneo-nacional-amateur-en-atlantida.html",
+      "https://ajedrezenlifa.blogspot.com/2019/09/torneo-amateur-atlantida-menu-de-cantina.html"
+    ],
+    "incluidas": true
+  }
+}

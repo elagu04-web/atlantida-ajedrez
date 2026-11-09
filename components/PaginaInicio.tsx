@@ -17,6 +17,7 @@ import { PrimeraVisitaClub } from "@/components/PrimeraVisitaClub";
 import { CompartirInvitacion } from "@/components/CompartirInvitacion";
 import { MovimientoPortada, CaballoPortada } from "@/components/MovimientoPortada";
 import { InvitacionMembresias } from "@/components/InvitacionMembresias";
+import { InvitacionHistoria } from "@/components/InvitacionHistoria";
 export function PaginaInicio() {
   const jugadores=useJugadoresEnVivo();
   const {cargando:cargandoJugadores,errorCarga:errorJugadores}=useJugadores();
@@ -57,6 +58,7 @@ export function PaginaInicio() {
       <div className="flex flex-col gap-4"><Link href="/transmision" className="broadcast-card group"><span className="feature-icon mb-6"><Icono nombre="directo" /></span><p className="eyebrow text-blue-300">Primera fila</p><h2>La partida,<br />en directo.</h2><p className="mt-3 max-w-xs text-sm leading-relaxed text-zinc-400">Seguí el tablero, las jugadas y el análisis de la transmisión del club.</p><span className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-blue-200">Abrir transmisión<Icono nombre="flecha" className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span></Link><Link href="/estadisticas" className="panel flex items-center gap-4 p-5 transition-colors hover:border-blue-400/40"><span className="feature-icon"><Icono nombre="grafico" /></span><span className="flex-1"><span className="block font-semibold">Más allá del resultado</span><span className="mt-1 block text-xs text-zinc-400">Evolución de Elo, rendimiento y campeones.</span></span><Icono nombre="flecha" className="h-4 w-4 text-zinc-400" /></Link></div>
     </div>
     <PrimeraVisitaClub/>
+    <InvitacionHistoria/>
     <div className="club-metrics">{[
       {valor:jugadores.length,texto:"Jugadores en el club",icono:"personas"},
       {valor:torneos.length,texto:"Torneos registrados",icono:"trofeo"},
