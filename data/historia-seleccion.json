@@ -1,0 +1,970 @@
+{
+  "fecha": "2026-11-09",
+  "criterio": "Historia del club, sus encuentros, talleres, torneos, trabajo de sus integrantes y participaciones documentadas fuera de Atlántida.",
+  "originales": 403,
+  "publicadas": 268,
+  "retiradas": [
+    {
+      "id": "4346307994294788631",
+      "titulo": "Video uruguayo ganador de un concurso de la cadena Al Jazeera",
+      "fecha": "2020-09-26",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2020/09/video-uruguayo-ganador-de-un-concurso.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1079468744591168625",
+      "titulo": "Torneo en Pando",
+      "fecha": "2019-07-02",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2019/07/blog-post.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "2403340912763075875",
+      "titulo": "Comunicado 3/2019 Creación de la figura de Socio Federado y nuevo Portal Web",
+      "fecha": "2019-02-15",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2019/02/comunicado-32019-creacion-de-la-figura.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6468694114208818210",
+      "titulo": "Canelones al podio",
+      "fecha": "2018-08-26",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2018/08/canelones-al-podio.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1159071934692081632",
+      "titulo": "Comunicado 15/2018: Curso válido para norma de Árbitro FIDE, Árbitro Nacional y Árbitro Asistente",
+      "fecha": "2018-07-30",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2018/07/comunicado-152018-curso-valido-para.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "8846726018901751909",
+      "titulo": "Comunicado 3/2016: Segundo curso de árbitros por internet de la Federación Uruguaya de Ajedrez en la plataforma de Educantel",
+      "fecha": "2016-03-08",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2016/03/comunicado-32016-segundo-curso-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "141530499684228669",
+      "titulo": "Anexo Comunicado 24/2015: Cambio de Fecha Curso de Fide Trainer Viernes 12 al domingo 14 de febrero del 2016 en Montevideo.",
+      "fecha": "2016-01-07",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2016/01/anexo-comunicado-242015-cambio-de-fecha.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "862803030813024864",
+      "titulo": "Calendario de eventos ajedrecísticos para noviembre y diciembre",
+      "fecha": "2015-10-15",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/10/calendario-de-eventos-ajedrecisticos.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5327983542802437550",
+      "titulo": "Calendario oficial de torneos nacionales FUA 2016",
+      "fecha": "2015-10-14",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/10/calendario-oficial-de-torneos.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "7532187424460854672",
+      "titulo": "Comunicado 20/2015: Bases y Reglamento Torneo Interdepartamental por Equipos 2015",
+      "fecha": "2015-09-09",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/09/comunicado-202015-bases-y-reglamento.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5148541218351518577",
+      "titulo": "Elo Fua Setiembre 2015",
+      "fecha": "2015-09-01",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/09/elo-fua-setiembre-2015.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5154040702769987290",
+      "titulo": "Comunicado 18/2015: Período de Pases Extraordinario desde el 10 al 20 de agosto.",
+      "fecha": "2015-08-11",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/08/comunicado-182015-periodo-de-pases.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "8699101708084135387",
+      "titulo": "Comunicado 19/2015 Campeonato Nacional Interclubes Punta del Este 21 al 23 de agosto",
+      "fecha": "2015-08-11",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/08/comunicado-192015-campeonato-nacional.html",
+      "motivo": "Convocatoria o reglamento general de un torneo externo. Se conservan las crónicas y partidas que sí documentan la participación de integrantes del club."
+    },
+    {
+      "id": "5653431097888708963",
+      "titulo": "Comunicado 16/2015: Finales Nacionales Torneo Educación Media 2015",
+      "fecha": "2015-07-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/07/comunicado-162015-finales-nacionales.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "284002517755328073",
+      "titulo": "XXIV Campeonato Nacional Interclubes en la Ciudad de Punta del Este",
+      "fecha": "2015-06-21",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/06/xxiv-campeonato-nacional-interclubes-en.html",
+      "motivo": "Convocatoria o reglamento general de un torneo externo. Se conservan las crónicas y partidas que sí documentan la participación de integrantes del club."
+    },
+    {
+      "id": "8461783631187207528",
+      "titulo": "Comunicado 10/2015 Festival Nacional de la Juventud en el Club Banco República",
+      "fecha": "2015-05-20",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/05/comunicado-102015-festival-nacional-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5575546393733240327",
+      "titulo": "Comunicado 7/2015: Primer curso de árbitros por internet de la Federación Uruguaya de Ajedrez en la plataforma de Educantel",
+      "fecha": "2015-04-14",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/04/comunicado-72015-primer-curso-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "2516365935888481507",
+      "titulo": "Comunicado 4/2015: 1er.Congreso de Ajedrez de la FUA \"Proyección del Ajedrez Uruguayo 2020\"",
+      "fecha": "2015-02-17",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2015/02/comunicado-42015-1ercongreso-de-ajedrez.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "8745564184740240942",
+      "titulo": "V Torneo Ajedrez UdelaR",
+      "fecha": "2014-11-22",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/11/blog-post.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1438365148807486362",
+      "titulo": "Próximos eventos del ajedrez popular",
+      "fecha": "2014-10-04",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/10/proximos-eventos-del-ajedrez-popular.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "8359020908076122979",
+      "titulo": "ZERDEJA (aprendiendo ajedrez al revés)",
+      "fecha": "2014-09-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/09/zerdeja-aprendiendo-ajedrez-al-reves.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "5314023552607284214",
+      "titulo": "XV Encuentro de Ajedrez Escolar",
+      "fecha": "2014-09-24",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/09/xv-encuentro-de-ajedrez-escolar.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1342978070967619100",
+      "titulo": "Imágenes del Sudamericano Blitz de la Juventud 2014",
+      "fecha": "2014-09-23",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/09/imagenes-del-sudamericano-blitz-de-la.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "2389480360587806998",
+      "titulo": "Campeonato Uruguayo Blitz \"MF Ing. José Bademián\"",
+      "fecha": "2014-08-18",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/08/campeonato-uruguayo-blitz-mf-ing-jose.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "8382114924800545295",
+      "titulo": "Comunicado 16/2014 Campeonato Nacional Interclubes Punta del Este 23 al 25 de agosto",
+      "fecha": "2014-08-14",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/08/comunicado-162014-campeonato-nacional.html",
+      "motivo": "Convocatoria o reglamento general de un torneo externo. Se conservan las crónicas y partidas que sí documentan la participación de integrantes del club."
+    },
+    {
+      "id": "7238564159482968301",
+      "titulo": "Encuentro Departamental de Ajedrez Maldonado 4 de Agosto de 2014 en imágenes..",
+      "fecha": "2014-08-11",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/08/encuentro-departamental-de-ajedrez.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1627583875072781036",
+      "titulo": "Comunicado 13/2014 Firma del Convenio FUA - UDELAR",
+      "fecha": "2014-07-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/07/comunicado-132014-firma-del-convenio.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "2096724689186521300",
+      "titulo": "Comunicado 13/2014 Festival Sudamericano de la Juventud",
+      "fecha": "2014-06-25",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/06/comunicado-132014-festival-sudamericano.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "7219744450844222573",
+      "titulo": "Campeonato Nacional de Categorías sub 18 a sub 8 en Montevideo",
+      "fecha": "2014-05-31",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/05/campeonato-nacional-de-categorias-sub.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5038703128081766971",
+      "titulo": "Cursos de Ajedrez online para todos los niveles",
+      "fecha": "2014-05-07",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/05/cursos-de-ajedrez-online-para-todos-los.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4171849706017554571",
+      "titulo": "Comunicado 6/2014: Campeonato Nacional de Categorías Infantiles. Nuevo Reglamento",
+      "fecha": "2014-03-23",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/03/comunicado-62016-campeonato-nacional-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "420231830117846929",
+      "titulo": "Comunicado 5/2014 Final del Campeonato Uruguayo Femenino Absoluto desde el 27 al 30 de marzo",
+      "fecha": "2014-03-18",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/03/comunicado-52014-final-del-campeonato.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6833224150873154645",
+      "titulo": "Video Chess Private Lessons de Al Jazeera",
+      "fecha": "2014-03-10",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/03/video-chess-private-lessons-de-al.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4822423329393625670",
+      "titulo": "Falleció nuestro querido amigo el A.I. Horacio Arévalo",
+      "fecha": "2014-02-27",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/02/fallecio-nuestro-querido-amigo-el-ai.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "369000981477790730",
+      "titulo": "Comunicado 2/2014 Nuevos afiliados a la Federación Uruguaya de Ajedrez",
+      "fecha": "2014-02-24",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/02/comunicado-22014-nuevos-afiliados-la.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6929189774444896506",
+      "titulo": "Carlsen le gana a Bill Gates en 79 segundos",
+      "fecha": "2014-01-26",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2014/01/carlsen-le-gana-bill-gates-en-79.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "1225118318834004927",
+      "titulo": "Comunicado 29/2013 Nuevas Autoridades de la Federación Uruguaya de Ajedrez",
+      "fecha": "2013-12-27",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/12/comunicado-292013-nuevas-autoridades-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4607545594441760126",
+      "titulo": "Comunicado 28/2013 Asamblea General Ordinaria de la FUA",
+      "fecha": "2013-12-13",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/12/comunicado-282013-asamblea-general.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5215248556604693209",
+      "titulo": "Torneo Ajedrez Udelar el próximo domingo",
+      "fecha": "2013-11-25",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/11/torneo-ajedrez-udelar-el-proximo-domingo.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5783791782741131736",
+      "titulo": "9 de Nobiembre: Torneo Blitz por parejas en el Club Banco República",
+      "fecha": "2013-10-30",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/10/9-de-nobiembre-torneo-blitz-por-parejas.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5255634284637004312",
+      "titulo": "Seminario de Investigación en Ajedrez - Udelar - Miércoles 30 de Octubre",
+      "fecha": "2013-10-25",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/10/seminario-de-investigacion-en-ajedrez.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1677185451065426862",
+      "titulo": "Torneos Blitz todos los martes de Noviembre en el Club Banco República",
+      "fecha": "2013-10-22",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/10/torneos-blitz-todos-los-martes-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1680208271932887915",
+      "titulo": "Torneo Panamericano Amateur",
+      "fecha": "2013-10-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/10/torneo-panamericano-amateur.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "8133111611389815967",
+      "titulo": "3° Etapa Torneo Metropolitano",
+      "fecha": "2013-09-23",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/09/3-etapa-torneo-metropolitano.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "551822042910280885",
+      "titulo": "II Curso de Didáctica del Ajedrez... abren las inscripciones!!",
+      "fecha": "2013-09-20",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/09/ii-curso-de-didactica-del-ajedrez-abren.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "2109634628102278494",
+      "titulo": "Encuentro de Ajedrez UTU Ciudad del Plata, San José",
+      "fecha": "2013-09-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/09/encuentro-de-ajedrez.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "3372276804467114368",
+      "titulo": "Comunicado 23/2013: Cámara de Diputados reconoce la trayectoria de dos insignes Ajedrecistas",
+      "fecha": "2013-09-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/09/comunicado-232013-camara-de-diputados.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6644793929786876782",
+      "titulo": "Imágenes Expoeduca Maldonado 2013",
+      "fecha": "2013-09-13",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/09/imagenes-expoeduca-maldonado-2013.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6146438409827928359",
+      "titulo": "Torneo Metropolitano de Ajedrez 2° Etapa - Video",
+      "fecha": "2013-08-18",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/08/torneo-metropolitano-de-ajedrez-2-etapa.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6812829641731003386",
+      "titulo": "Torneo Metropolitano 2º Etapa",
+      "fecha": "2013-08-11",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/08/torneo-metropolitano-2-etapa.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "475221937569783997",
+      "titulo": "Segunda etapa del Metropolitano",
+      "fecha": "2013-07-26",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/07/segunda-etapa-del-metropolitano.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "955893253416692318",
+      "titulo": "Comunicado 21/2013 Sábado 24 de Agosto: Encuentro Nacional de Ajedrez Escolar e Infantil en el Atrio Municipal",
+      "fecha": "2013-07-22",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/07/comunicado-212013-sabado-24-de-agosto.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "3250882385852046167",
+      "titulo": "Comunicado 19/2013 URUGUAY SERÁ LA SEDE DEL FESTIVAL SUDAMERICANO DE LA JUVENTUD 2014.",
+      "fecha": "2013-07-18",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/07/comunicado-192013-uruguay-sera-la-sede.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "7826480917892157058",
+      "titulo": "Se viene el Interclubes...",
+      "fecha": "2013-07-12",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/07/se-viene-el-interclubes.html",
+      "motivo": "Convocatoria o reglamento general de un torneo externo. Se conservan las crónicas y partidas que sí documentan la participación de integrantes del club."
+    },
+    {
+      "id": "8400242619929943734",
+      "titulo": "Ayuntamiento de Mérida, Linex Magic y Federación Uruguaya de Ajedrez firman un convenio para difundir este deporte",
+      "fecha": "2013-07-04",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/07/ayuntamiento-de-merida-linex-magic-y.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "8477973466033810484",
+      "titulo": "Comunicado 16/2013: Esteban Jaureguizar invitado a disertar en España",
+      "fecha": "2013-06-21",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/06/comunicado-162013-esteban-jaureguizar.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "7561038315571354831",
+      "titulo": "Comunicado 15/2013 Buenas Noticias: Confirmación de los Nuevos títulos para Uruguay",
+      "fecha": "2013-06-18",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/06/comunicado-152013-buenas-noticias.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1768663084154782067",
+      "titulo": "Torneo Metropolitano",
+      "fecha": "2013-05-27",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/05/torneo-metropolitano.html",
+      "motivo": "Convocatoria o reglamento general de un torneo externo. Se conservan las crónicas y partidas que sí documentan la participación de integrantes del club."
+    },
+    {
+      "id": "3117845836037943144",
+      "titulo": "Una adivina tailandesa usa el ajedrez para ver el futuro",
+      "fecha": "2013-05-24",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/05/una-adivina-tailandesa-usa-el-ajedrez.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "3855608859163469170",
+      "titulo": "PRIMERA CLASE DE AJEDREZ ON LINE POR EL SITIO AJEREZ UDELAR",
+      "fecha": "2013-05-24",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/05/primera-clase-de-ajedrez-on-line-por-el.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "9148093633476666821",
+      "titulo": "Comunicado 12/2013 Programa de Alto Rendimiento 2013",
+      "fecha": "2013-05-21",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/05/comunicado-122013-programa-de-alto.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6651987321224521591",
+      "titulo": "Seminario \"Estimulación Cognitiva: Ajedrez y Juegos de la mente\" con Leontxo Garcia",
+      "fecha": "2013-05-11",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/05/seminario-estimulacion-cognitiva.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "793048154890818375",
+      "titulo": "Campeonato Nacional de Categorías sub 18 a sub 8,",
+      "fecha": "2013-05-05",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/05/campeonato-nacional-de-categorias-sub.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6904734628138889613",
+      "titulo": "Encuentro de Ajedrez Infantil Sábado 4 de mayo en el Club Banco República",
+      "fecha": "2013-04-30",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/04/encuentro-de-ajedrez-infantil-sabado-4.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4891606165242404091",
+      "titulo": "Talleres de Ajedrez UdelaR",
+      "fecha": "2013-04-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/04/talleres-de-ajedrez-udelar.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "116909604689231125",
+      "titulo": "Topalov en 18 de Julio - Ajedrez Callejero",
+      "fecha": "2013-04-26",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/04/topalov-en-18-de-julio-ajedrez-callejero.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "2668710570704756040",
+      "titulo": "Convocatoria de la Comuna Canaria a jóvenes ajedrecistas",
+      "fecha": "2013-04-18",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/04/convocatoria-de-la-comuna-canaria.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "7454568983991489701",
+      "titulo": "Al Jazeera busca agentes de cambio: Taller Ajedrez Uruguayo entre los finalistas..",
+      "fecha": "2013-04-17",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/04/al-jazeera-busca-agentes-de-cambio.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5479873633871150823",
+      "titulo": "Carlsen gana el Torneo de Candidatos Londres 2013 perdiendo contra Svidler",
+      "fecha": "2013-04-05",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/04/carlsen-gana-el-torneo-de-candidatos.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "4720329094438570629",
+      "titulo": "TORNEO ZONAL ABSOLUTO Y FEMENINO ZONA 2.5",
+      "fecha": "2013-04-02",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/04/torneos-zonales-absoluto-y-femenino-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5655369312042670037",
+      "titulo": "Análisis Carlsen - Ivanchuk Ronda 12 Torneo Londres 2013",
+      "fecha": "2013-03-31",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/03/analisis-carlsen-ivanchuk-ronda-12.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "7308184429000234052",
+      "titulo": "Conferencia Ministerio Educación y Cultura el 18 de Marzo 2013 en la sala de prensa de la Torre Ejecutiva con motivo de la llegada Topalov al Uruguay y lanzamiento del programa \"Ajedrez para la Convivencia\".",
+      "fecha": "2013-03-19",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/03/conferencia-ministerio-educacion-y.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "7532970143857782232",
+      "titulo": "Comunicado 6/2013 LXXXIII FINAL DEL CAMPEONATO URUGUAYO ABSOLUTO DE AJEDREZ",
+      "fecha": "2013-03-06",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/03/comunicado-62013-lxxxiii-final-del.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "754093742624737287",
+      "titulo": "Listado de jugadores con Id y/o Elo de Uruguay actualizada a Marzo de 2013",
+      "fecha": "2013-02-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/02/listado-de-jugadores-con-id-yo-elo-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "337786549373008445",
+      "titulo": "Comunicado 5/2013 Programa Ajedrez Educativo del MEC",
+      "fecha": "2013-02-27",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/02/comunicado-52013-programa-ajedrez.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1242369365150042510",
+      "titulo": "PANDOCHESS: 1er.Blitz 2013 Club Solís de Pando",
+      "fecha": "2013-02-26",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/02/pandochess-1erblitz-2013-club-solis-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5965228515234316682",
+      "titulo": "Torneo infantil en Fray Bentos",
+      "fecha": "2013-02-20",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2013/02/torneo-infantil-en-fray-bentos.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "986758847527016780",
+      "titulo": "Comunicado 30/2012 Panamericano Absoluto de Ajedrez por Equipos Campinas 2013",
+      "fecha": "2012-12-31",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/12/comunicado-302012-panamericano-absoluto.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "7000656221894191673",
+      "titulo": "Comunicado 29/2012 Convocatoria Asamblea Anual Ordinaria de la FUA",
+      "fecha": "2012-12-14",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/12/comunicado-292012-convocatoria-asamblea.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5112661066418047301",
+      "titulo": "V Torneo de Ajedrez Activo Taller de Ajedrez Los Bulevares",
+      "fecha": "2012-11-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/v-torneo-de-ajedrez-activo-taller-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4592876006929619002",
+      "titulo": "Super Blitz en la UdelaR",
+      "fecha": "2012-11-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/blog-post.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4775119728909112273",
+      "titulo": "Utilicé Ajedrezudelar",
+      "fecha": "2012-11-14",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/utilice-ajedrezudelar.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "2065788054187104523",
+      "titulo": "El miércoles 14/11 inauguramos el sitio uruguayo de juego de ajedrez online,con clase del GM Andrés Rodriguez",
+      "fecha": "2012-11-12",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/el-miercoles-1411-inauguramos-el-sitio.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5142122705454052962",
+      "titulo": "Miniatura jugada en Paris, 1858 entre Paul Morphy - Carl Isouard Fuente: Curso Didáctica del Ajedrez IPES 2012",
+      "fecha": "2012-11-12",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/miniatura-jugada-en-paris-1858-entre.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "7711557235333872664",
+      "titulo": "JORNADA RECREATIVA DE AJEDREZ",
+      "fecha": "2012-11-10",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/jornada-recreativa-de-ajedrez.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1046941883714978261",
+      "titulo": "Comunicado 29/2012 Convenio Udelar-FUA Lanzamiento espacio de juego y clases on line",
+      "fecha": "2012-11-08",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/comunicado-292012-convenio-udelar-fua.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5290575264523682886",
+      "titulo": "IRT Ciudad de Montevideo",
+      "fecha": "2012-11-04",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/11/irt-ciudad-de-montevideo.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5536663714095889477",
+      "titulo": "Clasificados a la Copa Mundial",
+      "fecha": "2012-10-22",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/clasificados-la-copa-mundial_22.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "8391824192794442158",
+      "titulo": "Ultima ronda y posiciones finales 7o.Torneo Continental",
+      "fecha": "2012-10-21",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/ultima-ronda-y-posiciones-finales.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "8801502211363801436",
+      "titulo": "7o.TORNEO CONTINENTAL--DESENLACE FINAL--",
+      "fecha": "2012-10-21",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/7otorneo-continental-desenlace-final.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "2198861430727295683",
+      "titulo": "SE ESTA JUGANDO EL 7o..TORNEO CONTINENTAL EN MAR DEL PLATA-ARGENTINA",
+      "fecha": "2012-10-20",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/se-esta-jugando-el-7otorneo-continental.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "4610433717653546615",
+      "titulo": "Torneo Interdepartamental 2012",
+      "fecha": "2012-10-17",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/recordamos-cierre-de-inscripciones.html",
+      "motivo": "Convocatoria o reglamento general de un torneo externo. Se conservan las crónicas y partidas que sí documentan la participación de integrantes del club."
+    },
+    {
+      "id": "7079765627812486814",
+      "titulo": "Nueva organización de ajedrecistas argentinos",
+      "fecha": "2012-10-11",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/nueva-organizacion-de-ajedrecistas.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "2545083438815509180",
+      "titulo": "Comunicado 27/2012 Calendario FUA 2013 y Reglamento Uruguayo Absoluto 2013",
+      "fecha": "2012-10-02",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/comunicado-272012-calendario-fua-2013-y.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "3798601107423680936",
+      "titulo": "Campeonato Panamericano Femenino de Ajedrez 2012",
+      "fecha": "2012-10-01",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/10/campeonato-panamericano-femenino-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4166214066797289443",
+      "titulo": "Recuerdo del club",
+      "fecha": "2012-08-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/08/un-gm-de-ajedrezcampeon-del.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "6547957349165399145",
+      "titulo": "Recuerdo del club",
+      "fecha": "2012-08-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/08/comienza-la-olimpiada-de-ajedrez-en.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "7716775670453465877",
+      "titulo": "Campeonato Nacional Interclubes Paysandú.. 3,4 y 5 de agosto",
+      "fecha": "2012-07-17",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/07/campeonato-nacional-interclubes.html",
+      "motivo": "Convocatoria o reglamento general de un torneo externo. Se conservan las crónicas y partidas que sí documentan la participación de integrantes del club."
+    },
+    {
+      "id": "5751664496484150088",
+      "titulo": "Match por el Titulo Mundial de ajedrez",
+      "fecha": "2012-06-01",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/06/match-por-el-titulo-mundial-de-ajedrez.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "441574771753886134",
+      "titulo": "Kasparov: “El mañana del ajedrez acaba de comenzar hoy”",
+      "fecha": "2012-04-12",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/04/kasparov-el-manana-del-ajedrez-acaba-de.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "4479106998696878218",
+      "titulo": "El Parlamento Europeo promueve la asignatura de ajedrez en las escuelas",
+      "fecha": "2012-04-12",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/04/el-parlamento-europeo-promueve-la.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "3883034348449327632",
+      "titulo": "Publico partida de la entrada anterior para seguirla con mayor facilidad.",
+      "fecha": "2012-03-23",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/03/blog-post.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "9027058277243606905",
+      "titulo": "Nuestro flamante Campeón Uruguayo 2012 calificado \"Inmortal\"",
+      "fecha": "2012-03-22",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/03/nuestro-flamante-campeon-uruguayo-2012.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "6672714176832906832",
+      "titulo": "Importante Proyecto se presentará a autoridades de la Unión Europea por la Unión Europea de Ajedrez.",
+      "fecha": "2012-02-12",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/02/importante-proyecto-se-presentara.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "1416813334214466201",
+      "titulo": "Màs sobre la defensa francesa...",
+      "fecha": "2012-01-30",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2012/01/mas-sobre-la-defensa-francesa.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "413259756169349193",
+      "titulo": "Recuerdo del club",
+      "fecha": "2011-12-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/12/nuevas-autoridades-de-la-federacion.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6176798211986282182",
+      "titulo": "Finalizó la 2da.Copa Latinoamericana",
+      "fecha": "2011-11-08",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/11/finalizo-la-2dacopa-latinoamericana.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "981320632731242423",
+      "titulo": "GM Alexandr Fier recibe premio",
+      "fecha": "2011-11-08",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/11/gm-alexandr-fier-recibe-premio.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "5786470919786688333",
+      "titulo": "Comienza la mayor fiesta del Ajedrez en Uruguay",
+      "fecha": "2011-10-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/10/comienza-la-mayor-fiesta-del-ajedrez-en.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "903466670440763352",
+      "titulo": "Biblioteca de Ajedrez",
+      "fecha": "2011-08-29",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/08/biblioteca-de-ajedrez.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "517450727784218778",
+      "titulo": "Carta recibida de la Federación Uruguaya de Ajedrez",
+      "fecha": "2011-08-26",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/08/carta-recibida-de-la-federacion.html",
+      "motivo": "Comunicado nacional o actividad de otra institución sin participación, organización o vínculo concreto con el club documentado en la entrada."
+    },
+    {
+      "id": "6337969372734099526",
+      "titulo": "Leningrado 1974 - Ronda 3 - Blancas: Karpov, Anatoly - Negras: Spassky, Boris",
+      "fecha": "2011-08-01",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/08/leningrado-1974-ronda-3-blancas-karpov.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "497364781235021844",
+      "titulo": "Defensa Benoni",
+      "fecha": "2011-07-17",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/07/defensa-benoni.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "8631989694432269203",
+      "titulo": "Copa América 2011",
+      "fecha": "2011-07-17",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/07/copa-america-2011.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "3138830981050387756",
+      "titulo": "Defensa francesa. Variante Tarrasch.",
+      "fecha": "2011-07-14",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2011/07/defensa-francesa-variante-tarrasch.html",
+      "motivo": "Noticia general, curiosidad, fútbol o material de estudio sin vínculo documentado con el club."
+    },
+    {
+      "id": "3814372994430063965",
+      "titulo": "Aniversario del match Kasparov-Karpov----Kasparov campeón mundial----",
+      "fecha": "2010-11-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/11/aniversario-del-match-kasparov-karpov.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "1019852647978541741",
+      "titulo": "Gm Rafael Leitâo hizo tablas con el gm Peter Leko-Olimpiada 2010-",
+      "fecha": "2010-10-24",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/10/gm-rafael-leitao-hizo-tablas-con-el-gm.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "3462990079784343145",
+      "titulo": "El gm H.Nakamura se destaca",
+      "fecha": "2010-10-24",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/10/el-gm-hnakamura-se-destaca.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "5172986258251325848",
+      "titulo": "Una francesa sin apuros-un bieloruso inspirado-Olimpiada 2010-",
+      "fecha": "2010-10-24",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/10/una-francesa-sin-apuros-un-bieloruso.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "5883362334084225817",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)-Tabla continental-",
+      "fecha": "2010-10-05",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/10/39aolimpiada-de-ajedrez-khanty-mansiyk_05.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "4134881978953000803",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)--1º UCRANIA--19 puntos.-",
+      "fecha": "2010-10-03",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/10/39aolimpiada-de-ajedrez-khanty-mansiyk_03.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "256004602916613243",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)-Faltando una ronda Rusia-1 (mujeres)ya ganó la Olimpiada",
+      "fecha": "2010-10-01",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/10/39aolimpiada-de-ajedrez-khanty-mansiyk_01.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "766136306661341052",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)-Jugada la 9a ronda en el primer puesto:UCRANIA con 16 pts.",
+      "fecha": "2010-10-01",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/10/39aolimpiada-de-ajedrez-khanty-mansiyk.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "808457544128512751",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)-Ucrania mantiene 1er.puesto con 14pts.-",
+      "fecha": "2010-09-29",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/09/39aolimpiada-de-ajedrez-khanty-mansiyk_29.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "2260784083775831085",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)-Ucrania al 1er.puesto con 13 pts.--",
+      "fecha": "2010-09-28",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/09/39aolimpiada-de-ajedrez-khanty-mansiyk_28.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "2434246052042320885",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)",
+      "fecha": "2010-09-27",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/09/39aolimpiada-de-ajedrez-khanty-mansiyk_27.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "4508910195919130404",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)",
+      "fecha": "2010-09-27",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/09/39aolimpiada-de-ajedrez-khanty-mansiyk.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "6248765182347108503",
+      "titulo": "39a.Olimpíada de Ajedrez (Khanty Mansiyk)-se jugó la 6a.ronda.-",
+      "fecha": "2010-09-27",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/09/39aolimpiada-de-ajedrez-khanty-mansiyk_4626.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "5653313172545901760",
+      "titulo": "La 39a.Olimpíada de Ajedrez se está jugando en Rusia (Khanty-Masiysk)",
+      "fecha": "2010-09-25",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/09/la-39aolimpiada-de-ajedrez-se-esta.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "6990426533318086175",
+      "titulo": "Campeonato Paulista Absoluto de Xadrez 2010 - Santos-SP - 19 a 22 de Agosto",
+      "fecha": "2010-09-01",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/09/campeonato-paulista-absoluto-de-xadrez.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "3067918985495685784",
+      "titulo": "gm Andrés Rodríguez 2º lugar compartido en Magistral -Santos-SP-Brasil",
+      "fecha": "2010-08-19",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/08/gm-andres-rodriguez-2-lugar-compartido.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "6871301497490008860",
+      "titulo": "gm A.Rodríguez en Magistral Internacional Gov. Mario Covas Jr-Santos-SP-Brasil",
+      "fecha": "2010-08-18",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/08/gm-arodriguez-en-magistral.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "4922971180661345546",
+      "titulo": "9. TORNEO INTERNACIONAL GOVERNADOR MARIO COVAS",
+      "fecha": "2010-08-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/08/9-torneo-internacional-governador-mario.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "6315970700286017269",
+      "titulo": "5a.ronda Torneo Internacional Gov.Mario Covas-Santos-SP.",
+      "fecha": "2010-08-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/08/5aronda-torneo-internacional-govmario.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    },
+    {
+      "id": "8100652312009979558",
+      "titulo": "gm Andrés Rodríguez en 2do.lugar compartido",
+      "fecha": "2010-08-16",
+      "fuente": "https://ajedrezenlifa.blogspot.com/2010/08/gm-andres-rodriguez-en-2dolugar.html",
+      "motivo": "Cobertura de torneos internacionales o partidas de maestros sin relación con la actividad del club."
+    }
+  ],
+  "porAnio": {
+    "2010": 6,
+    "2011": 19,
+    "2012": 57,
+    "2013": 56,
+    "2014": 34,
+    "2015": 32,
+    "2016": 15,
+    "2017": 2,
+    "2018": 8,
+    "2019": 12,
+    "2020": 18,
+    "2021": 3,
+    "2022": 3,
+    "2023": 3
+  },
+  "imagenes": 362
+}

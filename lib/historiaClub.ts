@@ -5,10 +5,11 @@ export type PublicacionHistoria={id:string;titulo:string;sinTitulo:boolean;fecha
 export const publicacionesHistoria=archivo as PublicacionHistoria[];
 export function slugHistoria(p:PublicacionHistoria){return new URL(p.fuente).pathname.replace(/^\//,'').replace(/\.html$/,'').replace(/\//g,'-');}
 export const rutaHistoria=(p:PublicacionHistoria)=>'/historia/'+slugHistoria(p);
-export const categoriasHistoria=['Vida del club','Torneos y resultados','Aprender y compartir','Ajedrez de aquí y del mundo'];
-export const aniosHistoria=[...new Set(publicacionesHistoria.map(p=>p.anio))].sort((a,b)=>b-a);
+export const categoriasHistoria=['Vida del club','Torneos y resultados','Aprender y compartir','Jugadores del club'];
+export const aniosHistoria=[...new Set(publicacionesHistoria.map(p=>p.anio))].sort((a,b)=>a-b);
+export const imagenesHistoria=new Set(publicacionesHistoria.flatMap(p=>p.fotos.map(f=>f.src))).size;
 export const normalizarHistoria=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
-export function filtrarHistoria({anio='',categoria='',buscar='',fotos=false,orden='recientes'}:{anio?:string;categoria?:string;buscar?:string;fotos?:boolean;orden?:string}){
+export function filtrarHistoria({anio='',categoria='',buscar='',fotos=false,orden='antiguas'}:{anio?:string;categoria?:string;buscar?:string;fotos?:boolean;orden?:string}={}){
  const terminos=normalizarHistoria(buscar).split(' ').filter(Boolean);
  const lista=publicacionesHistoria.filter(p=>(!anio||String(p.anio)===anio)&&(!categoria||p.categoria===categoria)&&(!fotos||p.fotos.length>0)&&terminos.every(t=>normalizarHistoria(p.titulo+' '+p.palabras).includes(t)));
  return orden==='antiguas'?[...lista].reverse():lista;
