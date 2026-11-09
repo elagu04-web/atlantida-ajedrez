@@ -4,6 +4,14 @@ Sección pública `/historia`, solicitada por Agustín el 9 de noviembre de 2026
 
 ## Importación y selección pública
 
+### Ampliación con Grupo Ajedrez Li.F.A.
+
+Agustín aprobó incorporar las 20 entradas seleccionadas de `grupoajedrezlifa.blogspot.com`. El segundo feed tiene 49 publicaciones de abril a agosto de 2010; se conservan solamente las 20 aprobadas sobre torneos, fotos y la propuesta de ícono del grupo. La selección pública completa pasa a **288 recuerdos y 370 imágenes**, con inicio el **18 de abril de 2010** y **26 entradas de 2010**. `data/historia-grupo-lifa-origen.json` detalla los 20 identificadores, fechas y fuentes. Las 268 entradas previas se mantienen, al igual que los 135 retiros editoriales. `historia-seleccion.json` registra la ampliación separada de su selección inicial.
+
+Se sumaron siete fotos y el ícono, procesados a WebP con miniaturas locales conservando el color. El recuerdo del segundo blitz de 2009 mantiene la publicación del 26/4/2010; no se le atribuye una fecha exacta al evento. La portada comienza ahora con una ronda del primer torneo de 2010 e incluye también la foto de premiación. La línea de tiempo destaca ese torneo: 14 participantes, siete rondas, Guillermo Carvalho 7/7 y Fabián Fuentes segundo, confirmado en las crónicas. Se añadieron los créditos del segundo blog y las 20 rutas al sitemap.
+
+### Selección inicial
+
 Se recorrieron las tres páginas del feed público de `ajedrezenlifa.blogspot.com/feeds/posts/default?alt=json&max-results=150`, índices 1, 151 y 301. El blog declara 403 publicaciones y se verificaron 403 identificadores y enlaces únicos. La importación original incluyó las 20 publicaciones sin título. La selección pública posterior conserva 17, presentadas como «Recuerdo del club». Se preserva la fecha del calendario original del blog, aunque los posts usan distintos husos horarios.
 
 Distribución original: 2010: 26; 2011: 29; 2012: 85; 2013: 97; 2014: 52; 2015: 43; 2016: 17; 2017: 2; 2018: 10; 2019: 14; 2020: 19; 2021: 3; 2022: 3; 2023: 3. Intervalo original: 16 de agosto de 2010 al 9 de junio de 2023.
@@ -28,7 +36,7 @@ Las convocatorias históricas se distinguen de la agenda actual. No se convierte
 
 Buscador sin distinguir tildes, filtros por año y tema, opción con imágenes y carga de 24 entradas por tanda. El orden predeterminado es desde 2010 hacia adelante; se puede invertir. La línea de tiempo horizontal permite elegir año, avanzar/retroceder y desplazarla en celular. El año elegido filtra las noticias y actualiza un recuerdo destacado con contexto. El estado de los filtros está en la dirección, para poder compartir una búsqueda y volver con la navegación del navegador.
 
-La portada empieza con el encuentro Atlántida–Solís de Pando de octubre de 2010. Cada 30 segundos elige al azar otra de ocho fotos verificadas, sin repetir inmediatamente la misma. Muestra año, descripción y enlace a su noticia. Tiene pausa y avance manual; no rota con movimiento reducido del sistema ni mientras la pestaña está oculta. Las fotografías mantienen el color.
+La portada empieza con una ronda del primer torneo de 2010. Cada 30 segundos elige al azar otra de diez fotos verificadas, sin repetir inmediatamente la misma. Muestra año, descripción y enlace a su noticia. Tiene pausa y avance manual; no rota con movimiento reducido del sistema ni mientras la pestaña está oculta. Las fotografías mantienen el color.
 
 
 A pedido de Agustín, el archivo usa una estética propia de papel en tonos sepia, tinta marrón y tipografía editorial. Las fotos mantienen su color: sin filtros de sepia, desaturación ni escala de grises. La cabecera general del sitio conserva la identidad azul.

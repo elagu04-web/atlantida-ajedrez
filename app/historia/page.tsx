@@ -8,10 +8,12 @@ import {imagenesHistoria,publicacionesHistoria,rutaHistoria} from '@/lib/histori
 import {metadatosPagina,serializarDatosEstructurados,URL_SITIO} from '@/lib/seo';
 import s from '@/components/HistoriaClub.module.css';
 
-const imagen='/imagenes/historia/archivo-ba57a47bac8d8f34.webp';
+const imagen=publicacionesHistoria.find(p=>p.id==='8714087108985587595')?.fotos[0]?.src??'/imagenes/historia/archivo-ba57a47bac8d8f34.webp';
 const meta=metadatosPagina('/historia','Historia del club · Atlántida Ajedrez',`Recorré la historia de Atlántida Ajedrez desde 2010: encuentros, torneos, talleres y ${publicacionesHistoria.length} recuerdos del club en una línea de tiempo interactiva.`);
-export const metadata={...meta,openGraph:{...meta.openGraph,images:[{url:URL_SITIO+imagen,alt:'Encuentro de Atlántida con el Club Solís de Pando en 2010'}]},twitter:{...meta.twitter,card:'summary_large_image' as const,images:[URL_SITIO+imagen]}};
+export const metadata={...meta,openGraph:{...meta.openGraph,images:[{url:URL_SITIO+imagen,alt:'Una ronda del primer torneo del club en 2010'}]},twitter:{...meta.twitter,card:'summary_large_image' as const,images:[URL_SITIO+imagen]}};
 const momentos=[
+ {id:'8714087108985587595',descripcion:'Una ronda del primer torneo de 2010.',foto:0},
+ {id:'1774937215598873269',descripcion:'Premiación del primer torneo de 2010.',foto:0},
  {id:'3153606336940460723',descripcion:'Atlántida recibe al Club Solís de Pando.',foto:0},
  {id:'8400866532081339500',descripcion:'Una tarde de ajedrez entre los socios de LIFA.',foto:0},
  {id:'996325375499609458',descripcion:'Encuentros de verano en el club.',foto:0},
@@ -30,6 +32,11 @@ export default function HistoriaPage(){
   <Suspense fallback={<p role="status">Abriendo la línea de tiempo…</p>}><LineaTiempoHistoria/></Suspense>
   <Suspense fallback={<p role="status">Abriendo el archivo del club…</p>}><ArchivoHistoria/></Suspense>
   <section className={s.hoy}><div><p className="eyebrow">La historia sigue</p><h2>El próximo recuerdo lo hacemos juntos.</h2><p>Hoy seguimos encontrándonos para aprender, competir y compartir el ajedrez.</p></div><Link className="button-primary" href="/noticias">Lo que pasa hoy en el club →</Link></section>
-  <details className={s.fuentes}><summary>Sobre este archivo y sus fuentes</summary><p>Esta selección parte del archivo público de <a href="https://ajedrezenlifa.blogspot.com/" target="_blank" rel="noopener noreferrer">Club de Ajedrez Atlántida en Blogger</a>, desde agosto de 2010 hasta junio de 2023. Se dejaron fuera las noticias generales de ajedrez sin relación con la vida del club. Cada recuerdo conserva su fecha, su texto y el enlace al blog original; las imágenes disponibles se pueden recorrer acá mismo.</p><p>Los hitos se apoyan en las crónicas enlazadas. La afiliación de 2011 también fue recogida por <a href="https://pandochess.blogspot.com/2011/12/asamblea-de-la-fua.html" target="_blank" rel="noopener noreferrer">el Club Solís de Pando</a>. La actividad del club en 2016 figura en <a href="https://www.imcanelones.gub.uy/agenda-cultural/torneo-abierto-ajedrez-atlantida" target="_blank" rel="noopener noreferrer">la agenda cultural de Canelones</a>.</p><p>Los horarios, precios y convocatorias del archivo corresponden a su época. Para la actividad actual, consultá <Link href="/torneos">los próximos torneos</Link> o <Link href="/noticias">las noticias del club</Link>.</p></details>
+  <details className={s.fuentes}>
+   <summary>Sobre este archivo y sus fuentes</summary>
+   <p>Esta selección reúne los archivos de <a href="https://ajedrezenlifa.blogspot.com/" target="_blank" rel="noopener noreferrer">Club de Ajedrez Atlántida</a> y <a href="https://grupoajedrezlifa.blogspot.com/" target="_blank" rel="noopener noreferrer">Grupo Ajedrez Li.F.A.</a>, desde abril de 2010 hasta junio de 2023. Se dejaron fuera las noticias generales de ajedrez sin relación con la vida del club. Cada recuerdo conserva su fecha, su texto y el enlace al blog original; las imágenes disponibles se pueden recorrer acá mismo.</p>
+   <p>Los hitos se apoyan en las crónicas enlazadas. La afiliación de 2011 también fue recogida por <a href="https://pandochess.blogspot.com/2011/12/asamblea-de-la-fua.html" target="_blank" rel="noopener noreferrer">el Club Solís de Pando</a>. La actividad del club en 2016 figura en <a href="https://www.imcanelones.gub.uy/agenda-cultural/torneo-abierto-ajedrez-atlantida" target="_blank" rel="noopener noreferrer">la agenda cultural de Canelones</a>.</p>
+   <p>Los horarios, precios y convocatorias del archivo corresponden a su época. Para la actividad actual, consultá <Link href="/torneos">los próximos torneos</Link> o <Link href="/noticias">las noticias del club</Link>.</p>
+  </details>
  </div>;
 }

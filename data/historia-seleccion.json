@@ -2,7 +2,7 @@
   "fecha": "2026-11-09",
   "criterio": "Historia del club, sus encuentros, talleres, torneos, trabajo de sus integrantes y participaciones documentadas fuera de Atlántida.",
   "originales": 403,
-  "publicadas": 268,
+  "publicadas": 288,
   "retiradas": [
     {
       "id": "4346307994294788631",
@@ -951,7 +951,7 @@
     }
   ],
   "porAnio": {
-    "2010": 6,
+    "2010": 26,
     "2011": 19,
     "2012": 57,
     "2013": 56,
@@ -966,5 +966,14 @@
     "2022": 3,
     "2023": 3
   },
-  "imagenes": 362
+  "imagenes": 370,
+  "ampliaciones": [
+    {
+      "fuente": "https://grupoajedrezlifa.blogspot.com/",
+      "originales": 49,
+      "incorporadas": 20,
+      "fecha": "2026-11-09",
+      "informe": "historia-grupo-lifa-origen.json"
+    }
+  ]
 }
