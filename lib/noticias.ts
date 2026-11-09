@@ -11,6 +11,28 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "larita-mejor-femenino-liga-uruguaya-sub16-2026",
+  titulo: "Larita sigue cosechando títulos",
+  bajada: "Lara Escaris recibió el premio a Mejor Femenino en la Final Nacional Sub 16 de la Liga Uruguaya, disputada en Tacuarembó. Otra alegría para el club.",
+  categoria: "Orgullo del club",
+  fecha: "2026-11-08",
+  imagen: "/imagenes/lara-escaris-liga-uruguaya-sub16-2026.png",
+  imagenAlt: "Lara Escaris sonríe con su trofeo de Mejor Femenino de la Final Nacional Sub 16 de la Liga Uruguaya de Ajedrez 2026",
+  imagenPosicion: "50% 36%",
+  imagenVertical: true,
+  imagenAspecto: "402 / 695",
+  imagenAncho: 440,
+  imagenSinCompresion: true,
+  pieFoto: "Larita con su premio a Mejor Femenino de la Final Nacional Sub 16.",
+  parrafos: [
+    "¡Otra alegría para Atlántida! **Larita Escaris se llevó el premio a Mejor Femenino de la Final Nacional Sub 16 de la Liga Uruguaya de Ajedrez**, que se jugó este 7 y 8 de noviembre en Tacuarembó. Y acá la tenemos, con una sonrisa y otro trofeo para llevar a casa.",
+    "La final reunió a **29 jugadores**, con cinco rondas por sistema suizo y partidas a ritmo de 60 minutos más 30 segundos por jugada. Larita terminó con **2½ puntos: dos victorias y unas tablas**.",
+    "Después de una primera ronda difícil, frente al número uno del ranking inicial, **ganó dos partidas seguidas**. En la cuarta sumó unas tablas y llegó a la última ronda con 2½ puntos. Un lindo recorrido para seguir sumando experiencia en estas finales.",
+    "Hace poquito festejábamos su **vicecampeonato nacional y la clasificación a Ecuador con su colegio Imagine**. Ahora vuelve a darnos un motivo para compartir una foto y felicitarla. Qué lindo ver a una jugadora de nuestro club seguir creciendo y sumando reconocimientos.",
+    "**¡Felicitaciones, Larita!** Estamos muy contentos por vos. A disfrutar ese trofeo y a seguir jugando, que esto sigue.",
+    "[Mirá los resultados de Larita en Chess-Results](https://s2.chess-results.com/tnr1527714.aspx?lan=2&art=9&snr=15&turdet=YES) y [recordá su clasificación a Ecuador](https://atlantida-ajedrez.vercel.app/noticias/lara-escaris-vicecampeona-nacional-ecuador)."
+  ]
+}, {
   slug: "ernesto-blanco-sudamericano-2026",
   titulo: "Ernesto nos representó en el Sudamericano",
   bajada: "Ernesto Blanco llevó el ajedrez de Atlántida al Sudamericano Absoluto de Montevideo. Nueve rondas, dos victorias y dos tablas para compartir después en el club.",
