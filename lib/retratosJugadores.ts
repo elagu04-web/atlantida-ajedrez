@@ -5,6 +5,7 @@ const bucket = "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/publi
 const fotoRegistrada = (id: string, version: string) => `${bucket}${id}.png?v=${version}`;
 
 const preparados: Record<string, Preparado> = {
+  "2c191207-a48a-418b-a8ef-210a00e5acc4": { archivo: "/imagenes/retratos/ezequiel-nunez-tablero-20261110-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ezequiel-nunez-tablero-20261110.jpg" },
   "3059d6c3-44f3-49f7-8b57-8156cae5d0f0": { archivo: "/imagenes/retratos/ismael-gonzalez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ismael-gonzalez-tablero-20261103-miniatura.webp" },
   "171197d2-fa9e-4a6a-ac3e-3139fbc7ff62": { archivo: "/imagenes/retratos/agustin-nunez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/agustin-nunez-tablero-20261103-miniatura.webp" },
   "3e6c34fb-23a2-4a15-8de0-009cf51493db": { archivo: "/imagenes/retratos/cristian-gonzalez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/cristian-gonzalez-tablero-20261103-miniatura.webp" },
