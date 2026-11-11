@@ -11,6 +11,30 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "tio-ale-campeon-segundo-torneo-noviembre-2026",
+  titulo: "El Tío Ale se lleva el segundo torneo de noviembre",
+  tituloTarjeta: "El Tío Ale escapó del Hipopótamo y salió campeón",
+  bajada: "Una pieza de menos, un final para el infarto y unas tablas que valieron muchísimo. Ale Visi terminó invicto, con 4½ de 5, y se quedó con el segundo torneo de noviembre.",
+  categoria: "Vida del club",
+  fecha: "2026-11-10",
+  imagen: "/imagenes/tio-ale-fonchi-segundo-torneo-noviembre-2026.jpg",
+  imagenAlt: "Ale Visi y Fonchi frente al tablero durante el segundo torneo de noviembre de Atlántida Ajedrez",
+  imagenPosicion: "50% 53%",
+  imagenVertical: true,
+  imagenAspecto: "3 / 4",
+  imagenAncho: 780,
+  imagenSinCompresion: true,
+  pieFoto: "El Tío Ale y Fonchi. Uno con el brazo en la baranda; el otro con un Hipopótamo entre las piezas. Tranquilidad aparente.",
+  parrafos: [
+    "**El Tío Ale se llevó el segundo torneo de noviembre**, pero antes nos hizo sufrir un rato. Fuimos **12 jugadores, cinco rondas por sistema suizo**, y hubo una partida que merecía tener un cardiólogo sentado al lado.",
+    "En la tercera ronda le tocó Fonchi, que volvió a sacar su querido **Hipopótamo**. La cosa se puso complicada para Ale: **un final con pieza de menos** y el animal acechando. Parecía que el hipo ya tenía la cena servida, pero el Tío no estaba dispuesto a entrar en el menú.",
+    "Ale aguantó, siguió buscando y logró sacar **unas tablas que lo mantuvieron con posibilidades de ganar el torneo**. Medio punto en la planilla y varios años menos de vida para los que miraban. Fonchi se quedó sin la victoria y nosotros con tema para comentar un buen rato.",
+    "Después de semejante escape, Ale ganó las dos rondas que quedaban y cerró **invicto con 4½ puntos: cuatro victorias y unas tablas**. Un torneo muy sólido, aunque lo de transmitir tranquilidad podemos discutirlo.",
+    "**Matías terminó segundo con 4 puntos**. Sigue diciendo que no estudia, pero sigue apareciendo arriba. A esta altura vamos a tener que pedirle que nos enseñe su método de no estudiar. **Fonchi completó el podio con 3½**: después del 5 de 5 de la semana pasada, esta vez el Hipopótamo tuvo que compartir un poco.",
+    "Miren la foto: el Tío Ale con el brazo en la baranda, como si todo estuviera bajo control. Claro, así cualquiera. Los nervios nos los dejó al resto. **¡Felicitaciones, Ale!** Tremendo torneo y tremenda salvada. Al hipo le quedó pendiente la revancha.",
+    "[Mirá todos los resultados del torneo](https://atlantida-ajedrez.vercel.app/torneos/57980c50-3e05-421b-9cbf-2e770762db1d) y [cómo viene la tabla del mes](https://atlantida-ajedrez.vercel.app/estadisticas)."
+  ]
+}, {
   slug: "larita-mejor-femenino-liga-uruguaya-sub16-2026",
   titulo: "Larita sigue cosechando títulos",
   bajada: "Lara Escaris recibió el premio a Mejor Femenino en la Final Nacional Sub 16 de la Liga Uruguaya, disputada en Tacuarembó. Otra alegría para el club.",
