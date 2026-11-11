@@ -49,7 +49,7 @@ export function TablaRachas({compacta = false}: {compacta?: boolean}) {
     <div className="p-5 sm:p-6">
       <p className="eyebrow text-amber-200">El desafío diario del club</p>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-        <h2 id="titulo-rachas" className="text-2xl font-semibold">Quién está en racha</h2>
+        <h2 id="titulo-rachas" tabIndex={-1} className="text-2xl font-semibold">Quién está en racha</h2>
         {compacta && <Link href="/desafios#rachas" className="text-link">Ver la tabla completa<Icono nombre="flecha" className="h-4 w-4"/></Link>}
       </div>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">Cada resolución guardada cuenta. Sumá días consecutivos y competí por la racha más larga.</p>

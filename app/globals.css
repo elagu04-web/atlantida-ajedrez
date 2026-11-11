@@ -856,6 +856,15 @@ button:not(:disabled), summary { cursor: pointer; }
 /* El logro usa todo el ancho y deja el tablero completo a la vista. */
 .puzzle-logro{grid-column:1/-1;min-width:0}
 .puzzle-logro>[data-desafio-logrado]{margin:0}
+.puzzle-result-actions{display:flex;justify-content:center;margin:14px 0;animation:puzzle-result-in .32s ease-out both}
+.puzzle-result-actions .button-primary{gap:16px;min-height:44px}
+.puzzle-review{display:grid;gap:14px;margin-block:18px}
+.puzzle-review-locked{margin-block:18px;padding:12px 14px;border:1px solid #93b9e22b;border-radius:12px;color:#9db0c7;font-size:12px;line-height:1.7}
+#rachas:target{animation:puzzle-table-arrival 1.4s ease-out}
+#titulo-rachas:focus-visible{outline:2px solid #e4c587;outline-offset:6px;border-radius:4px}
+@keyframes puzzle-result-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes puzzle-table-arrival{from{box-shadow:0 0 0 3px #e4c58770}to{box-shadow:0 0 0 3px transparent}}
+@media(prefers-reduced-motion:reduce){.puzzle-result-actions,#rachas:target{animation:none}}
 @media(min-width:901px){.puzzle-layout[data-logrado=true]{--play-board-size:clamp(180px,calc(100dvh - 450px),620px)}}
 
 /* El tablero ajustable usa dimensiones reales; nunca zoom/transform sobre sus casillas. */

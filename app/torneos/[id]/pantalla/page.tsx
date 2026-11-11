@@ -32,22 +32,22 @@ function FotoJugador({
       <img
         src={fotoUrl}
         alt=""
-        className={`shrink-0 rounded-full border-2 border-white/20 object-cover ${claseTam}`}
+        className={`aspect-square shrink-0 rounded-xl border-2 border-white/20 object-cover object-[center_25%] shadow-lg ${claseTam}`}
       />
     );
   }
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-full border-2 border-white/20 bg-white/10 font-bold text-zinc-300 ${claseTam}`}
+      className={`flex aspect-square shrink-0 items-center justify-center rounded-xl border-2 border-white/20 bg-white/10 font-bold text-zinc-300 ${claseTam}`}
     >
       {nombre.charAt(0).toUpperCase()}
     </span>
   );
 }
 
-const TAM_FOTO_PARTIDO = "h-8 w-8 text-sm sm:h-12 sm:w-12 sm:text-lg lg:h-16 lg:w-16 lg:text-2xl";
-const TAM_FOTO_PODIO = "h-10 w-10 text-base sm:h-14 sm:w-14 sm:text-xl lg:h-[72px] lg:w-[72px] lg:text-2xl";
-const TAM_FOTO_TABLA = "h-7 w-7 text-xs sm:h-9 sm:w-9 sm:text-sm lg:h-11 lg:w-11 lg:text-base";
+const TAM_FOTO_PARTIDO = "w-14 max-w-full text-sm sm:w-20 sm:text-lg lg:w-28 lg:text-2xl";
+const TAM_FOTO_PODIO = "w-14 max-w-full text-base sm:w-20 sm:text-xl lg:w-28 lg:text-2xl";
+const TAM_FOTO_TABLA = "w-10 max-w-full text-xs sm:w-14 sm:text-sm lg:w-18 lg:text-base";
 
 function BotonPantallaCompleta() {
   const [enPantallaCompleta, setEnPantallaCompleta] = useState(false);
@@ -241,9 +241,9 @@ export default function PantallaTorneoPage() {
                     </span>
                     {e.negrasId ? (
                       <>
-                        <span className="flex min-w-0 flex-col-reverse items-center gap-1.5 sm:flex-row sm:justify-end sm:gap-3 lg:gap-4">
+                        <span className="flex min-w-0 flex-col-reverse items-center gap-1.5 sm:gap-3 lg:gap-4 2xl:flex-row 2xl:justify-end">
                           <span
-                            className={`min-w-0 break-words text-center text-sm font-bold sm:text-right sm:text-xl lg:text-4xl ${
+                            className={`min-w-0 break-words text-center text-sm font-bold sm:text-xl lg:text-4xl 2xl:text-right ${
                               ganoBlancas ? "text-amber-300" : "text-white"
                             }`}
                           >
@@ -256,10 +256,10 @@ export default function PantallaTorneoPage() {
                           <span className="font-medium">vs</span>
                           <span className="hidden h-3 w-3 rounded-sm border border-zinc-500 bg-zinc-900 sm:block sm:h-5 sm:w-5" />
                         </span>
-                        <span className="flex min-w-0 flex-col items-center gap-1.5 sm:flex-row sm:gap-3 lg:gap-4">
+                        <span className="flex min-w-0 flex-col items-center gap-1.5 sm:gap-3 lg:gap-4 2xl:flex-row">
                           <FotoJugador fotoUrl={fotoDe(e.negrasId)} nombre={nombreDe(e.negrasId)} claseTam={TAM_FOTO_PARTIDO} />
                           <span
-                            className={`min-w-0 break-words text-center text-sm font-bold sm:text-left sm:text-xl lg:text-4xl ${
+                            className={`min-w-0 break-words text-center text-sm font-bold sm:text-xl lg:text-4xl 2xl:text-left ${
                               ganoNegras ? "text-amber-300" : "text-white"
                             }`}
                           >
