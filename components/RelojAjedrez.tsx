@@ -15,6 +15,7 @@ export function RelojAjedrez() {
   const actual = useRef(reloj), escenario = useRef<HTMLDivElement>(null);
   const [ahora, setAhora] = useState(0), [cargado, setCargado] = useState(false);
   const [mesa, setMesa] = useState(false), [enfrentados, setEnfrentados] = useState(true), [invertidos, setInvertidos] = useState(false);
+  const [pantallaCompleta, setPantallaCompleta] = useState(false);
   const [mantenerPantalla, setMantenerPantalla] = useState(true), [pantallaActiva, setPantallaActiva] = useState(false);
   const [pendiente, setPendiente] = useState<ConfiguracionReloj | null>(null), [aviso, setAviso] = useState("");
   const [minutos, setMinutos] = useState("5"), [segundos, setSegundos] = useState("0"), [incremento, setIncremento] = useState("3");
@@ -61,6 +62,12 @@ export function RelojAjedrez() {
     escenario.current?.focus({ preventScroll: true });
     return () => { document.body.style.overflow = anterior; };
   }, [mesa]);
+
+  useEffect(() => {
+    const actualizar = () => setPantallaCompleta(document.fullscreenElement === escenario.current);
+    document.addEventListener("fullscreenchange", actualizar);
+    return () => document.removeEventListener("fullscreenchange", actualizar);
+  }, []);
 
   useEffect(() => {
     if (reloj.estado !== "corriendo" || !mantenerPantalla || !("wakeLock" in navigator)) return;
@@ -125,6 +132,10 @@ export function RelojAjedrez() {
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
   }
   function ampliar() {
+    if (document.fullscreenElement === escenario.current) {
+      void document.exitFullscreen().catch(() => {});
+      return;
+    }
     setMesa(true);
     const solicitud = escenario.current?.requestFullscreen?.();
     if (solicitud) void solicitud.catch(() => { /* El modo mesa sigue disponible sin pantalla completa nativa. */ });
@@ -144,14 +155,15 @@ export function RelojAjedrez() {
   }
 
   return <div className={s.raiz}>
-    <div ref={escenario} tabIndex={-1} className={`${s.escenario} ${mesa ? s.mesa : ""}`} role={mesa ? "dialog" : "group"} aria-modal={mesa || undefined} aria-label="Reloj de ajedrez para dos jugadores">
+    <div ref={escenario} tabIndex={-1} className={`${s.escenario} ${mesa ? s.mesa : ""}`} data-corriendo={reloj.estado === "corriendo"} role={mesa ? "dialog" : "group"} aria-modal={mesa || undefined} aria-label="Reloj de ajedrez para dos jugadores">
       {panel(deArriba, true)}
       <div className={s.controles}>
         {pendiente ? <div className={s.confirmar} role="group" aria-label="Confirmar nuevo reloj"><p>¿Empezar de cero con {nombreRitmo(pendiente)}?</p><span>Se reinician los dos tiempos y las jugadas.</span><div><button type="button" onClick={() => setPendiente(null)}>Cancelar</button><button type="button" className={s.principal} onClick={() => { publicar(crearReloj(pendiente)); setPendiente(null); setAviso(""); }}>Sí, reiniciar</button></div></div> : <>
           <span className={s.ritmo}>{nombreRitmo(reloj.configuracion)}<small>MIN + SEG / JUGADA</small></span>
           <button type="button" className={s.principal} disabled={!cargado || reloj.estado === "terminado"} onClick={alternar}>{reloj.estado === "listo" ? "Empezar · blancas" : reloj.estado === "corriendo" ? "Ⅱ Pausar" : reloj.estado === "pausado" ? "▶ Continuar" : "Tiempo agotado"}</button>
           <button type="button" onClick={reiniciar} disabled={reloj.estado === "listo"}><Icono nombre="reiniciar" className="h-4 w-4"/><span>Nuevo reloj</span></button>
-          {mesa ? <button type="button" onClick={salir}><Icono nombre="menu" className="h-4 w-4"/><span>Salir / ajustes</span></button> : <button type="button" onClick={ampliar}><Icono nombre="reloj" className="h-4 w-4"/><span>Pantalla completa</span></button>}
+          <button type="button" className={s.ampliar} onClick={ampliar} aria-pressed={pantallaCompleta}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d={pantallaCompleta ? "M3 8h5V3m13 5h-5V3M3 16h5v5m13-5h-5v5" : "M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"}/></svg><span>{pantallaCompleta ? "Salir de pantalla completa" : "Pantalla completa"}</span></button>
+          {mesa && <button type="button" onClick={salir}><Icono nombre="menu" className="h-4 w-4"/><span>Salir / ajustes</span></button>}
         </>}
         <span className={s.sr} role="status" aria-live="polite">{mensaje}</span>
       </div>
@@ -169,14 +181,14 @@ export function RelojAjedrez() {
           <button type="submit" className="button-secondary">Aplicar tiempo</button>
         </form>
         <div className={s.opciones}>
-          <label><input type="checkbox" checked={enfrentados} onChange={e => setEnfrentados(e.target.checked)}/>Relojes enfrentados</label>
+          <label><input type="checkbox" checked={enfrentados} onChange={e => setEnfrentados(e.target.checked)}/>Girar el reloj de arriba en celular</label>
           <label><input type="checkbox" checked={sonido.activo} onChange={e => sonido.setActivo(e.target.checked)}/>Sonido al cambiar turno</label>
           <label><input type="checkbox" checked={mantenerPantalla} onChange={e => setMantenerPantalla(e.target.checked)}/>Mantener pantalla encendida, si el navegador lo permite</label>
           <button type="button" disabled={reloj.estado === "corriendo"} onClick={() => setInvertidos(v => !v)}>⇅ Cambiar lados</button>
         </div>
         {pantallaActiva && <p className={s.ayuda}>Pantalla activa durante la partida.</p>}
       </section>
-      <div className={s.consejos}><p><strong>Un teléfono entre los dos.</strong> Colocalo al lado del tablero y tocá Empezar. El reloj de arriba está girado para quien se sienta enfrente.</p><p><strong>También con teclado.</strong> Espacio cambia el turno; Escape pausa. Podés usar Tab y Enter para recorrer los controles.</p><p>El tiempo sigue al cambiar de pestaña. Si recargás la página, se recupera en pausa con el tiempo transcurrido descontado. Se guarda en este dispositivo, sin iniciar sesión.</p></div>
+      <div className={s.consejos}><p><strong>Un teléfono entre los dos.</strong> Colocalo al lado del tablero y tocá Empezar. En modo mesa vertical, podés girar el reloj de arriba para quien se sienta enfrente.</p><p><strong>También con teclado.</strong> Espacio cambia el turno; Escape pausa. Podés usar Tab y Enter para recorrer los controles.</p><p>El tiempo sigue al cambiar de pestaña. Si recargás la página, se recupera en pausa con el tiempo transcurrido descontado. Se guarda en este dispositivo, sin iniciar sesión.</p></div>
     </div>
   </div>;
 }
