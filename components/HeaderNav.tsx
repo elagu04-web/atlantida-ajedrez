@@ -8,13 +8,13 @@ import { LogoClub } from "./LogoClub";
 import { BusquedaRapida } from "./BusquedaRapida";
 import { Icono } from "./Icono";
 import {useAccesosMembresia} from '@/context/AccesosMembresiaContext';
-const navLinks = [{href:"/",label:"Inicio"},{href:"/jugar",label:"Jugar"},{href:"/entrenamiento",label:"Entrenar"},{href:"/noticias",label:"Noticias"},{href:"/historia",label:"Historia"},{href:"/torneos",label:"Torneos"},{href:"/jugadores",label:"Ranking"},{href:"/estadisticas",label:"Estadísticas"},{href:"/desafios",label:"Desafíos"},{href:"/transmision",label:"En directo"},{href:"/actividad",label:"Actividad"}];
+const navLinks = [{href:"/",label:"Inicio"},{href:"/jugar",label:"Jugar"},{href:"/reloj",label:"Reloj"},{href:"/entrenamiento",label:"Entrenar"},{href:"/noticias",label:"Noticias"},{href:"/historia",label:"Historia"},{href:"/torneos",label:"Torneos"},{href:"/jugadores",label:"Ranking"},{href:"/estadisticas",label:"Estadísticas"},{href:"/desafios",label:"Desafíos"},{href:"/transmision",label:"En directo"},{href:"/actividad",label:"Actividad"}];
 const gestion = [{href:"/gestion/membresias",label:"Socios y membresías"},{href:"/clases",label:"Mis clases"},{href:"/colegio",label:"Colegio Pinares"},{href:"/epico",label:"Épico"},{href:"/entrenamiento/entrenador",label:"Herramientas del profe"}];
 export function HeaderNav() {
   const [abierto,setAbierto]=useState(false);const pathname=usePathname();const {esAdmin}=useAuth();const {datos:accesos}=useAccesosMembresia();
   const activo=(href:string)=>href==="/"?pathname==="/":pathname===href||pathname.startsWith(`${href}/`);
   useEffect(()=>{function cerrar(e:KeyboardEvent){if(e.key==="Escape")setAbierto(false);}document.addEventListener("keydown",cerrar);return()=>document.removeEventListener("keydown",cerrar);},[]);
-  const publicos=[...navLinks.slice(0,3),{href:"/aprender",label:"Aprender desde cero"},...navLinks.slice(3)];
+  const publicos=[...navLinks.slice(0,4),{href:"/aprender",label:"Aprender desde cero"},...navLinks.slice(4)];
   const links=esAdmin?[...publicos,...gestion]:accesos?.docentes.permitido?[...publicos,{href:'/clases',label:'Mis juegos docentes'}]:publicos;
   return <div className="site-width">
     <div className="flex min-h-20 items-center justify-between gap-4">

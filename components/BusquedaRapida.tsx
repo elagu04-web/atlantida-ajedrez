@@ -23,7 +23,7 @@ export function BusquedaRapida() {
     return () => document.removeEventListener("keydown", atajo);
   }, []);
   const q = normalizar(consulta.trim());
-  const retos=[{href:"/jugar/caballo",titulo:"Desafío del caballo",detalle:"64 casillas · Superá las marcas del club",icono:"trofeo" as const}];
+  const retos=[{href:"/jugar/caballo",titulo:"Desafío del caballo",detalle:"64 casillas · Superá las marcas del club",icono:"trofeo" as const},{href:"/reloj",titulo:"Reloj de ajedrez",detalle:"Dos jugadores · Tiempos e incremento para tu tablero",icono:"reloj" as const}];
   const resultados = q ? [
     ...retos.filter(r=>normalizar(r.titulo).includes(q)),
     ...jugadores.filter(j => normalizar(`${j.nombre} ${j.apodo ?? ""}`).includes(q)).map(j => ({href:`/jugadores/${j.id}`, titulo:nombreVisible(j), detalle:`Jugador · Elo ${j.eloAtlantida}`, icono:"personas" as const})),
