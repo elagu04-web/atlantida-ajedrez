@@ -11,6 +11,28 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "bruno-nicolini-campeon-invicto-espacio-minga-2026",
+  titulo: "Bruno Nicolini, campeón invicto en Espacio Minga",
+  bajada: "Cuatro victorias, unas tablas y el primer puesto entre 16 jugadores. Bruno ganó el torneo de Espacio Minga en Canelones con 4½ de 5.",
+  categoria: "Orgullo del club",
+  fecha: "2026-11-16",
+  imagen: "/imagenes/bruno-nicolini-campeon-espacio-minga-2026.png",
+  imagenAlt: "Bruno Nicolini concentrado frente al tablero durante el torneo de Espacio Minga en Canelones",
+  imagenPosicion: "50% 40%",
+  imagenVertical: true,
+  imagenAspecto: "490 / 650",
+  imagenAncho: 490,
+  imagenSinCompresion: true,
+  pieFoto: "Bruno en Espacio Minga: campeón invicto con 4½ puntos en cinco partidas.",
+  parrafos: [
+    "Bruno se fue a Canelones y volvió campeón. Este domingo 15 de noviembre ganó el **Torneo Activo de Espacio Minga**, con **4½ puntos en cinco partidas y sin perder ninguna**. ¡Tremendo torneo!",
+    "Fueron **16 jugadores**, cinco rondas y partidas a ritmo **10+5**. Bruno arrancó con todo: **cuatro victorias seguidas** para llegar a la última ronda en la punta. No estaba repartiendo muchos puntos que digamos.",
+    "Para cerrar le tocó Mateo Young, el número uno del ranking inicial. Consiguió unas tablas y se aseguró el campeonato, con medio punto de ventaja sobre su escolta, Aniel Carnebia, a quien había vencido en la cuarta ronda.",
+    "**Cuatro ganadas, una tabla y el 90% de los puntos.** Otra linda alegría para los que compartimos el tablero con él en Atlántida.",
+    "**¡Felicitaciones, Bruno!** Cuando vengas al club habrá que mirar alguna de esas partidas. Pero explicalas tranquilo, que después nos toca jugarte enfrente.",
+    "[Mirá la clasificación final en Chess-Results](https://chess-results.com/tnr1529706.aspx?lan=2&art=1&rd=5&turdet=YES)."
+  ]
+}, {
   slug: "tio-ale-campeon-segundo-torneo-noviembre-2026",
   titulo: "El Tío Ale se lleva el segundo torneo de noviembre",
   tituloTarjeta: "El Tío Ale escapó del Hipopótamo y salió campeón",
