@@ -57,11 +57,18 @@ assert.equal((await db.query('select registrar_desafio_resuelto($1,$2,$3,$4) ok'
 assert.equal((await db.query('select mi_desafio_resuelto() estado')).rows[0].estado.resuelto,true);checks++;
 await db.query("select set_config('test.uid',$1,false)",[users[1]]);
 assert.equal((await db.query('select mi_desafio_resuelto() estado')).rows[0].estado.resuelto,false);checks++;
+// Un error o una pista se registra con el mismo RPC: ni reiniciar ni volver a
+// entrar con la cuenta permite convertir ese día en una resolución válida.
+assert.equal((await db.query('select registrar_desafio_error($1,$2) ok',[today,daily.datos.puzzle.id])).rows[0].ok,true);
+await assert.rejects(()=>db.query('select registrar_desafio_resuelto($1,$2,$3,$4)',[today,daily.datos.puzzle.id,'Jugador 1',daily.datos.puzzle.solution]),/error cortó la racha/);
+await db.exec('reset role');await db.query("select set_config('test.uid',$1,false)",[users[1]]);await db.exec('set role authenticated');
+const fallado=(await db.query('select mi_desafio_resuelto() estado')).rows[0].estado;assert.equal(fallado.fallado,true);assert.equal(fallado.resuelto,false);checks++;
 await db.query("select set_config('test.uid',$1,false)",[users[0]]);
 assert.equal((await db.query('select mi_desafio_resuelto() estado')).rows[0].estado.resuelto,true);checks++;
 assert.equal((await db.query('select nombre from tabla_rachas_desafios()')).rows[0].nombre,'Jugador 0');checks++;
 await db.exec('reset role');
 // Cuando se agota el nivel, recicla el menos reciente y no salta a un nivel ajeno.
+await db.exec('delete from desafios_fallados;');
 await db.query('delete from desafios_resueltos where dia=$1',[today]);await db.query('delete from desafios_diarios where dia=$1',[today]);
 const tier=(await db.query('select puzzle_id,datos,rating from desafios_banco where round(rating/50.0)*50=1850 order by puzzle_id')).rows;
 for(let i=0;i<tier.length;i++){await db.query("insert into desafios_diarios(dia,puzzle_id,rating,datos) values(('2020-01-01'::date+$1::integer),$2,$3,$4)",[i,tier[i].puzzle_id,tier[i].rating,tier[i].datos]);}
@@ -70,5 +77,5 @@ assert.equal((await db.query('select obtener_desafio_diario() d')).rows[0].d.dat
 await db.query('delete from desafios_diarios where dia=$1',[today]);
 const earlier=(await db.query("select ((now() at time zone 'America/Montevideo')::date-i)::text d from generate_series(3,5) i")).rows;await seed(earlier.map(r=>r.d));
 const higher=(await db.query('select obtener_desafio_diario() d')).rows[0].d;assert.equal(higher.objetivo,2000);assert.ok(Math.abs(higher.datos.puzzle.rating-2000)<=25);checks++;
-assert.equal(checks,24);await db.close();
+assert.equal(checks,25);await db.close();
 });

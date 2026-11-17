@@ -18,7 +18,9 @@ import { CompartirInvitacion } from "@/components/CompartirInvitacion";
 import { MovimientoPortada, CaballoPortada } from "@/components/MovimientoPortada";
 import { InvitacionMembresias } from "@/components/InvitacionMembresias";
 import { InvitacionHistoria } from "@/components/InvitacionHistoria";
+import { useAuth } from "@/context/AuthContext";
 export function PaginaInicio() {
+  const {session}=useAuth();
   const jugadores=useJugadoresEnVivo();
   const {cargando:cargandoJugadores,errorCarga:errorJugadores}=useJugadores();
   const {torneos,cargando:cargandoTorneos,errorCarga:errorTorneos}=useTorneos();
@@ -38,13 +40,13 @@ export function PaginaInicio() {
       <div className="home-welcome-actions"><Link href="#competencia" className="button-primary">Ver torneos<Icono nombre="flecha" className="h-4 w-4"/></Link><Link href="/jugar" className="button-secondary">Jugar contra los bots</Link><p className="home-welcome-note">{cargandoTorneos?"Cargando torneos…":proximos?`${proximos} ${proximos===1?"torneo con inscripción abierta":"torneos con inscripción abierta"}`:enCurso?`${enCurso} ${enCurso===1?"torneo en curso":"torneos en curso"}`:"Nos vemos en el tablero."}</p><Link href="/aprender" className="text-link text-xs">Aprender ajedrez desde cero →</Link><Link href="#sumate" className="text-link text-xs">¿Es tu primera vez? Te contamos cómo sumarte →</Link></div>
     </section>
     {(errorJugadores||errorTorneos)&&<p role="status" className="panel border-amber-500/30 p-4 text-sm text-amber-200">{errorJugadores||errorTorneos}</p>}
-    <div className="home-main-grid">
+    <div className="home-main-grid" data-sin-desafio={!session}>
     <section id="competencia" className="home-competition" aria-labelledby="titulo-competencia"><div className="section-heading"><div><p className="eyebrow mb-2 text-zinc-500">Tu próxima partida</p><h2 id="titulo-competencia">Torneos del club</h2></div><Link href="/torneos" className="text-link">Todos los torneos<Icono nombre="flecha" className="h-4 w-4" /></Link></div>
       <div className="segmented-control mb-5" role="group" aria-label="Torneos destacados">{[{id:"armado",texto:"Próximos"},{id:"en_curso",texto:"En curso"},{id:"todos",texto:"Últimos torneos"}].map(v=><button type="button" key={v.id} aria-pressed={vistaActiva===v.id} onClick={()=>setVista(v.id)}>{v.texto}{v.id==="en_curso"&&enCurso>0&&<span>{enCurso}</span>}</button>)}</div>
       {cargandoTorneos?<div className="home-tournament-list">{[0,1,2].map(i=><div key={i} className="panel h-56 p-6" aria-hidden="true"><div className="skeleton h-5 w-20" /><div className="skeleton mt-8 h-6 w-3/4" /><div className="skeleton mt-3 h-3 w-1/2" /></div>)}<span className="sr-only" role="status">Cargando torneos</span></div>:destacados.length?<div className="home-tournament-list">{destacados.map((t,i)=><TarjetaTorneo key={t.id} fotoFondo={i%2===0?"/imagenes/club-fondo.jpg":"/imagenes/fonchi-siciliana-final-13-octubre.jpg"} torneo={t} nombreJugador={nombreJugador} accion={t.estado==="armado"?<div className="home-tournament-actions"><CompartirInvitacion titulo={t.nombre} texto={`¿Te sumás a ${t.nombre}? El torneo de Atlántida Ajedrez tiene la inscripción abierta.`} ruta={`/torneos/${t.id}`} etiqueta="Invitar"/><Link href={`/torneos/${t.id}/inscribirse`} className="button-primary text-xs">Anotarme<Icono nombre="flecha" className="h-3.5 w-3.5"/></Link></div>:undefined}/>)}</div>:<div className="empty-state"><Icono nombre="trofeo" className="h-8 w-8 text-zinc-500" /><h3>{vistaActiva==="armado"?"La próxima competencia se está preparando":"No hay torneos en curso"}</h3><p>Podés consultar los resultados de los torneos anteriores.</p><button type="button" onClick={()=>setVista("todos")} className="text-link">Ver últimos torneos<Icono nombre="flecha" className="h-4 w-4" /></button></div>}
     </section>
     <div className="home-agenda"><AgendaClub/></div>
-    <aside className="home-daily" aria-label="Problema diario"><DesafioAjedrez/></aside>
+    {session&&<aside className="home-daily" aria-label="Problema diario"><DesafioAjedrez/></aside>}
     <div className="home-knight"><TarjetaRetoCaballo/></div>
     </div>
     <CarruselNoticias noticias={noticiasRecientes()} portada/>

@@ -872,3 +872,4 @@ button:not(:disabled), summary { cursor: pointer; }
 .play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]) .play-table{width:100%;max-width:100%;margin-inline:0}
 .play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]) .play-sidebar{height:auto;max-height:none}
 @media(max-width:900px){.play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]){grid-template-columns:minmax(0,1fr)}.play-layout[data-activa="true"]:has(> .play-table > [data-tablero-ajustable]) .play-table{width:100%;max-width:100%}}
+.home-main-grid[data-sin-desafio=true]{grid-template-columns:minmax(0,1fr);grid-template-areas:"competition" "agenda" "knight";grid-template-rows:auto}

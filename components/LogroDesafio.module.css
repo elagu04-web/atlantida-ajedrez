@@ -3,6 +3,7 @@
 .eyebrow{font-size:8px;letter-spacing:.15em;color:#a3e8c5;font-weight:600}
 .logro h2{font-size:clamp(18px,2vw,24px);line-height:1.25;letter-spacing:-.5px;margin:5px 0;color:#ecfff4;font-weight:600}
 .logro p{font-size:12px;line-height:1.65;color:#b4d0c6;margin:0}
+.logro[data-practica=true]{border-color:#e4c58757;background:linear-gradient(120deg,#30291d,#152336)}.logro[data-practica=true] .check{background:#e4c58718;color:#efd6a7;border-color:#e4c58757}.logro[data-practica=true] .eyebrow{color:#e4c587}.logro[data-practica=true] h2{color:#f5e8d0}.logro[data-practica=true] p{color:#d0c3ae}
 @keyframes entrada{from{opacity:0;translate:0 9px}to{opacity:1;translate:0 0}}
 @media(max-width:540px){.logro{padding:16px 14px;gap:11px}.check{width:35px;height:35px;font-size:21px}.logro p{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.logro{animation:none}}

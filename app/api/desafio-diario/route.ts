@@ -18,18 +18,25 @@ const buscar = unstable_cache(async (fecha:string) => {
   throw new Error("No llegó un problema dentro del rango de dificultad");
 },["desafio-diario-1800-v1"],{revalidate:86400});
 
-export async function GET() {
+export async function GET(request: Request) {
+  const headers={"Cache-Control":"private, no-store",Vary:"Authorization"};
+  const token=request.headers.get("authorization")?.match(/^Bearer (\S+)$/i)?.[1];
+  if(!token||token.length>3800)return Response.json({error:"Iniciá sesión para ver el desafío diario."},{status:401,headers});
+  const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:`Bearer ${token}`}}});
+  try {
+    const {data:{user},error}=await db.auth.getUser(token);
+    if(error||!user||user.is_anonymous)return Response.json({error:"Iniciá sesión para ver el desafío diario."},{status:401,headers});
+  }catch{return Response.json({error:"No se pudo comprobar tu sesión."},{status:503,headers});}
   const fecha=fechaMontevideo();
   // La base fija un único problema para todos, conserva el archivo y permite registrar rachas.
   // Solo se usa la clave pública; el SQL controla las escrituras y la identidad de la cuenta.
   try {
-    const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
     const {data,error}=await db.rpc("obtener_desafio_diario").abortSignal(AbortSignal.timeout(12000));
     if (!error && data?.datos && data.fecha===fecha) {
       const progresivo=Number.isInteger(data.objetivo)&&data.objetivo>=1800&&Number.isInteger(data.racha_base)&&data.racha_base>=0;
-      return Response.json({...convertirPuzzle(data.datos,data.fecha),registrable:true,...(progresivo?{objetivo:data.objetivo,rachaBase:data.racha_base}:{})},{headers:{"Cache-Control":"private, no-cache"}});
+      return Response.json({...convertirPuzzle(data.datos,data.fecha),registrable:true,...(progresivo?{objetivo:data.objetivo,rachaBase:data.racha_base}:{})},{headers});
     }
   } catch { /* La práctica sigue disponible mientras se activa o recupera la base. */ }
-  try { return Response.json(await buscar(fecha),{headers:{"Cache-Control":"private, no-cache"}}); }
-  catch { return Response.json({...reserva,reserva:true},{headers:{"Cache-Control":"private, no-cache"}}); }
+  try { return Response.json(await buscar(fecha),{headers}); }
+  catch { return Response.json({...reserva,reserva:true},{headers}); }
 }
