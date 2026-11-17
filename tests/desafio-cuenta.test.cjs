@@ -32,7 +32,7 @@ test('una sesión verificada consulta el problema con el token de su cuenta',asy
 });
 test('sin sesión no se monta el tablero, y en portada no se muestra el desafío',()=>{
  const componentes=cargar('../components/DesafioAjedrez.tsx',{
-  'react-chessboard':{},'./MarcoTablero':{},'@/context/useMiJugador':{},'@/lib/players':{},'chess.js':{},'@/lib/useSonidoPiezas':{},'./Icono':{},'@/lib/desafios':{},'@/data/desafio-reserva.json':{},'./RevisionDesafio':{},'./GuardarRacha':{},'./LogroDesafio':{},'@/context/AuthContext':{useAuth:()=>({session:null,cargando:false})},'@/lib/identidadJugador':{},'./AuthWidget':{AuthWidget:()=>React.createElement('button',null,'Iniciar sesión')},'@/lib/supabase':{},'@/lib/intentoDesafio':{}
+  'react-chessboard':{},'./MarcoTablero':{},'@/context/useMiJugador':{},'@/lib/players':{},'chess.js':{},'@/lib/useSonidoPiezas':{},'./Icono':{},'@/lib/desafios':{},'@/data/desafio-reserva.json':{},'./RevisionDesafio':{},'./ResultadoDesafio':{},'./GuardarRacha':{},'./LogroDesafio':{},'@/context/AuthContext':{useAuth:()=>({session:null,cargando:false})},'@/lib/identidadJugador':{},'./AuthWidget':{AuthWidget:()=>React.createElement('button',null,'Iniciar sesión')},'@/lib/supabase':{},'@/lib/intentoDesafio':{}
  });
  assert.equal(renderToStaticMarkup(React.createElement(componentes.DesafioAjedrez)), '');
  const html=renderToStaticMarkup(React.createElement(componentes.DesafioAjedrez,{ampliado:true}));assert.match(html,/Iniciá sesión/);assert.doesNotMatch(html,/play-board|Ver pista|Reiniciar/);
