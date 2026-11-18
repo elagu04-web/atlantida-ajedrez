@@ -11,6 +11,39 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "gabi-campeon-triple-repeticion-17-noviembre-2026",
+  titulo: "¡Polémica, triple repetición y Gabi campeón!",
+  bajada: "Un fallo del juez, la punta abierta hasta el cierre y Gabi campeón por enfrentamiento directo. Ezequiel y Yamandú se llevaron las mayores subidas de Elo.",
+  categoria: "Vida del club",
+  fecha: "2026-11-17",
+  imagen: "/imagenes/gabi-campeon-20-octubre-2026.jpg",
+  imagenAlt: "Gabriel Coronel frente al tablero en el club Atlántida Ajedrez",
+  imagenPosicion: "50% 38%",
+  imagenVertical: true,
+  imagenAspecto: "3 / 4",
+  imagenAncho: 620,
+  imagenSinCompresion: true,
+  pieFoto: "Gabi volvió a quedarse con un torneo de los martes. Foto del archivo del club.",
+  parrafos: [
+    "**¡Qué cierre tuvimos este martes!** Nueve jugadores, cinco rondas y el primer puesto en suspenso hasta el último momento. Hubo tablas por triple repetición cobradas por el juez y hubo que mirar los desempates para conocer al campeón. El titular viene con todo, pero el festejo tiene nombre: **Gabriel Coronel**.",
+    "Gabi arrancó con **cuatro victorias consecutivas**: les ganó a Agustín Baudry, Yamandú, Juan Diego y al Tío Ale. Parecía encaminado, pero en la quinta apareció **Camilo y le cortó la racha**. Camilo no se llevó el torneo, pero se dio el gusto de ganarle al campeón y agregarle un poco más de suspenso a la noche.",
+    "**Gabi y Ale Visi terminaron con 4 puntos de 5.** El título se resolvió por **enfrentamiento directo**: como Gabi había ganado el duelo entre ambos en la cuarta ronda, quedó primero. **No hubo una final extra.** El Tío Ale, campeón de la semana pasada, volvió a dar pelea hasta el cierre y se quedó con el segundo puesto.",
+    "Y sí, el juez también tuvo su momento de protagonismo: **en el cierre cobró tablas por triple repetición**. Entre posiciones que volvían y cuentas que todavía había que hacer, nos quedó una noche con todos los ingredientes para la crónica. La posición se podrá repetir; un martes tranquilo nos viene costando bastante.",
+    "**Fonchi completó el podio con 3½ puntos**, seguido por **Ezequiel Núñez y Yamandú Martínez**, también con 3½. Los tres consiguieron tres victorias, unas tablas y una derrota. Fonchi y Ezequiel cerraron con tablas entre ellos; Yamandú hizo lo propio frente a Agustín Baudry. A medio punto de la punta había bastante gente golpeando la puerta.",
+    "**Los que más subieron su Elo Atlántida en este torneo fueron Ezequiel y Yamandú.** Ezequiel sumó **32 puntos, de 1527 a 1559**: después de perder con Ale en la primera, encadenó tres victorias y cerró con tablas frente a Fonchi. Yamandú subió **30 puntos, de 1461 a 1491**, con triunfos ante Juan Diego, Fernando y Camilo. Tremenda noche para los dos.",
+    "El tercer mayor salto fue el de **Gabi: +10, de 1730 a 1740**. Campeonato y Elo para llevar a casa. Ale también sumó: **+3, de 1851 a 1854**. Hay varias formas de irse contento de un torneo, y mirar cómo crece el numerito es una de ellas.",
+    "**¡Felicitaciones, Gabi, y gracias a todos por otra noche de ajedrez!** Entre el campeón, el Tío que sigue ahí arriba, Fonchi metido en el podio y los que vienen subiendo fuerte, el próximo martes promete. Al juez le vamos reservando una silla cómoda.",
+    "[Mirá la clasificación y todos los resultados del torneo](https://atlantida-ajedrez.vercel.app/torneos/566889fc-fa22-46f3-94d9-4b0411b35e52) y [cómo viene el ranking del club](https://atlantida-ajedrez.vercel.app/jugadores)."
+  ],
+  galeria: [{
+    imagen: "/imagenes/fonchi-siciliana-final-13-octubre.jpg",
+    alt: "Fonchi concentrado frente al tablero, con sus lentes de sol, en Atlántida Ajedrez",
+    pie: "Fonchi volvió a meterse en el podio: tercero con 3½ puntos. Foto del archivo del club.",
+    ancho: 1536,
+    alto: 2048,
+    maxAncho: 620
+  }]
+}, {
   slug: "bruno-nicolini-campeon-invicto-espacio-minga-2026",
   titulo: "Bruno Nicolini, campeón invicto en Espacio Minga",
   bajada: "Cuatro victorias, unas tablas y el primer puesto entre 16 jugadores. Bruno ganó el torneo de Espacio Minga en Canelones con 4½ de 5.",
