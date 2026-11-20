@@ -8,6 +8,7 @@
 .invitacion h2{font-size:clamp(42px,6vw,76px);line-height:1.04;letter-spacing:-.055em;font-weight:650;margin:0}
 .invitacion h2 em{display:block;font-family:Georgia,serif;font-weight:400;color:#e8cb93}
 .bajada{font-size:16px;color:#c0d2e6;line-height:1.7;max-width:460px;margin:20px 0 0}
+.historia{max-width:550px;margin-top:16px;padding-left:14px;border-left:2px solid #d8b87c88;font-size:13px;color:#b4c9df;line-height:1.8}.historia strong{font-weight:600;color:#eed4a3}
 .datos{display:flex;flex-wrap:wrap;gap:22px 34px;margin:28px 0 0;padding:22px 0;border-block:1px solid #c2d7ee25;max-width:570px}
 .datos>div{display:grid;gap:7px;min-width:110px}
 .datos dt{font-size:10px;color:#aac2dc;letter-spacing:.04em}

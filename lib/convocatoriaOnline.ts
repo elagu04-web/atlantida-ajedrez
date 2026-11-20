@@ -8,5 +8,5 @@ export const convocatoriaOnline = {
   rondas: 5,
   dias: 3,
   imagen: '/imagenes/sabados-aprender-ajedrez-primer-plano.jpg',
-  invitacion: '♟️ ¿Te quedó una revancha pendiente? Llega la Copa Revancha de Atlántida: 5 rondas suizas, partidas 5+3 y 3 días para coordinar cada ronda con tu rival. Jugamos en la página, por el mismo Elo del club, y las partidas quedan guardadas para repasarlas. Entrá con tu cuenta y anotate. ¡Se puede sumar gente nueva!',
+  invitacion: '♟️ Bruno se llevó el torneo anterior al ganarle a Fonchi en la última ronda. ¡Ahora toca la revancha! Llega la Copa Revancha de Atlántida: 5 rondas suizas, partidas 5+3 y 3 días para coordinar cada ronda con tu rival. Jugamos en la página, por el mismo Elo del club, y las partidas quedan guardadas para repasarlas. Entrá con tu cuenta y anotate. ¡Se puede sumar gente nueva!',
 };

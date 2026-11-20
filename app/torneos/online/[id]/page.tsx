@@ -5,7 +5,7 @@ import {URL_SITIO} from '@/lib/seo';
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
  const {id}=await params;
  if(id!==copa.id)return {title:'Sala del torneo online · Atlántida Ajedrez',robots:{index:false,follow:true}};
- const description='¿Te quedó una revancha pendiente? 5 rondas suizas, partidas 5+3 y 3 días para coordinar con tu rival. Jugá en la página por el Elo del club.';
+ const description='Bruno le ganó a Fonchi y se llevó la edición anterior. Ahora toca la revancha: 5+3, 5 rondas y 3 días para coordinar. Sumate al torneo online del club.';
  return {title:copa.nombre,description,alternates:{canonical:URL_SITIO+copa.ruta},openGraph:{type:'website',title:copa.nombre,description,url:URL_SITIO+copa.ruta,images:[{url:URL_SITIO+copa.imagen,alt:'Piezas de ajedrez sobre un tablero de madera'}]},twitter:{card:'summary_large_image',title:copa.nombre,description,images:[URL_SITIO+copa.imagen]}};
 }
 export default async function Pagina({params}:{params:Promise<{id:string}>}){const {id}=await params;return <TorneosOnline id={id}/>;}
