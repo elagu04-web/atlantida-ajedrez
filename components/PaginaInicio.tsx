@@ -19,6 +19,7 @@ import { MovimientoPortada, CaballoPortada } from "@/components/MovimientoPortad
 import { InvitacionMembresias } from "@/components/InvitacionMembresias";
 import { InvitacionHistoria } from "@/components/InvitacionHistoria";
 import { useAuth } from "@/context/AuthContext";
+import { InvitacionTorneoOnline } from "@/components/InvitacionTorneoOnline";
 export function PaginaInicio() {
   const {session}=useAuth();
   const jugadores=useJugadoresEnVivo();
@@ -49,6 +50,7 @@ export function PaginaInicio() {
     {session&&<aside className="home-daily" aria-label="Problema diario"><DesafioAjedrez/></aside>}
     <div className="home-knight"><TarjetaRetoCaballo/></div>
     </div>
+    <InvitacionTorneoOnline compacta/>
     <CarruselNoticias noticias={noticiasRecientes()} portada/>
     <MesaEstudioClub/>
     <InvitacionMembresias/>

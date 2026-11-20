@@ -8,6 +8,8 @@ import {tablaTorneoOnline,etiquetaEstadoOnline,type TorneoOnline,type DatosTorne
 import {AuthWidget} from './AuthWidget';
 import {IdentidadJugador} from './IdentidadJugador';
 import {useMiJugador} from '@/context/useMiJugador';
+import {InvitacionTorneoOnline} from './InvitacionTorneoOnline';
+import {convocatoriaOnline} from '@/lib/convocatoriaOnline';
 import s from './TorneosOnline.module.css';
 
 async function rpc<T>(nombre:string,args:Record<string,unknown>={}):Promise<T>{
@@ -29,7 +31,8 @@ export function TorneosOnline({id}:{id?:string}){
  const {session,cargando}=useAuth();
  return <div className={s.pagina}>
   <header className={s.encabezado}><div><p className={s.sello}>El club, desde donde estés</p><h1>Torneos <em>online.</em></h1><p>Un rival, un horario y una mesa en Atlántida.</p></div><Link href={id?'/torneos/online':'/jugar/online'} className="text-link">{id?'Todos los torneos':'Ir a la sala online'} →</Link></header>
-  {cargando?<p role="status">Comprobando tu sesión…</p>:session?<CuentaTorneos key={session.user.id+':'+(id??'lista')} id={id} usuario={session.user.id}/>:<section className={s.panel}><p className={s.sello}>Tu lugar en el torneo</p><h2>Entrá con tu cuenta para participar.</h2><p>Podés usar tu usuario del club o Google. La inscripción, los horarios y las partidas quedan asociados a tu cuenta.</p><AuthWidget/></section>}
+  {(!id||id===convocatoriaOnline.id&&!session)&&<InvitacionTorneoOnline enSala={id===convocatoriaOnline.id}/>}
+  {cargando?<p role="status">Comprobando tu sesión…</p>:session?<CuentaTorneos key={session.user.id+':'+(id??'lista')} id={id} usuario={session.user.id}/>:<section id="acceso-torneo" className={s.panel}><p className={s.sello}>Tu lugar en el torneo</p><h2>Entrá con tu cuenta para participar.</h2><p>Podés usar tu usuario del club o Google. La inscripción, los horarios y las partidas quedan asociados a tu cuenta.</p><AuthWidget/></section>}
  </div>;
 }
 function CuentaTorneos({id,usuario}:{id?:string;usuario:string}){
