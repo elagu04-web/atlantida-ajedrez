@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { Chess, type Square, type PieceSymbol } from "chess.js";
 import { Chessboard } from "react-chessboard";
+import { estilosUltimoMovimiento } from '@/lib/ultimoMovimiento';
 import { MarcoTablero } from "./MarcoTablero";
 import Image from "next/image";
 import Link from "next/link";
@@ -162,10 +163,10 @@ function MesaBot({cuenta}:{cuenta:string}){
     const signo=orientacion==="white"?1:-1;const x="abcdefgh".indexOf(square[0])+(e.key==="ArrowRight"?signo:e.key==="ArrowLeft"?-signo:0);const y=Number(square[1])+(e.key==="ArrowUp"?signo:e.key==="ArrowDown"?-signo:0);
     if(x<0||x>7||y<1||y>8)return;const destino=`${"abcdefgh"[x]}${y}` as Square;setFoco(destino);tableroRef.current?.querySelector<HTMLButtonElement>(`[data-square="${destino}"] button`)?.focus();
   }
-  const estilos:Record<string,CSSProperties>={};const ultima=vista.historial.at(-1);
-  if(recorrido!==null){const uci=RECORRIDO_MORRA[recorrido].uci;if(uci)for(const s of [uci.slice(0,2),uci.slice(2,4)])estilos[s]={backgroundColor:"#e4be7170"};}
-  else if(revision!==null){const m=vista.historial[pasoRevision-1];if(m)for(const s of [m.from,m.to])estilos[s]={backgroundColor:"#e4be7170"};}
-  else if(ultima)for(const s of [ultima.from,ultima.to])estilos[s]={backgroundColor:"#e4be7170"};
+  const ultima=vista.historial.at(-1);
+  const uciRecorrido=recorrido!==null?RECORRIDO_MORRA[recorrido].uci:'';
+  const ultimaVisible=revision!==null?vista.historial[pasoRevision-1]:recorrido!==null?uciRecorrido?{from:uciRecorrido.slice(0,2),to:uciRecorrido.slice(2,4)}:null:ultima;
+  const estilos:Record<string,CSSProperties>=estilosUltimoMovimiento(ultimaVisible);
   if(seleccion){estilos[seleccion]={backgroundColor:"#668ed4b0"};for(const m of posicion.moves({square:seleccion,verbose:true}))estilos[m.to]={backgroundImage:posicion.get(m.to)?"radial-gradient(transparent 55%, #25426da0 56%)":"radial-gradient(#25426d80 19%, transparent 21%)"};}
   if(posicion.isCheck())for(const fila of posicion.board())for(const p of fila)if(p?.type==="k"&&p.color===posicion.turn())estilos[p.square]={backgroundColor:"#dc6c6c"};
   const perfilActivo=enJuego?vista.perfil:perfil;

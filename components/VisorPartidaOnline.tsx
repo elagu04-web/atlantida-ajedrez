@@ -6,6 +6,7 @@ import { Chessboard } from 'react-chessboard';
 import { MarcoTablero } from './MarcoTablero';
 import type { PartidaOnline } from '@/lib/partidaOnline';
 import { recorridoOnline } from '@/lib/recorridoOnline';
+import { estilosUltimoMovimiento } from '@/lib/ultimoMovimiento';
 import { descargarOnline } from '@/lib/juegoOnline';
 import styles from './VisorPartidaOnline.module.css';
 
@@ -57,7 +58,7 @@ export function VisorPartidaOnline({ partida, color, volver }: { partida: Partid
           id: `revision-online-${partida.id}`, position: recorrido.posiciones[indice], boardOrientation: (girado ? color === 'w' ? 'b' : 'w' : color) === 'w' ? 'white' : 'black',
           allowDragging: false, allowAutoScroll: false, animationDurationInMs: 160,
           lightSquareStyle: { backgroundColor: '#f0e6ce' }, darkSquareStyle: { backgroundColor: '#638480' },
-          squareStyles: jugada ? { [jugada.origen]: { backgroundColor: '#e4be7155' }, [jugada.destino]: { backgroundColor: '#e4be7180' } } : {},
+          squareStyles: estilosUltimoMovimiento(jugada ? {from:jugada.origen,to:jugada.destino} : null),
         }} /></div>
         <div className={styles.controles} role="group" aria-label="Recorrer la partida" tabIndex={0} onKeyDown={teclado} aria-keyshortcuts="ArrowLeft ArrowRight Home End">
           <button aria-label="Ir al comienzo de la partida" disabled={indice === 0} onClick={() => ir(0)}>↤</button>

@@ -3,6 +3,7 @@ import {memo,useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {Chess,type Square} from 'chess.js';
 import {Chessboard} from 'react-chessboard';
 import {destinoTablero} from '@/lib/interaccionTablero';
+import {estilosUltimoMovimiento} from '@/lib/ultimoMovimiento';
 import {destinosPremovimiento,normalizarPremovimiento,resolverPremovimiento,type PremovimientoOnline} from '@/lib/premovimientoOnline';
 import styles from './TallerAperturas.module.css';
 type Props={mesa:string;ply:number;chess:Chess;visible:Chess;color:'w'|'b';habilitado:boolean;puedePremover:boolean;mover:(from:string,to:string,promotion?:string)=>boolean};
@@ -33,7 +34,7 @@ export const TableroOnline=memo(function TableroOnline({mesa,ply,chess,visible,c
   return()=>{vigente=false;};
  },[pre,mesa,ply,chess,color,habilitado,interactivo,mover]);
  const estilos=useMemo(()=>{
-  const s:Record<string,CSSProperties>={};
+  const s:Record<string,CSSProperties>=estilosUltimoMovimiento(visible.history({verbose:true}).at(-1));
   if(pre&&pre.mesa===mesa)for(const sq of [pre.uci.slice(0,2),pre.uci.slice(2,4)])s[sq]={backgroundColor:'#986de477',boxShadow:'inset 0 0 0 3px #d4b3ff'};
   if(seleccionActual&&interactivo){
    s[seleccionActual]={backgroundColor:puedePremover?'#986de490':'#e4be7180'};
@@ -41,7 +42,7 @@ export const TableroOnline=memo(function TableroOnline({mesa,ply,chess,visible,c
    for(const to of destinos)s[to]={...s[to],backgroundImage:'radial-gradient(circle, #173f3baa 0 15%, transparent 17%)'};
   }
   return s;
- },[chess,color,interactivo,mesa,pre,puedePremover,seleccionActual]);
+ },[chess,visible,color,interactivo,mesa,pre,puedePremover,seleccionActual]);
  function cancelar(){setPre(null);setSeleccion(null);setPromocion(null);setAviso('');}
  function confirmar(from:string,to:string,promotion?:string){
   setPromocion(null);setSeleccion(null);setAviso('');
