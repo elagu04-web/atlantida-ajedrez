@@ -16,6 +16,8 @@ El resultado se guarda antes de mostrar la animación. La tira se rasga con mous
 
 Las cartas normales y foil muestran nombre, Elo unificado actual, ranking y partidas desde los mismos datos públicos que Ranking. Full art reserva espacio a la foto y deja nombre y Elo. No se inventan estadísticas para Charly.
 
+La composición se define en `components/CartaAlbum.tsx` y su módulo CSS: proporción 2:3, retrato sin ventana interior, transición hacia el nombre y las estadísticas, un único borde y sello inferior de rareza. El estado de la colección queda fuera de la carta. Común usa metal frío, rara violeta y mítica oro; full art extiende la foto y desplaza el Elo a la esquina. La tipografía se adapta al ancho de cada carta, con tamaños mínimos para la vista móvil. El álbum muestra cuatro columnas en escritorio, tres en pantallas intermedias y dos en celular; el detalle y la revelación usan cartas más grandes. La vista de prueba local no forma parte de la publicación.
+
 ## Intercambios
 Hay que activar «Compartir mis repetidas». Otros participantes de la mesa ven sólo el nombre público y las copias disponibles, sin correos ni la colección completa. Cada versión tiene existencias independientes.
 
