@@ -1,37 +1,44 @@
-# Álbum del club · primera edición
+# Álbum del club
+Ruta: `/album`. Edición inicial: 24 jugadores con retrato individual y 8 figuritas de campeones. Cada una tiene versión normal, foil y full art: 32 figuritas, 96 versiones coleccionables. El catálogo es público; cada colección es privada.
 
-Ruta pública: `/album`. El catálogo muestra 60 figuritas del club (52 jugadores y 8 momentos). La colección de cada cuenta es privada. Se requiere una cuenta real y un jugador vinculado para abrir sobres o intercambiar.
+## Sobres por actividad
+- Bienvenida: 6 figuritas una sola vez. Incluye el propio jugador normal si está en esta edición.
+- Torneo presencial finalizado: 6, con al menos una partida registrada entre dos jugadores. No alcanza con anotarse o recibir un BYE.
+- Torneo online finalizado: 6, con participación efectiva en una mesa con resultado confirmado.
+- Victoria online: 3, en una partida terminada entre dos cuentas distintas, con al menos cuatro medias jugadas. No cuentan tablas, mesas anuladas ni partidas sin jugar.
+- Desafío diario: 3, por resolución oficial sin errores ni pistas.
+- Se reconocen actividades desde el 24/11/2026. Los torneos online que empezaron antes y terminan después también cuentan.
+- El servidor comprueba cada actividad. La misma clave de recompensa nunca entrega dos veces. No hay venta de sobres ni un sobre gratuito por entrar cada día.
 
-## Reglas iniciales
+La rareza se sortea primero: común 70%, rara 25%, mítica 5%. Luego se sortea la versión, de forma independiente: normal 80%, foil 15%, full art 5%. Dentro de cada combinación se elige uniformemente entre las figuritas activas. La figurita propia garantizada de bienvenida es una excepción explícita al sorteo.
 
-- Un sobre de bienvenida de 6 figuritas por cuenta. Incluye su propio jugador si está en esta edición.
-- Un sobre gratis de 3 figuritas por día de Uruguay. La fecha la calcula Postgres; el cliente no decide cuándo puede reclamarlo.
-- Los sobres pueden traer repetidas. Las especiales tienen un peso de aparición menor que las comunes, igual para todos. No hay pagos ni venta de sobres.
-- Para intercambiar se activa explícitamente «Compartir mis repetidas». Otros participantes de la mesa ven el nombre público del club y las repetidas disponibles, sin correos ni la colección completa.
-- Una propuesta ofrece una copia por otra. El emisor debe tener una repetida libre; esa copia queda reservada. El receptor también debe tener una repetida libre al aceptar.
-- Nunca sale la última copia del álbum. Aceptar ejecuta las dos entregas en la misma transacción, o ninguna. Repetir una solicitud no entrega dos veces.
-- Máximo de 5 propuestas salientes pendientes y 10 entrantes por receptor. Sólo una propuesta pendiente por pareja. Vencen a los 7 días; se pueden cancelar o rechazar antes.
-- Desactivar el intercambio cancela las propuestas pendientes de esa cuenta. Los sobres y la colección permanecen guardados.
-- El historial guarda todos los cambios; la interfaz presenta las últimas 60 propuestas.
+El resultado se guarda antes de mostrar la animación. Rasgar el sobre y dar vuelta cada carta son efectos visuales: recargar no permite cambiar lo obtenido. Se puede omitir la animación y se respeta movimiento reducido.
 
-## Catálogo y ampliaciones
+## Intercambios
+Hay que activar «Compartir mis repetidas». Otros participantes de la mesa ven sólo el nombre público y las copias disponibles, sin correos ni la colección completa. Cada versión tiene existencias independientes.
 
-`lib/albumCatalogo.json` fija los identificadores y números de esta edición. No renumerar ni reutilizar identificadores. El motor privado contiene la misma lista de identificadores y pesos, sembrada en la migración `album_club_figuritas`. Cambiar fotos o corregir textos no altera la propiedad de las figuritas.
+Una propuesta ofrece una copia por otra; se reserva la copia ofrecida. El receptor acepta o rechaza; el emisor puede cancelar antes. Ambas entregas se ejecutan en una transacción y nunca se entrega la última copia de una versión. Los reintentos son idempotentes.
 
-Las fotos usan los retratos de `lib/retratosJugadores.ts` y las imágenes ya publicadas del club. Si falta una foto, aparece un monograma; no se inventan retratos. Las fotos nuevas del perfil tienen prioridad sobre las anteriores.
+Límites: 5 propuestas salientes, 10 entrantes por receptor y una pendiente por pareja. Caducan a los 7 días. Desactivar los intercambios cancela los pendientes. El historial conserva todos los cambios y la interfaz muestra las últimas 60 propuestas.
 
-Nuevos jugadores o nuevas ediciones requieren actualizar el catálogo y añadir una migración; no ampliar el catálogo sólo en el cliente. No borrar las figuritas que alguien ya consiguió. La edición inicial omite el segundo registro de Facundo Rodríguez para no duplicar su figurita; no modifica registros ni resultados del ranking.
+## Catálogo ampliable y retratos
+El administrador puede abrir «Gestión del álbum» e incorporar jugadores que ya tengan una foto en su perfil. El servidor vuelve a comprobar el permiso y la existencia de la foto. Cada incorporación añade el siguiente número y las tres versiones, sin desplegar código.
+
+Usar retratos individuales recortados; no fotos con dos personas. El catálogo conserva su propia foto para que un cambio del perfil no introduzca a otro jugador en una figurita existente. La edición inicial usa los recortes del club en `public/imagenes/retratos`.
+
+`lib/albumCatalogo.json` es la base inicial que permite mostrar el álbum mientras se consulta el catálogo público remoto. La base de datos es la autoridad para incorporaciones. No reutilizar identificadores ni números activos.
+
+El prototipo inicial incluía figuritas sin foto. Sus copias permanecen guardadas internamente, pero se retiran de la selección y de los intercambios. Si el administrador incorpora al jugador al cargarle una foto, su identificador se reactiva y recupera esas copias. No se borraron sobres ni inventarios durante este ajuste.
 
 ## Persistencia y autorización
+Tablas en `album_privado`: catálogo, perfiles, inventario, sobres e intercambios, con RLS y sin acceso directo de clientes. `public.album_club` es un envoltorio SECURITY INVOKER de un motor privado que comprueba la cuenta real y su jugador vinculado. El catálogo tiene un RPC de lectura pública que devuelve sólo nombres, números, fotos y atributos del coleccionable.
 
-Tablas en `album_privado`: `catalogo`, `perfiles`, `inventario`, `sobres`, `intercambios`. RLS activado y sin permisos directos para clientes: el acceso se realiza por `public.album_club`, envoltorio SECURITY INVOKER de un motor privado que comprueba `auth.uid()`, rechaza sesiones anónimas y resuelve el jugador en el servidor.
-
-Todos los movimientos de una cuenta se serializan con un bloqueo de transacción. Un intercambio bloquea las dos cuentas en orden de UUID, vuelve a comprobar las reservas y ejecuta ambas entregas juntas. Los UUID de propuesta y las claves de sobre hacen idempotentes los reintentos. Las propuestas ajenas no se pueden leer ni contestar.
-
-Los avisos informativos de Supabase sobre RLS sin políticas en este esquema privado son intencionales: deniegan el acceso directo y el motor autorizado es la única vía de escritura. Los índices de claves foráneas están incluidos.
+Los movimientos se serializan por cuenta; un intercambio bloquea ambas cuentas en orden de UUID y comprueba de nuevo las reservas. Las claves de sobre y los UUID de propuesta evitan entregas duplicadas. Los avisos informativos de RLS sin políticas son intencionales en estas tablas privadas: el acceso directo queda denegado.
 
 ## Validación
-
 `node --test tests/album-club.test.cjs tests/rpc-cuenta.test.cjs`
 
-Las pruebas ejecutan la migración en Postgres/PGlite: permisos, usuarios anónimos, aislamiento entre cuentas, sobres idempotentes, bienvenida con figurita propia, reservas, última copia, aceptación doble, rechazo, cancelación, caducidad, falta de existencias y baja de la mesa de intercambio. En Supabase se verificó la apertura/reintento de un sobre dentro de una transacción revertida, sin entregar figuritas de prueba a usuarios reales.
+Postgres/PGlite verifica autorización, privacidad, sobres y recompensas idempotentes, límites exactos de rareza y acabado, participación real, victorias de ambos colores y roles, desafíos fallidos, reservas, última copia por versión, aceptación doble, caducidad, falta de existencias e incorporaciones sólo por administrador. También comprueba que todos los retratos iniciales existan.
+
+## Recurso de Bruno
+Recorte guardado en `public/imagenes/retratos/bruno-album-transparente.webp`, generado con la herramienta integrada imagegen a partir de la foto facilitada para la noticia de Espacio Minga. Prompt: extraer sólo a Bruno en primer plano, conservar identidad, cabello, expresión, ropa, postura, brazos y ajedrez; eliminar por completo al otro jugador, la pared y las sillas; fondo transparente; sin texto ni estilización. Se conserva la fotografía original de la noticia.

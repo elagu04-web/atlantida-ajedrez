@@ -51,7 +51,7 @@ export function PaginaInicio() {
     <div className="home-knight"><TarjetaRetoCaballo/></div>
     </div>
     <InvitacionTorneoOnline compacta/>
-    <Link href="/album" className="panel flex flex-wrap items-center justify-between gap-5 border-amber-300/20 bg-gradient-to-r from-amber-200/5 to-blue-400/5 p-6 sm:p-8"><div><p className="eyebrow mb-2 text-amber-200">Nuevo · El álbum del club</p><h2 className="text-2xl font-bold tracking-tight">Nuestras caras. Nuestras historias.</h2><p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">Coleccioná figuritas de los jugadores y los momentos del club. Abrí tus sobres gratis e intercambiá las repetidas.</p></div><span className="button-secondary text-amber-200">Abrir el álbum →</span></Link>
+    <Link href="/album" className="panel flex flex-wrap items-center justify-between gap-5 border-amber-300/20 bg-gradient-to-r from-amber-200/5 to-blue-400/5 p-6 sm:p-8"><div><p className="eyebrow mb-2 text-amber-200">Nuevo · El álbum del club</p><h2 className="text-2xl font-bold tracking-tight">Nuestras caras. Nuestras historias.</h2><p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">Coleccioná figuritas de los jugadores y campeones del club. Abrí tus sobres gratis e intercambiá las repetidas.</p></div><span className="button-secondary text-amber-200">Abrir el álbum →</span></Link>
     <CarruselNoticias noticias={noticiasRecientes()} portada/>
     <MesaEstudioClub/>
     <InvitacionMembresias/>
