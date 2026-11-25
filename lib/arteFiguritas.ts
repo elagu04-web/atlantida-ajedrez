@@ -3,7 +3,7 @@ import type {Figurita} from './album';
 export function arteFigurita(f:Pick<Figurita,'baseId'|'jugadorId'>){
  let semilla=2166136261;for(const c of f.baseId)semilla=Math.imul(semilla^c.charCodeAt(0),16777619)>>>0;
  const fonchi=f.jugadorId==='adaff79d-3a75-4532-8ff7-3ec7238a21b6';
- const familia=fonchi?'hipopotamo':(['club','mar','mate'] as const)[semilla%3];
+ const familia=fonchi?'hipopotamo':(['club','mar','club'] as const)[semilla%3];
  let x=semilla%8,y=(semilla>>>4)%8;const puntos=[`${x*10+15},${y*10+15}`];
  const saltos=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
  let estado=semilla||1;
