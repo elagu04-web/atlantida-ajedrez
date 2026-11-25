@@ -15,7 +15,7 @@ import s from './AlbumClub.module.css';
 function Modal({ titulo, cerrar, children }: { titulo: string; cerrar: () => void; children: React.ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const dialog = ref.current; dialog?.showModal(); return () => dialog?.close(); }, []);
-  return <dialog ref={ref} className={s.modal} onCancel={cerrar} onClick={e => { if (e.target === e.currentTarget) cerrar(); }} aria-label={titulo}>
+  return <dialog ref={ref} className={s.modal} onCancel={e => { e.preventDefault(); cerrar(); }} onClick={e => { if (e.target === e.currentTarget) cerrar(); }} aria-label={titulo}>
     <div className={s.modalHeader}><h2>{titulo}</h2><button type="button" onClick={cerrar} aria-label="Cerrar">✕</button></div>{children}
   </dialog>;
 }
