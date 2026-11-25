@@ -110,3 +110,10 @@
   .foil { opacity: .12 !important; }
   .glare { opacity: .18 !important; }
 }
+.card[data-foil-finish=normal] .foil{display:none}
+.card[data-foil-finish=foil] .foil{opacity:.48;background-image:repeating-linear-gradient(112deg,#6de4ff00 0%,#7be5ffb0 8%,#b792ffc9 17%,#ffd3f0b0 25%,#fff3a7bd 34%,#90ffd6a0 43%,#85d9ff00 52%);background-size:220% 220%;mask-image:radial-gradient(ellipse at var(--foil-x) var(--foil-y),#000 5%,#000c 40%,#0003 76%)}
+.card[data-foil-finish=foil][data-foil-active] .foil{opacity:.92}.card[data-foil-finish=foil] .foil:after{opacity:.2}
+.card[data-foil-finish=foil] .glare{background:radial-gradient(circle at var(--foil-x) var(--foil-y),#ffffff99,transparent 22%,#d9f2ff19 40%,transparent 65%)}
+.card[data-foil-finish=full-art] .foil{opacity:.3;background:linear-gradient(115deg,transparent 15%,#ffffff05 32%,#ffffff66 48%,#ffdfac50 51%,#bfeaff22 57%,transparent 75%);background-size:240% 200%;background-position:var(--foil-x) var(--foil-y);mask-image:none}
+.card[data-foil-finish=full-art][data-foil-active] .foil{opacity:.8}.card[data-foil-finish=full-art] .glare{background:radial-gradient(ellipse at var(--foil-x) var(--foil-y),#fff0d766,#e9f6ff19 30%,transparent 65%)}
+@media(hover:none),(pointer:coarse){.card[data-foil-touch=true][data-foil-active]{transform:perspective(900px) rotateX(var(--foil-rx)) rotateY(var(--foil-ry)) scale(1.04)}}

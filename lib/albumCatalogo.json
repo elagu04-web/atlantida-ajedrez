@@ -269,7 +269,7 @@
     "nombre": "Gabi · campeón de octubre",
     "detalle": "La remontada de octubre de 2026",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "d1c933d4-197b-434a-924c-d404421e02a6",
     "foto": "/imagenes/retratos/gabi-transparente.webp",
     "peso": 3,
     "rareza": "mitica"
@@ -280,7 +280,7 @@
     "nombre": "Fonchi · cinco de cinco",
     "detalle": "Martes 3 de noviembre de 2026",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "adaff79d-3a75-4532-8ff7-3ec7238a21b6",
     "foto": "/imagenes/retratos/fonchi-transparente.webp",
     "peso": 3,
     "rareza": "mitica"
@@ -291,7 +291,7 @@
     "nombre": "El Tío Ale",
     "detalle": "Ganador del segundo torneo de noviembre de 2026",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "40edddb0-5302-4798-8cf2-80f60317d856",
     "foto": "/imagenes/retratos/ale-visi-tablero-20261103-transparente.webp",
     "peso": 3,
     "rareza": "rara"
@@ -302,7 +302,7 @@
     "nombre": "Bruno en Espacio Minga",
     "detalle": "Un título del club en Canelones",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "f88a3bd3-bedd-41dc-a115-17ba1378b6bb",
     "foto": "/imagenes/retratos/bruno-album-transparente.webp",
     "peso": 3,
     "rareza": "rara"
@@ -313,7 +313,7 @@
     "nombre": "Larita sigue sumando",
     "detalle": "Mejor femenino · final nacional Sub 16 de 2026",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "49441026-0a70-4e0c-904c-8022c4a5fa3a",
     "foto": "/imagenes/retratos/lara-transparente.webp",
     "peso": 3,
     "rareza": "rara"
@@ -324,7 +324,7 @@
     "nombre": "Matías · campeón de septiembre",
     "detalle": "Campeón mensual del club · septiembre de 2026",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "9178067e-5b8e-4883-bf17-ac0945ea923a",
     "foto": "/imagenes/retratos/matias-transparente.webp",
     "peso": 3,
     "rareza": "mitica"
@@ -335,7 +335,7 @@
     "nombre": "Gabi · un final con polémica",
     "detalle": "Campeón del torneo del 17 de noviembre de 2026",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "d1c933d4-197b-434a-924c-d404421e02a6",
     "foto": "/imagenes/retratos/gabi-transparente.webp",
     "peso": 3,
     "rareza": "rara"
@@ -346,9 +346,20 @@
     "nombre": "Fonchi · la Siciliana",
     "detalle": "Campeón del torneo del 13 de octubre de 2026",
     "serie": "Campeones",
-    "jugadorId": null,
+    "jugadorId": "adaff79d-3a75-4532-8ff7-3ec7238a21b6",
     "foto": "/imagenes/retratos/fonchi-transparente.webp",
     "peso": 3,
     "rareza": "rara"
+  },
+  {
+    "id": "especial:charly-suerte",
+    "numero": 33,
+    "nombre": "El Charly de la Suerte",
+    "detalle": "El amuleto del club. Una sonrisa para acompañar cada sobre.",
+    "serie": "Especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/retratos/charly-suerte-original.webp",
+    "peso": 10,
+    "rareza": "comun"
   }
 ]

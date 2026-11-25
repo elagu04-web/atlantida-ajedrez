@@ -12,7 +12,7 @@ function IconoMate() {
 }
 
 /** Luz sobre la superficie impresa; nunca intercepta enlaces ni gestos de scroll. */
-export function CartaBrillante({ children, className = "", inclinacion = 7, distinciones = [], ...props }: HTMLAttributes<HTMLDivElement> & { inclinacion?: number; distinciones?: string[] }) {
+export function CartaBrillante({ children, className = "", inclinacion = 7, distinciones = [], acabado, tactil=false, ...props }: HTMLAttributes<HTMLDivElement> & { inclinacion?: number; distinciones?: string[]; acabado?:'normal'|'foil'|'full-art';tactil?:boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const mate = distinciones.includes("Cinturón del Mate");
 
@@ -25,17 +25,22 @@ export function CartaBrillante({ children, className = "", inclinacion = 7, dist
     let pending: { x: number; y: number } | null = null;
     let shimmer: Animation | undefined;
     let introPlayed = false;
+    let limites:DOMRect|null=null;
+    let inicioTouch:{x:number;y:number}|null=null;
+    let touchMovido=false;
 
     function reset() {
       cancelAnimationFrame(frame);
       frame = 0;
       pending = null;
+      limites=null;inicioTouch=null;
       card!.removeAttribute("data-foil-active");
       for (const name of ["--foil-x", "--foil-y", "--foil-rx", "--foil-ry"]) card!.style.removeProperty(name);
     }
     function move(e: PointerEvent) {
-      if (motion.matches || !mouse.matches || e.pointerType !== "mouse") return;
-      const rect = card!.getBoundingClientRect();
+      if (motion.matches || (e.pointerType==='mouse'&&!mouse.matches) || (e.pointerType!=='mouse'&&(!tactil||!inicioTouch))) return;
+      if(inicioTouch&&Math.hypot(e.clientX-inicioTouch.x,e.clientY-inicioTouch.y)>10)touchMovido=true;
+      const rect = limites??(limites=card!.getBoundingClientRect());
       pending = {
         x: Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
         y: Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height)),
@@ -61,7 +66,9 @@ export function CartaBrillante({ children, className = "", inclinacion = 7, dist
         { transform: "translateX(130%) skewX(-18deg)", opacity: 0 },
       ], { duration: 1600, easing: "ease-in-out" });
     }
-    function press(e: PointerEvent) { if (e.pointerType !== "mouse") shine(); }
+    function press(e: PointerEvent) { if(e.pointerType==='mouse'){touchMovido=false;return;}shine();if(tactil){limites=card!.getBoundingClientRect();inicioTouch={x:e.clientX,y:e.clientY};touchMovido=false;} }
+    function soltar(e:PointerEvent){if(e.pointerType!=='mouse')reset();}
+    function clic(e:MouseEvent){if(tactil&&touchMovido&&e.detail>0){e.preventDefault();e.stopPropagation();touchMovido=false;}}
     function visibility() { if (document.hidden) { reset(); shimmer?.cancel(); } }
     function preference() { reset(); shimmer?.cancel(); }
     const observer = window.IntersectionObserver ? new IntersectionObserver(entries => {
@@ -76,6 +83,7 @@ export function CartaBrillante({ children, className = "", inclinacion = 7, dist
     card.addEventListener("pointerleave", reset);
     card.addEventListener("pointercancel", reset);
     card.addEventListener("pointerdown", press, { passive: true });
+    card.addEventListener('pointerup',soltar);card.addEventListener('click',clic,true);
     card.addEventListener("focusin", shine);
     card.addEventListener("repetir-brillo", shine);
     document.addEventListener("visibilitychange", visibility);
@@ -87,15 +95,16 @@ export function CartaBrillante({ children, className = "", inclinacion = 7, dist
       card.removeEventListener("pointerleave", reset);
       card.removeEventListener("pointercancel", reset);
       card.removeEventListener("pointerdown", press);
+      card.removeEventListener('pointerup',soltar);card.removeEventListener('click',clic,true);
       card.removeEventListener("focusin", shine);
       card.removeEventListener("repetir-brillo", shine);
       document.removeEventListener("visibilitychange", visibility);
       motion.removeEventListener("change", preference);
       mouse.removeEventListener("change", preference);
     };
-  }, [inclinacion]);
+  }, [inclinacion,tactil,acabado]);
 
-  return <div {...props} ref={ref} className={`${s.card} ${className}`} data-foil-card="true" data-foil-tone={mate ? "mate" : distinciones.length ? "gold" : "blue"}>
+  return <div {...props} ref={ref} className={`${s.card} ${className}`} data-foil-card="true" data-foil-finish={acabado} data-foil-touch={tactil?'true':undefined} data-foil-tone={mate ? "mate" : distinciones.length ? "gold" : "blue"}>
     {children}
     {mate && <span className={s.selloMate} aria-hidden="true"><IconoMate/><small>DUELO DEL MATE</small></span>}
     {distinciones.length > 0 && <div className={s.distinciones} aria-label="Distinciones del jugador">{distinciones.map(d => <span key={d}>{d === "Cinturón del Mate" ? <IconoMate/> : <b aria-hidden="true">♛</b>}{d}</span>)}</div>}

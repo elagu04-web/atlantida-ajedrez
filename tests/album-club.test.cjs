@@ -18,6 +18,8 @@ test('Álbum: sobres persistentes, privacidad, reservas e intercambio bilateral 
    alter table public.jugadores add column foto_url text;`);
   const segunda=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(f=>f.endsWith('_album_sobres_por_participacion.sql'));
   await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',segunda),'utf8'));
+  const tercera=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(f=>f.endsWith('_album_rareza_por_figurita.sql'));
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',tercera),'utf8'));
   async function entrar(u,rol='authenticated',jwt={}){await db.exec('reset role');await db.query("select set_config('test.uid',$1,false),set_config('test.jwt',$2,false)",[u??'',JSON.stringify(jwt)]);await db.exec(`set role ${rol}`);}
   async function api(accion='resumen',datos={}){return (await db.query('select public.album_club($1,$2) r',[accion,JSON.stringify(datos)])).rows[0].r;}
   await entrar(null,'anon');await assert.rejects(()=>api());assert.equal((await db.query('select public.catalogo_album_club() r')).rows[0].r.length,catalogo.length);
@@ -65,7 +67,8 @@ test('Álbum: sobres persistentes, privacidad, reservas e intercambio bilateral 
   // A linked player in this edition receives their own sticker in the welcome pack.
   await db.exec('reset role');const propio=catalogo[0].jugadorId;await db.query('insert into auth.users values($1)',[propio]);await db.query("insert into public.jugadores values($1,'Del catálogo',null)",[propio]);await entrar(propio);estado=await api('sobre',{tipo:'bienvenida'});assert.ok(estado.sobre.figuritas.includes(catalogo[0].id));assert.equal(cantidad(estado),6);
   await entrar('00000000-0000-0000-0000-000000000099');await assert.rejects(()=>api('sobre',{tipo:'bienvenida'}));
-  await db.exec('reset role');assert.equal((await db.query('select count(*)::int n from album_privado.catalogo where activa')).rows[0].n,catalogo.length*3);
+  await db.exec('reset role');assert.equal((await db.query('select count(*)::int n from album_privado.catalogo where activa')).rows[0].n,catalogo.length*9);
+  for(const f of catalogo){const combinaciones=(await db.query('select count(*)::int n,count(distinct rareza)::int r,count(distinct acabado)::int a from album_privado.catalogo where activa and base_id=$1',[f.id])).rows[0];assert.deepEqual(combinaciones,{n:9,r:3,a:3});}
   // Exact boundaries: rarity and finish are independent server-side draws.
   for(const [r,v,rareza,acabado] of [[0,0,'comun','normal'],[.6999,.7999,'comun','normal'],[.7,.8,'rara','foil'],[.9499,.9499,'rara','foil'],[.95,.95,'mitica','full-art'],[.99,.1,'mitica','normal'],[.1,.99,'comun','full-art']]){
    const sorteada=(await db.query('select album_privado.sortear($1,$2) id',[r,v])).rows[0].id;const fila=(await db.query('select rareza,acabado from album_privado.catalogo where id=$1',[sorteada])).rows[0];assert.deepEqual(fila,{rareza,acabado});
@@ -90,6 +93,11 @@ test('Álbum: sobres persistentes, privacidad, reservas e intercambio bilateral 
   await db.exec('reset role');await db.query('insert into album_privado.inventario values($1,$2,1),($3,$4,2) on conflict(usuario_id,figurita_id) do update set cantidad=excluded.cantidad',[a,`${f}:foil`,c,`${g}:full-art`]);
   await entrar(a);await api('compartir',{activo:true});const variante={id:'20000000-0000-0000-0000-000000000007',destino:c,ofrece:`${f}:foil`,pide:`${g}:full-art`};await assert.rejects(()=>api('proponer',variante));
   await db.exec('reset role');await db.query('update album_privado.inventario set cantidad=2 where usuario_id=$1 and figurita_id=$2',[a,`${f}:foil`]);await entrar(a);await api('proponer',variante);await entrar(c);estado=await api('responder',{id:variante.id,respuesta:'aceptar'});assert.equal(estado.inventario.find(x=>x.id===`${g}:full-art`).cantidad,1);assert.equal(estado.inventario.find(x=>x.id===`${f}:foil`).cantidad,1);
+  const resetId='90000000-0000-0000-0000-000000000001';await entrar(a);const ajenas=cantidad(await api());await assert.rejects(()=>api('reiniciar_prueba',{id:resetId}));
+  await entrar(admin);await api('sobre',{tipo:'bienvenida'});assert.equal(cantidad(await api()),6);estado=await api('reiniciar_prueba',{id:resetId});assert.equal(cantidad(estado),0);assert.equal(estado.bienvenida,true);assert.equal(estado.compartir,false);
+  await api('sobre',{tipo:'bienvenida'});assert.equal(cantidad(await api('reiniciar_prueba',{id:resetId})),6); // A retry cannot erase the new pack.
+  await entrar(a);assert.equal(cantidad(await api()),ajenas);await assert.rejects(()=>db.query('select * from album_privado.reinicios_prueba'));
+  await db.exec('reset role');assert.equal((await db.query('select count(*)::int n from album_privado.reinicios_prueba')).rows[0].n,1);assert.equal((await db.query("select jsonb_array_length(respaldo->'sobres') n from album_privado.reinicios_prueba")).rows[0].n,1);
  }finally{await db.close();}
 });
 test('Todas las figuritas iniciales tienen un retrato individual disponible',()=>{for(const f of catalogo){assert.ok(f.foto?.startsWith('/imagenes/retratos/'));assert.ok(fs.existsSync(path.join(__dirname,'../public',f.foto)),f.foto);}});
