@@ -8,7 +8,8 @@ const {estilosUltimoMovimiento}=cargar(path.join(raiz,'lib/ultimoMovimiento.ts')
 function render(chess,visible=chess,color='w'){renderToStaticMarkup(React.createElement(TableroOnline,{mesa:'prueba',ply:chess.history().length,chess,visible,color,habilitado:false,puedePremover:false,mover:()=>false}));return opciones;}
 test('La mesa marca la jugada visible, también antes de confirmarse, sin alterar la partida',()=>{
  const confirmado=new Chess();assert.deepEqual(render(confirmado).squareStyles,{});confirmado.move('e4');const preview=new Chess(confirmado.fen());preview.move('c5');
- const antes=confirmado.fen();assert.deepEqual(Object.keys(render(confirmado,preview,'b').squareStyles),['c7','c5']);assert.equal(confirmado.fen(),antes);
+ const antes=confirmado.fen();const tablero=render(confirmado,preview,'b');assert.deepEqual(Object.keys(tablero.squareStyles),['c7','c5']);assert.equal(confirmado.fen(),antes);
+ const casilla=tablero.squareRenderer({square:'c5',children:null});assert.deepEqual(casilla.props.style,tablero.squareStyles.c5);assert.ok(casilla.props.style.boxShadow);
  assert.deepEqual(Object.keys(render(confirmado).squareStyles),['e2','e4']);confirmado.undo();assert.deepEqual(render(confirmado).squareStyles,{});
 });
 test('Enroque, promoción y captura al paso conservan origen y destino correctos',()=>{
