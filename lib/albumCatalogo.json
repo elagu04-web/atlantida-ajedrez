@@ -1,0 +1,602 @@
+[
+  {
+    "id": "jugador:20237542-c3f6-4ba4-8400-e9eb3b438101",
+    "numero": 1,
+    "nombre": "Agustín Baudry",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "20237542-c3f6-4ba4-8400-e9eb3b438101",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/agustin-baudry-tablero-20261103-miniatura.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:d0f87bfb-dddf-42ca-beae-f58ee746ab4d",
+    "numero": 2,
+    "nombre": "Agustín Fuentes",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "d0f87bfb-dddf-42ca-beae-f58ee746ab4d",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:171197d2-fa9e-4a6a-ac3e-3139fbc7ff62",
+    "numero": 3,
+    "nombre": "Agustin Nuñez",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "171197d2-fa9e-4a6a-ac3e-3139fbc7ff62",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/agustin-nunez-tablero-20261103-miniatura.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:40edddb0-5302-4798-8cf2-80f60317d856",
+    "numero": 4,
+    "nombre": "Ale Visi",
+    "detalle": "Alejandro Visillac",
+    "serie": "Jugadores",
+    "jugadorId": "40edddb0-5302-4798-8cf2-80f60317d856",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ale-visi-tablero-20261103-miniatura.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:3f3f4d16-98af-482c-9e9b-3f4d6b31883f",
+    "numero": 5,
+    "nombre": "Alfredo Riccetto",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "3f3f4d16-98af-482c-9e9b-3f4d6b31883f",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:b069e33f-1687-4e1f-bacc-1ac7e0d3040d",
+    "numero": 6,
+    "nombre": "Armanzo Daniel",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "b069e33f-1687-4e1f-bacc-1ac7e0d3040d",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:67c27aa0-dda6-4825-a18c-9d5ee7c90c10",
+    "numero": 7,
+    "nombre": "Blanco Ernesto Rudemar",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "67c27aa0-dda6-4825-a18c-9d5ee7c90c10",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ernesto-blanco-tablero-20261101-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:f88a3bd3-bedd-41dc-a115-17ba1378b6bb",
+    "numero": 8,
+    "nombre": "Bruno Nicolini",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "f88a3bd3-bedd-41dc-a115-17ba1378b6bb",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:2cba15cf-586b-420b-a144-de5ee6d85031",
+    "numero": 9,
+    "nombre": "Camilo",
+    "detalle": "Camilo La Rosa",
+    "serie": "Jugadores",
+    "jugadorId": "2cba15cf-586b-420b-a144-de5ee6d85031",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/camilo-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:d1c933d4-197b-434a-924c-d404421e02a6",
+    "numero": 10,
+    "nombre": "Coronel Gabriel",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "d1c933d4-197b-434a-924c-d404421e02a6",
+    "foto": "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/public/fotos-jugadores/d1c933d4-197b-434a-924c-d404421e02a6.png?v=1788282055680",
+    "peso": 10
+  },
+  {
+    "id": "jugador:3e6c34fb-23a2-4a15-8de0-009cf51493db",
+    "numero": 11,
+    "nombre": "Cristian González",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "3e6c34fb-23a2-4a15-8de0-009cf51493db",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/cristian-gonzalez-tablero-20261103-miniatura.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:dce120b2-90ea-41b7-848e-9ba4a8f84613",
+    "numero": 12,
+    "nombre": "CuadrosMan",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "dce120b2-90ea-41b7-848e-9ba4a8f84613",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/cuadroman-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:cf9bbe7e-0c1a-4cf7-8708-287ace9daece",
+    "numero": 13,
+    "nombre": "David Morales",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "cf9bbe7e-0c1a-4cf7-8708-287ace9daece",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:21885761-c357-4357-9bb7-a1a6402ea32c",
+    "numero": 14,
+    "nombre": "De Los Reyes",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "21885761-c357-4357-9bb7-a1a6402ea32c",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/mauro-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:4c2a5198-dc88-49c3-ac3d-d4808e105aa3",
+    "numero": 15,
+    "nombre": "Elias Estevez",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "4c2a5198-dc88-49c3-ac3d-d4808e105aa3",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:f05c3ccd-7807-473c-a922-cd13659625ee",
+    "numero": 16,
+    "nombre": "Emanuel González",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "f05c3ccd-7807-473c-a922-cd13659625ee",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:2c191207-a48a-418b-a8ef-210a00e5acc4",
+    "numero": 17,
+    "nombre": "Ezequiel Núñez",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "2c191207-a48a-418b-a8ef-210a00e5acc4",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ezequiel-nunez-tablero-20261110.jpg",
+    "peso": 10
+  },
+  {
+    "id": "jugador:adaff79d-3a75-4532-8ff7-3ec7238a21b6",
+    "numero": 18,
+    "nombre": "Fonchi",
+    "detalle": "Fabián Fuentes (Fonchi)",
+    "serie": "Jugadores",
+    "jugadorId": "adaff79d-3a75-4532-8ff7-3ec7238a21b6",
+    "foto": "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/public/fotos-jugadores/adaff79d-3a75-4532-8ff7-3ec7238a21b6.png?v=1787279144638",
+    "peso": 10
+  },
+  {
+    "id": "jugador:df2fa121-939c-4b5e-84c5-6eb1ca7dc880",
+    "numero": 19,
+    "nombre": "Facundo Rodríguez",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "df2fa121-939c-4b5e-84c5-6eb1ca7dc880",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:4fd7b5ad-c10d-4056-b781-521869063829",
+    "numero": 20,
+    "nombre": "Fernando Campos",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "4fd7b5ad-c10d-4056-b781-521869063829",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:db7d23fa-0254-4d6a-91ac-9eb9b41c5c76",
+    "numero": 21,
+    "nombre": "Fernando",
+    "detalle": "Fernando Torterolo",
+    "serie": "Jugadores",
+    "jugadorId": "db7d23fa-0254-4d6a-91ac-9eb9b41c5c76",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/fernando-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:a92621c8-239d-4b93-8775-b8246fbcb506",
+    "numero": 22,
+    "nombre": "Fortes Gustavo",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "a92621c8-239d-4b93-8775-b8246fbcb506",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:c587628b-2aba-42a6-ba64-63d1d7d510f2",
+    "numero": 23,
+    "nombre": "Francisco Borgiani",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "c587628b-2aba-42a6-ba64-63d1d7d510f2",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:15d021cc-3310-48bf-a7b5-1e521a3c8288",
+    "numero": 24,
+    "nombre": "GONZALO LAGOMARSINO",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "15d021cc-3310-48bf-a7b5-1e521a3c8288",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:3783ab38-e327-4bf1-888f-7d039b7963e6",
+    "numero": 25,
+    "nombre": "Humberto Gil",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "3783ab38-e327-4bf1-888f-7d039b7963e6",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:df3d49d9-508f-4a76-997c-ee525886f7dc",
+    "numero": 26,
+    "nombre": "Inti Nada Macedo",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "df3d49d9-508f-4a76-997c-ee525886f7dc",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:3059d6c3-44f3-49f7-8b57-8156cae5d0f0",
+    "numero": 27,
+    "nombre": "Ismael González",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "3059d6c3-44f3-49f7-8b57-8156cae5d0f0",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ismael-gonzalez-tablero-20261103-miniatura.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:97fa10ca-29a9-4db7-8061-e39414e0c65f",
+    "numero": 28,
+    "nombre": "Jorge",
+    "detalle": "Jorge Franquez",
+    "serie": "Jugadores",
+    "jugadorId": "97fa10ca-29a9-4db7-8061-e39414e0c65f",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/jorge-franquez-tablero-20261103-miniatura.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:16c583d5-59c1-4a13-af42-575836df9e7f",
+    "numero": 29,
+    "nombre": "Jose",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "16c583d5-59c1-4a13-af42-575836df9e7f",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:2000cd88-92a9-4189-baa2-d1ecb89b17e9",
+    "numero": 30,
+    "nombre": "Juan Diaz",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "2000cd88-92a9-4189-baa2-d1ecb89b17e9",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:44970cf2-4a55-4b9f-93b0-9c9c59ef2557",
+    "numero": 31,
+    "nombre": "Juan Diego",
+    "detalle": "Juan Diego Montenegro",
+    "serie": "Jugadores",
+    "jugadorId": "44970cf2-4a55-4b9f-93b0-9c9c59ef2557",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/juan-diego-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:59086bb0-6a79-43d1-9a88-aea5b4a1436c",
+    "numero": 32,
+    "nombre": "Juan Zolessi",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "59086bb0-6a79-43d1-9a88-aea5b4a1436c",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:aa10113f-5c5c-43a1-8aa3-d9ea29a332f4",
+    "numero": 33,
+    "nombre": "Kiara Frizza",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "aa10113f-5c5c-43a1-8aa3-d9ea29a332f4",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/kiara-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:49441026-0a70-4e0c-904c-8022c4a5fa3a",
+    "numero": 34,
+    "nombre": "Lara Escaris",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "49441026-0a70-4e0c-904c-8022c4a5fa3a",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:95537d79-bdf2-4a78-9e7a-eaa440cde8b2",
+    "numero": 35,
+    "nombre": "Luis Escaris",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "95537d79-bdf2-4a78-9e7a-eaa440cde8b2",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:2eca2178-89cd-47d5-9b72-c7b1c65477bb",
+    "numero": 36,
+    "nombre": "Luis Perez Selios",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "2eca2178-89cd-47d5-9b72-c7b1c65477bb",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/luis-perez-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:d0eb0985-e27c-4eaa-87ff-88c04fa5864b",
+    "numero": 37,
+    "nombre": "Luna Lemos",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "d0eb0985-e27c-4eaa-87ff-88c04fa5864b",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:9cae9999-af4e-48e8-af60-6c25794fad09",
+    "numero": 38,
+    "nombre": "Marcelo Caccia",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "9cae9999-af4e-48e8-af60-6c25794fad09",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:6f1b8d21-76f7-4a49-8434-c18f48f91172",
+    "numero": 39,
+    "nombre": "Marco Ábalo",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "6f1b8d21-76f7-4a49-8434-c18f48f91172",
+    "foto": "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/public/fotos-jugadores/6f1b8d21-76f7-4a49-8434-c18f48f91172.png?v=1787716999302",
+    "peso": 10
+  },
+  {
+    "id": "jugador:9178067e-5b8e-4883-bf17-ac0945ea923a",
+    "numero": 40,
+    "nombre": "Matias",
+    "detalle": "Matías Iriondo",
+    "serie": "Jugadores",
+    "jugadorId": "9178067e-5b8e-4883-bf17-ac0945ea923a",
+    "foto": "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/public/fotos-jugadores/9178067e-5b8e-4883-bf17-ac0945ea923a.png?v=1788282100382",
+    "peso": 10
+  },
+  {
+    "id": "jugador:e315beb3-22ac-4037-a88b-5493824930e5",
+    "numero": 41,
+    "nombre": "Pablo Miranda",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "e315beb3-22ac-4037-a88b-5493824930e5",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:b298bece-6c2e-4df0-bedc-031c84278c32",
+    "numero": 42,
+    "nombre": "Pablo Pereira",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "b298bece-6c2e-4df0-bedc-031c84278c32",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/pablo-pereira-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:1d5a51c1-5ff8-4114-bb0e-d9706ce7b1c3",
+    "numero": 43,
+    "nombre": "Pizarro Nick",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "1d5a51c1-5ff8-4114-bb0e-d9706ce7b1c3",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:26671876-13e1-4dbc-8d1c-b249955d83c3",
+    "numero": 44,
+    "nombre": "Reboredo Manuel",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "26671876-13e1-4dbc-8d1c-b249955d83c3",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:54c74e69-50f0-4324-bcdb-55b8db09a2b5",
+    "numero": 45,
+    "nombre": "Ricardo Estevez",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "54c74e69-50f0-4324-bcdb-55b8db09a2b5",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:8232ee05-946c-4f44-bbc8-c64b341bfc11",
+    "numero": 46,
+    "nombre": "Ricardo Rocha",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "8232ee05-946c-4f44-bbc8-c64b341bfc11",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:010839b6-1534-4e59-b9e8-0bc635a36f25",
+    "numero": 47,
+    "nombre": "Richard Billar",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "010839b6-1534-4e59-b9e8-0bc635a36f25",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:0d188c7b-c5b7-4e75-852b-9a5d17379fdb",
+    "numero": 48,
+    "nombre": "Víctor",
+    "detalle": "Rodriguez Farias",
+    "serie": "Jugadores",
+    "jugadorId": "0d188c7b-c5b7-4e75-852b-9a5d17379fdb",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/victor-tablero-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "jugador:0d7d2441-36ff-42b6-a73a-aaef56cff202",
+    "numero": 49,
+    "nombre": "Santiago Pírez",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "0d7d2441-36ff-42b6-a73a-aaef56cff202",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:d19509c4-4858-4509-a587-1080ce3f3c7d",
+    "numero": 50,
+    "nombre": "Tacio Balmelli",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "d19509c4-4858-4509-a587-1080ce3f3c7d",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:83728a3c-b558-447a-9ded-570e89112a3c",
+    "numero": 51,
+    "nombre": "Thiago Vera",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "83728a3c-b558-447a-9ded-570e89112a3c",
+    "foto": null,
+    "peso": 10
+  },
+  {
+    "id": "jugador:f9cd88c1-b14f-4755-8d3d-90de781ea7d9",
+    "numero": 52,
+    "nombre": "Yamandú Martínez",
+    "detalle": "Atlántida Ajedrez",
+    "serie": "Jugadores",
+    "jugadorId": "f9cd88c1-b14f-4755-8d3d-90de781ea7d9",
+    "foto": "https://atlantida-ajedrez.vercel.app/imagenes/retratos/yamandu-foto-20261027-transparente.webp",
+    "peso": 10
+  },
+  {
+    "id": "especial:gabi-octubre",
+    "numero": 53,
+    "nombre": "Gabi · campeón de octubre",
+    "detalle": "La remontada de octubre de 2026",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/gabi-campeon-octubre-27-2026.jpg",
+    "peso": 3
+  },
+  {
+    "id": "especial:fonchi-perfecto",
+    "numero": 54,
+    "nombre": "Fonchi · cinco de cinco",
+    "detalle": "Martes 3 de noviembre de 2026",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/fonchi-siciliana-final-13-octubre.jpg",
+    "peso": 3
+  },
+  {
+    "id": "especial:tio-ale",
+    "numero": 55,
+    "nombre": "El Tío Ale",
+    "detalle": "Ganador del segundo torneo de noviembre de 2026",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/tio-ale-fonchi-segundo-torneo-noviembre-2026.jpg",
+    "peso": 3
+  },
+  {
+    "id": "especial:bruno-minga",
+    "numero": 56,
+    "nombre": "Bruno en Espacio Minga",
+    "detalle": "Un título del club en Canelones",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/bruno-nicolini-campeon-espacio-minga-2026.png",
+    "peso": 3
+  },
+  {
+    "id": "especial:larita-nacional",
+    "numero": 57,
+    "nombre": "Larita sigue sumando",
+    "detalle": "Mejor femenino · final nacional Sub 16 de 2026",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/lara-escaris-liga-uruguaya-sub16-2026.png",
+    "peso": 3
+  },
+  {
+    "id": "especial:ernesto-sudamericano",
+    "numero": 58,
+    "nombre": "Ernesto en el Sudamericano",
+    "detalle": "Nos representó en Montevideo en 2026",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/ernesto-blanco-sudamericano-2026.jpg",
+    "peso": 3
+  },
+  {
+    "id": "especial:martes",
+    "numero": 59,
+    "nombre": "Los martes del club",
+    "detalle": "Una mesa, una partida y otra historia",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/club-fondo.jpg",
+    "peso": 3
+  },
+  {
+    "id": "especial:aprender",
+    "numero": 60,
+    "nombre": "Aprender juntos",
+    "detalle": "El ajedrez también empieza desde cero",
+    "serie": "Momentos especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/sabados-aprender-ajedrez-primer-plano.jpg",
+    "peso": 3
+  }
+]

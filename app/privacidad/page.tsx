@@ -34,6 +34,16 @@ export default function PrivacidadPage() {
         La clasificación no muestra tu email ni el identificador de tu cuenta.
       </p>
 
+      <h2 className="mt-2 font-semibold">Álbum del club</h2>
+      <p className="text-zinc-400">
+        Tu colección, los sobres abiertos y el historial de intercambios quedan guardados
+        en tu cuenta. Si activás «Compartir mis repetidas», otros coleccionistas que también
+        lo hayan activado podrán ver tu nombre del club y tus figuritas disponibles para
+        intercambiar. No se muestra tu correo ni tu colección completa. Podés desactivarlo
+        en cualquier momento; eso cancela las propuestas pendientes. El catálogo usa las
+        fotos y los nombres que ya forman parte de los perfiles públicos del club.
+      </p>
+
       <h2 className="mt-2 font-semibold">Pagos y asistencia a torneos</h2>
       <p className="text-zinc-400">
         El administrador puede registrar si una inscripción fue pagada y si el jugador
