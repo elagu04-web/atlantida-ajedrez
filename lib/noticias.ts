@@ -11,6 +11,30 @@ export type Noticia = {
 
 // Agregar aquí las noticias y sus fotos. Sólo se publican historias confirmadas del club.
 export const noticias: Noticia[] = [{
+  slug: "fonchi-campeon-noviembre-final-24-2026",
+  titulo: "¡Fonchi ganó la final y se adueñó de noviembre!",
+  bajada: "Ezequiel arrancó con cuatro triunfos y Fonchi llegó a la definición ganando las últimas tres. Empataron con 4 de 5, hubo final y el festejo fue doble: torneo y campeonato mensual para Fonchi.",
+  categoria: "Vida del club",
+  fecha: "2026-11-24",
+  imagen: "/imagenes/fonchi-campeon-noviembre-final-24-2026.jpg",
+  imagenAlt: "Una partida del club seguida de cerca por dos compañeros de pie, durante la jornada del 24 de noviembre",
+  imagenPosicion: "50% 50%",
+  imagenVertical: true,
+  imagenAspecto: "3 / 4",
+  imagenAncho: 780,
+  imagenSinCompresion: true,
+  pieFoto: "Una definición con público de lujo. Los que miran de pie también juegan… aunque sus mejores ideas suelen aparecer después de que el otro mueve.",
+  parrafos: [
+    "**¡Noviembre se cerró con festejo de Fonchi!** Este martes 24 tuvimos ocho jugadores, cinco rondas por sistema suizo y una definición extra entre **Fonchi y Ezequiel Núñez**. Fonchi ganó la final, se llevó el torneo y se quedó también con el **campeonato del mes de noviembre**. El Hipopótamo vino tranquilo, pero se fue con todo.",
+    "**Ezequiel tuvo un arranque tremendo: cuatro victorias consecutivas**, ante Agustín Baudry, Fonchi, el Tío Ale y Gabi. Llegó a la última ronda con puntaje perfecto, pero **Juan Diego le puso el freno** y dejó abierta la pelea por el primer puesto. Cuatro rondas mirando la punta y una quinta que nos cambió todas las cuentas.",
+    "Fonchi había ganado la primera y perdido justamente con Ezequiel en la segunda. Desde ahí encadenó **tres triunfos seguidos**, frente a Yamandú, Ale Visi y Gabi, para cerrar con **4 puntos de 5**, los mismos que Ezequiel. El Tío Ale completó el podio con **3 puntos**: otra vez metido en la conversación de arriba.",
+    "Y como acá a veces cinco rondas no nos alcanzan, **hubo final y hubo revancha**. Ezequiel se había llevado el primer duelo de la noche, pero esta vez ganó Fonchi y el título quedó de su lado. Gran torneo de Ezequiel, que obligó al campeón a ganárselo hasta el último momento.",
+    "**Los números de Fonchi en noviembre acompañan el festejo: 16 puntos sobre 20 posibles en las rondas regulares, un 80% de rendimiento.** Abrió el mes con 5 de 5, siguió con dos torneos de 3½ y cerró con los 4 de hoy, sin contar la victoria de esta final extra. **Dos títulos en las cuatro fechas del mes** y una constancia que terminó valiendo la corona mensual.",
+    "La foto resume bastante bien cómo se viven estas definiciones: un tablero y varios cerebros trabajando alrededor. Los de la silla tienen que decidir; los de atrás pueden calcular tranquilos y guardar la explicación para cuando termine. Un cuerpo técnico completo, pero sin botón para pedir pista.",
+    "**¡Felicitaciones, Fonchi, campeón del torneo y de noviembre!** Y felicitaciones a Ezequiel por esas cuatro victorias de arranque y a todos los que compartieron otra noche de ajedrez. Diciembre tendrá nuevos martes, nuevas cuentas y, seguramente, al Hipopótamo bastante cómodo en su rincón.",
+    "[Mirá la clasificación y los resultados del torneo](https://atlantida-ajedrez.vercel.app/torneos/675c94ed-4e88-4f98-9cc2-956d61105169) y [las estadísticas del club](https://atlantida-ajedrez.vercel.app/estadisticas)."
+  ]
+}, {
   slug: "gabi-campeon-triple-repeticion-17-noviembre-2026",
   titulo: "¡Polémica, triple repetición y Gabi campeón!",
   bajada: "Un fallo del juez, la punta abierta hasta el cierre y Gabi campeón por enfrentamiento directo. Ezequiel y Yamandú se llevaron las mayores subidas de Elo.",
