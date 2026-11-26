@@ -467,7 +467,6 @@ export default function JugadorPage() {
               <th className="px-4 py-3 font-medium">Rival</th>
               <th className="px-4 py-3 font-medium">Color</th>
               <th className="px-4 py-3 font-medium">Resultado</th>
-              <th className="px-4 py-3 font-medium">Partida</th>
             </tr>
           </thead>
           <tbody>
@@ -480,12 +479,11 @@ export default function JugadorPage() {
                 <td className={`px-4 py-3 font-medium ${resultadoColor[p.resultado]}`}>
                   {resultadoLabel[p.resultado]}
                 </td>
-                <td className="px-4 py-3">{p.partidaOnlineId?<Link className="text-blue-300 hover:underline" href={`/partidas/${p.partidaOnlineId}?jugador=${jugador.id}`}>Ver partida →</Link>:<span className="text-zinc-500">Solo resultado</span>}</td>
               </tr>
             ))}
             {jugador.partidas.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
                   Todavía no tiene partidas cargadas.
                 </td>
               </tr>
