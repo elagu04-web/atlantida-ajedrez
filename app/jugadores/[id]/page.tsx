@@ -17,6 +17,7 @@ import { NavegadorJugadores } from "@/components/NavegadorJugadores";
 import retrato from "@/components/RetratoJugadorMotion.module.css";
 import { useTorneos } from "@/context/TorneosContext";
 import { cartasEspeciales } from "@/lib/cartasEspeciales";
+import { PartidasJugador } from '@/components/PartidasJugador';
 
 const FOTOS_BUCKET = "fotos-jugadores";
 
@@ -276,7 +277,7 @@ export default function JugadorPage() {
             </div>
           </div>
         </div>
-        <><p className={retrato.intro}>{puestoRanking ? <Link href="/jugadores" className={retrato.rankingBadge} aria-label={`Puesto ${puestoRanking} en el ranking de Elo del club`}><span>RANKING DEL CLUB</span><strong>#{puestoRanking}</strong><span aria-hidden="true">↗</span></Link> : <span>RANKING · SIN PARTIDAS TODAVÍA</span>}</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? (rachaActual.cantidad === 1 ? "victoria consecutiva" : "victorias consecutivas") : "en su historial"}</small></div></div><Link href={jugador.jugadas ? `/estadisticas?jugador=${jugador.id}` : "/estadisticas"} className={retrato.detailsLink}>{jugador.jugadas ? "Ver su rendimiento en Estadísticas ↗" : "Explorar las estadísticas del club ↗"}</Link></>
+        <><p className={retrato.intro}>{puestoRanking ? <Link href="/jugadores" className={retrato.rankingBadge} aria-label={`Puesto ${puestoRanking} en el ranking de Elo del club`}><span>RANKING DEL CLUB</span><strong>#{puestoRanking}</strong><span aria-hidden="true">↗</span></Link> : <span>RANKING · SIN PARTIDAS TODAVÍA</span>}</p><div className={retrato.numbers}><div><span>ELO ATLÁNTIDA</span><strong>{jugador.eloAtlantida}</strong><small>{jugador.jugadas} partidas registradas</small></div><div><span>{rachaActual?.tipo === "victoria" ? "RACHA GANADORA" : "VICTORIAS"}</span><strong>{rachaActual?.tipo === "victoria" ? rachaActual.cantidad : jugador.victorias}</strong><small>{rachaActual?.tipo === "victoria" ? (rachaActual.cantidad === 1 ? "victoria consecutiva" : "victorias consecutivas") : "en su historial"}</small></div></div><div className="flex flex-wrap gap-x-5"><Link href={jugador.jugadas ? `/estadisticas?jugador=${jugador.id}` : "/estadisticas"} className={retrato.detailsLink}>{jugador.jugadas ? "Ver su rendimiento en Estadísticas ↗" : "Explorar las estadísticas del club ↗"}</Link><a href="#partidas-guardadas" className={retrato.detailsLink}>Ver sus partidas guardadas ↓</a></div></>
         {errorFoto && <p className="mt-2 text-sm text-red-400">{errorFoto}</p>}
         </div>
       </CartaBrillante>
@@ -395,6 +396,8 @@ export default function JugadorPage() {
         ))}
       </div>
 
+      <PartidasJugador jugador={jugador.id} nombre={nombreVisible(jugador)}/>
+
       <div className="panel p-4">
         <h2 className="mb-3 font-semibold">Evolución de Elo</h2>
         <GraficoElo puntos={puntosElo} />
@@ -455,7 +458,7 @@ export default function JugadorPage() {
           {verTodasLasPartidas ? "▾" : "▸"} Ver todas las partidas ({jugador.partidas.length})
         </button>
         {verTodasLasPartidas && (
-      <div className="overflow-hidden panel">
+      <div className="overflow-x-auto panel">
         <table className="w-full text-sm">
           <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
             <tr>
@@ -464,6 +467,7 @@ export default function JugadorPage() {
               <th className="px-4 py-3 font-medium">Rival</th>
               <th className="px-4 py-3 font-medium">Color</th>
               <th className="px-4 py-3 font-medium">Resultado</th>
+              <th className="px-4 py-3 font-medium">Partida</th>
             </tr>
           </thead>
           <tbody>
@@ -476,11 +480,12 @@ export default function JugadorPage() {
                 <td className={`px-4 py-3 font-medium ${resultadoColor[p.resultado]}`}>
                   {resultadoLabel[p.resultado]}
                 </td>
+                <td className="px-4 py-3">{p.partidaOnlineId?<Link className="text-blue-300 hover:underline" href={`/partidas/${p.partidaOnlineId}?jugador=${jugador.id}`}>Ver partida →</Link>:<span className="text-zinc-500">Solo resultado</span>}</td>
               </tr>
             ))}
             {jugador.partidas.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
+                <td colSpan={6} className="px-4 py-6 text-center text-zinc-400">
                   Todavía no tiene partidas cargadas.
                 </td>
               </tr>
@@ -493,7 +498,7 @@ export default function JugadorPage() {
 
       <div>
         <h2 className="mb-3 font-semibold">Cabeza a cabeza</h2>
-        <div className="overflow-hidden panel">
+        <div className="overflow-x-auto panel">
           <table className="w-full text-sm">
             <thead className="border-b border-white/10 bg-white/10 text-left text-zinc-400">
               <tr>
