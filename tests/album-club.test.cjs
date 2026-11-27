@@ -20,6 +20,8 @@ test('Álbum: sobres persistentes, privacidad, reservas e intercambio bilateral 
   await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',segunda),'utf8'));
   const tercera=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(f=>f.endsWith('_album_rareza_por_figurita.sql'));
   await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',tercera),'utf8'));
+  const especiales=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(f=>f.endsWith('_album_seis_especiales_club.sql'));
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',especiales),'utf8'));
   async function entrar(u,rol='authenticated',jwt={}){await db.exec('reset role');await db.query("select set_config('test.uid',$1,false),set_config('test.jwt',$2,false)",[u??'',JSON.stringify(jwt)]);await db.exec(`set role ${rol}`);}
   async function api(accion='resumen',datos={}){return (await db.query('select public.album_club($1,$2) r',[accion,JSON.stringify(datos)])).rows[0].r;}
   await entrar(null,'anon');await assert.rejects(()=>api());assert.equal((await db.query('select public.catalogo_album_club() r')).rows[0].r.length,catalogo.length);
@@ -100,4 +102,4 @@ test('Álbum: sobres persistentes, privacidad, reservas e intercambio bilateral 
   await db.exec('reset role');assert.equal((await db.query('select count(*)::int n from album_privado.reinicios_prueba')).rows[0].n,1);assert.equal((await db.query("select jsonb_array_length(respaldo->'sobres') n from album_privado.reinicios_prueba")).rows[0].n,1);
  }finally{await db.close();}
 });
-test('Todas las figuritas iniciales tienen un retrato individual disponible',()=>{for(const f of catalogo){assert.ok(f.foto?.startsWith('/imagenes/retratos/'));assert.ok(fs.existsSync(path.join(__dirname,'../public',f.foto)),f.foto);}});
+test('Las figuritas de jugadores usan retratos individuales y las escenas especiales conservan su imagen disponible',()=>{for(const f of catalogo){assert.ok(f.foto?.startsWith(f.serie==='Especiales'?'/imagenes/':'/imagenes/retratos/'));assert.ok(fs.existsSync(path.join(__dirname,'../public',f.foto)),f.foto);}});

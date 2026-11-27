@@ -361,5 +361,71 @@
     "foto": "/imagenes/retratos/charly-suerte-original.webp",
     "peso": 10,
     "rareza": "comun"
+  },
+  {
+    "id": "especial:montana-elo",
+    "numero": 34,
+    "nombre": "La montaña de Elo",
+    "detalle": "Siempre hay otra cumbre por alcanzar.",
+    "serie": "Especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/album/extra-montana-elo.webp",
+    "peso": 10,
+    "rareza": "comun"
+  },
+  {
+    "id": "especial:hipopofonchy",
+    "numero": 35,
+    "nombre": "Hipopofonchy",
+    "detalle": "El hipopótamo del club tiene su propia carta.",
+    "serie": "Especiales",
+    "jugadorId": "adaff79d-3a75-4532-8ff7-3ec7238a21b6",
+    "foto": "/imagenes/album/extra-hipopofonchy.webp",
+    "peso": 10,
+    "rareza": "comun"
+  },
+  {
+    "id": "especial:victornator",
+    "numero": 36,
+    "nombre": "Victornator",
+    "detalle": "Circuitos, piezas y una versión especial de Víctor.",
+    "serie": "Especiales",
+    "jugadorId": "0d188c7b-c5b7-4e75-852b-9a5d17379fdb",
+    "foto": "/imagenes/album/extra-victornator.webp",
+    "peso": 10,
+    "rareza": "comun"
+  },
+  {
+    "id": "especial:momento-historico",
+    "numero": 37,
+    "nombre": "Momento histórico",
+    "detalle": "Un recuerdo del archivo y de las historias del club.",
+    "serie": "Especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/album/extra-momento-historico.webp",
+    "peso": 10,
+    "rareza": "comun"
+  },
+  {
+    "id": "especial:ludoarte",
+    "numero": 38,
+    "nombre": "Ludoarte",
+    "detalle": "El lugar donde compartimos tableros, encuentros e historias.",
+    "serie": "Especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/album/extra-ludoarte.webp",
+    "peso": 10,
+    "rareza": "comun"
+  },
+  {
+    "id": "especial:torneo-en-juego",
+    "numero": 39,
+    "nombre": "Torneo en juego",
+    "detalle": "Concentración, mesas compartidas y vida de club.",
+    "serie": "Especiales",
+    "jugadorId": null,
+    "foto": "/imagenes/album/extra-torneo-en-juego.webp",
+    "peso": 10,
+    "rareza": "comun"
   }
 ]

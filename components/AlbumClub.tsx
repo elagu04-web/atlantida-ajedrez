@@ -19,6 +19,7 @@ import { AlbumCatalogoProvider, useCatalogoAlbum } from '@/context/AlbumCatalogo
 import { IdentidadJugador } from './IdentidadJugador';
 import s from './AlbumClub.module.css';
 const AlbumAperturas=dynamic(()=>import('./AlbumAperturas').then(m=>m.AlbumAperturas),{loading:()=> <p role="status">Abriendo tu colección de aperturas…</p>});
+const AlbumesClub=dynamic(()=>import('./AlbumesClub').then(m=>m.AlbumesClub),{loading:()=> <p role="status">Abriendo los álbumes del club…</p>});
 
 function Modal({ titulo, cerrar, children }: { titulo: string; cerrar: () => void; children: React.ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -30,11 +31,12 @@ function Modal({ titulo, cerrar, children }: { titulo: string; cerrar: () => voi
 
 export function AlbumClub() {
   const { session, cargando } = useAuth();
-  const aperturas=useSearchParams().get('seccion')==='aperturas';
-  return <DatosFiguritasProvider><AlbumCatalogoProvider><AlbumCuenta key={(session?.user.id ?? 'visitante')+':'+aperturas} cuenta={session?.user.id ?? null} cargandoAuth={cargando} aperturas={aperturas}/></AlbumCatalogoProvider></DatosFiguritasProvider>;
+  const solicitada=useSearchParams().get('seccion');
+  const inicial=solicitada==='aperturas'?'aperturas':solicitada==='club'?'club':'album';
+  return <DatosFiguritasProvider><AlbumCatalogoProvider><AlbumCuenta key={(session?.user.id ?? 'visitante')+':'+inicial} cuenta={session?.user.id ?? null} cargandoAuth={cargando} inicial={inicial}/></AlbumCatalogoProvider></DatosFiguritasProvider>;
 }
 
-function AlbumCuenta({ cuenta, cargandoAuth, aperturas }: { cuenta: string | null; cargandoAuth: boolean; aperturas:boolean }) {
+function AlbumCuenta({ cuenta, cargandoAuth, inicial }: { cuenta: string | null; cargandoAuth: boolean; inicial:'album'|'aperturas'|'club' }) {
   const { catalogo:catalogoAlbum,porId:figuritaPorId,actualizar:actualizarCatalogo }=useCatalogoAlbum();
   const {esAdmin}=useAuth();const {jugadores}=useJugadores();
   const [nuevoJugador,setNuevoJugador]=useState('');
@@ -45,7 +47,7 @@ function AlbumCuenta({ cuenta, cargandoAuth, aperturas }: { cuenta: string | nul
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
-  const [tab, setTab] = useState<'album'|'repetidas'|'cambios'|'aperturas'>(aperturas?'aperturas':'album');
+  const [tab, setTab] = useState<'album'|'repetidas'|'cambios'|'aperturas'|'club'>(inicial);
   const [filtro, setFiltro] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
   const [seleccionada, setSeleccionada] = useState<Figurita | null>(null);
@@ -135,9 +137,9 @@ function AlbumCuenta({ cuenta, cargandoAuth, aperturas }: { cuenta: string | nul
       {esAdmin&&cuenta&&<details className={s.reglas}><summary>Gestión del álbum · agregar jugadores con foto</summary><div className={s.reglasInterior}><p>Primero cargá una foto individual recortada en el perfil. Cada jugador nuevo se incorpora al final de la colección con sus nueve combinaciones.</p><label>Jugador con foto<select value={nuevoJugador} onChange={e=>setNuevoJugador(e.target.value)}><option value="">Elegí un jugador</option>{incorporables.map(j=><option key={j.id} value={j.id}>{j.apodo||j.nombre}</option>)}</select></label><button className={s.botonDorado} disabled={ocupado||!nuevoJugador} onClick={()=>void operar('agregar',{jugadorId:nuevoJugador},'Jugador incorporado al álbum con sus nueve combinaciones.')}>Agregar figurita</button>{!incorporables.length&&<p>Todos los jugadores con foto ya están en el álbum. Cargá una foto en otro perfil para incorporarlo.</p>}</div></details>}
       <div aria-live="polite">{aviso && <p className={s.aviso}>{aviso}</p>}</div>
       {error && <div role="alert" className={s.error}><p>{error}</p><button className={s.boton} disabled={ocupado} onClick={()=>void refrescar()}>Reintentar</button></div>}
-      <div className={s.tabs} role="group" aria-label="Secciones del álbum">{([['album','El álbum'],['aperturas','Mis aperturas ✦'],['repetidas',`Mis repetidas (${repetidas})`],['cambios',`Intercambios${pendientes.length ? ` (${pendientes.length})` : ''}`]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={tab===id} disabled={id!=='album'&&id!=='aperturas'&&!estado?.jugadorId} onClick={()=>{setTab(id);setFiltro('Todas');if(id==='cambios')void cargarMercado();}}>{label}</button>)}</div>
+      <div className={s.tabs} role="group" aria-label="Secciones del álbum">{([['album','El álbum'],['aperturas','Mis aperturas ✦'],['club','Álbumes del club'],['repetidas',`Mis repetidas (${repetidas})`],['cambios',`Intercambios${pendientes.length ? ` (${pendientes.length})` : ''}`]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={tab===id} disabled={!['album','aperturas','club'].includes(id)&&!estado?.jugadorId} onClick={()=>{setTab(id);setFiltro('Todas');if(id==='cambios')void cargarMercado();}}>{label}</button>)}</div>
 
-      {tab==='aperturas'?<AlbumAperturas key={jugador?.id??'sin-jugador'} jugadorId={cuenta?jugador?.id??null:null}/>:tab!=='cambios' ? <>
+      {tab==='club'?<AlbumesClub/>:tab==='aperturas'?<AlbumAperturas key={jugador?.id??estado?.jugadorId??'sin-jugador'} jugadorId={cuenta?jugador?.id??estado?.jugadorId??null:null}/>:tab!=='cambios' ? <>
         <div className={s.filtros}><div role="group" aria-label="Filtrar figuritas">{['Todas','Jugadores','Campeones','Especiales',...(cuenta?['Me faltan']:[])].map(v=><button key={v} aria-pressed={filtro===v} onClick={()=>setFiltro(v)}>{v}</button>)}</div><label><span className={s.sr}>Buscar figurita</span><input type="search" placeholder="Buscá un nombre…" value={busqueda} onChange={e=>setBusqueda(e.target.value)} /></label></div>
         {tab==='repetidas' && <p className={s.ayuda}>Conservás siempre una copia en el álbum. Las que ofrecés quedan reservadas hasta que la propuesta se resuelva o venza.</p>}
         <div className={s.grilla}>{lista.map(f=><Carta key={f.id} f={f} cantidad={existencias.get(f.id)?.cantidad??0} seleccionar={()=>setSeleccionada(f)}/>)}</div>

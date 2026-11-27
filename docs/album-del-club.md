@@ -1,5 +1,5 @@
 # Álbum del club
-Ruta: `/album`. Edición inicial: 24 jugadores con retrato individual, 8 campeones y El Charly de la Suerte. Cada figurita tiene rareza común, rara y mítica, combinada con acabado normal, foil y full art: 33 figuritas, 297 combinaciones. Los identificadores anteriores se conservan. Cada colección es privada. Las no obtenidas muestran sólo un reverso sin retrato, arte, datos ni brillo, incluso en el detalle y para visitantes.
+Ruta: `/album`. Edición inicial: 24 jugadores con retrato individual, 8 campeones y El Charly de la Suerte. Cada figurita tiene rareza común, rara y mítica, combinada con acabado normal, foil y full art: 33 figuritas iniciales, ampliadas el 27/11/2026 a 39 y 351 combinaciones. Los identificadores anteriores se conservan. El álbum personal protege las cartas no obtenidas; por pedido posterior de Agustín se pueden visitar las versiones conseguidas en los álbumes de compañeros, junto con sus aperturas.
 
 ## Sobres por actividad
 - Bienvenida: 6 figuritas una sola vez. Incluye el propio jugador normal si está en esta edición.
@@ -65,3 +65,12 @@ En `/album?seccion=aperturas#mis-aperturas`, cada jugador vinculado tiene un apa
 Al terminar una partida online oficial, el visor presenta las cartas reconocidas con entrada animada, brillo e inclinación. Señala la primera aparición o repetición y permite recorrerlas e ir al álbum, conservando los controles de revisión. Respeta movimiento reducido. Estas cartas se consiguen por partidas y no participan del sorteo ni de los intercambios de jugadores.
 
 Pruebas: `node --test tests/album-aperturas.test.cjs tests/partidas-publicas.test.cjs`. Cubren transposiciones, formaciones de cada color, gambitos, deduplicación, resultados, partidas inválidas, paginación, exclusión de mesas activas/anuladas/amistosas y proyección sin información privada. Revisión visual local con las partidas públicas de Fonchi: cinco cartas en cuatro partidas, incluidas dos apariciones del Hipopótamo; detalle con enlaces de repaso y presentación final con tres cartas. Pantallas de escritorio y de 390 px sin desborde horizontal.
+
+## Álbumes visitables y especiales elegidas
+Desde el 27/11/2026, por pedido de Agustín, se pueden visitar los álbumes del plantel en `/album?seccion=club#albumes-del-club` y `/album/[jugadorId]`. Cada perfil tiene un acceso. Se muestran sólo las versiones activas obtenidas por el propietario, con sus cantidades, filtros y detalle. Las cartas que todavía no consiguió no se revelan. El encabezado identifica al dueño y permite cambiar entre sus figuritas y sus aperturas; estas últimas enlazan las partidas oficiales públicas.
+
+`albumes_publicos_club` proyecta nombre y foto deportivos, ID público del jugador, progreso y existencias activas. La función privada usa únicamente cuentas verificadas con un vínculo unívoco al plantel. No devuelve UID de acceso, correo, sobres pendientes, propuestas ni reservas; no modifica inventarios ni permisos de intercambio. Se conservan el motor privado y la protección de las cartas no obtenidas del álbum personal.
+
+Las seis nuevas especiales confirmadas en las láminas son: 34 La montaña de Elo (A09), 35 Hipopofonchy (A10), 36 Victornator (A12), 37 Momento histórico (F01), 38 Ludoarte (F07) y 39 Torneo en juego (F08). Usan imágenes existentes seleccionadas por Agustín, sin regenerar rostros. Cada una tiene nueve combinaciones. Total: 39 bases y 351 versiones. Las tres escenas mantienen la fotografía completa, sobre una extensión difuminada de la misma imagen; los retratos de jugadores siguen siendo individuales.
+
+Validación adicional: `tests/album-social.test.cjs` comprueba las proyecciones de visita como anónimo y autenticado, la exclusión de cartas inactivas o no obtenidas y la imposibilidad de leer o alterar las tablas privadas. La revisión local confirmó la búsqueda, la visita a las 14 versiones de Agustín Fuentes, el filtro foil, las aperturas de Fonchi y el tamaño móvil a 390 px.
