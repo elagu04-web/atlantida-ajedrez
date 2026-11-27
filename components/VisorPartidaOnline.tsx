@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Chessboard } from 'react-chessboard';
 import { MarcoTablero } from './MarcoTablero';
 import type { PartidaOnline } from '@/lib/partidaOnline';
@@ -9,6 +10,7 @@ import { recorridoOnline } from '@/lib/recorridoOnline';
 import { estilosUltimoMovimiento } from '@/lib/ultimoMovimiento';
 import { descargarOnline } from '@/lib/juegoOnline';
 import styles from './VisorPartidaOnline.module.css';
+const DescubrimientoApertura=dynamic(()=>import('./DescubrimientoApertura').then(m=>m.DescubrimientoApertura));
 
 export function VisorPartidaOnline({ partida, color, volver }: { partida: PartidaOnline; color: 'w' | 'b'; volver: () => void }) {
   const recorrido = useMemo(() => { try { return recorridoOnline(partida.estado); } catch { return null; } }, [partida.estado]);
@@ -77,6 +79,7 @@ export function VisorPartidaOnline({ partida, color, volver }: { partida: Partid
       <p className={styles.detalle}>{e.ritmo} · {e.porElo ? 'Por Elo Atlántida' : 'Amistosa'} · {new Date(partida.creada).toLocaleDateString('es-UY', { timeZone: 'America/Montevideo', day: 'numeric', month: 'short' })}</p>
       {elo && <p className={styles.elo}>Tu Elo Atlántida: <strong>{elo.antes} → {elo.despues}</strong> ({elo.variacion >= 0 ? '+' : ''}{elo.variacion})</p>}
       <p className={styles.ayuda}>Tu partida quedó guardada. Usá las flechas o tocá una jugada para repasarla. Vos elegís cuándo volver a la sala.</p>
+      <DescubrimientoApertura partida={partida}/>
       {recorrido && <div ref={lista} className={styles.jugadas} role="group" aria-label="Jugadas de la partida online">{recorrido.jugadas.length ? recorrido.jugadas.map((j, i) => <button key={i} aria-current={indice === i + 1 ? 'step' : undefined} onClick={() => ir(i + 1)}>{j.texto}</button>) : <p>La partida terminó sin movimientos.</p>}</div>}
       <div className={styles.acciones}><Link className="button-primary" href={`/entrenamiento?modo=online&partidaOnline=${partida.id}`}>Analizar con el motor →</Link><button className="button-secondary" disabled={!e.pgn} onClick={() => descargarOnline(partida)}>Descargar PGN</button></div>
       <button className={styles.volver} onClick={volver}>← Volver a mis mesas</button>

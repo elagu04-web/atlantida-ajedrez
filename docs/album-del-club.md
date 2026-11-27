@@ -53,3 +53,15 @@ Fondos originales generados con imagegen, formato vertical y sin texto, rostros 
 Charly usa la foto original facilitada por Agustín, convertida a `charly-suerte-original.webp`, sin regenerar su cara. El fondo claro se integra en una edición verde y crema.
 
 `reiniciar_prueba` sólo admite la cuenta administrativa preexistente y afecta únicamente su inventario y sobres. Antes guarda inventario, sobres y perfil en `album_privado.reinicios_prueba`; cancela sus propuestas pendientes y desactiva compartir. Conserva el historial aceptado y las colecciones ajenas. UUID de petición idempotente: repetirla no borra cartas abiertas después del reinicio. No se expone esta acción en la interfaz de usuarios.
+
+## Aperturas en la colección personal
+
+En `/album?seccion=aperturas#mis-aperturas`, cada jugador vinculado tiene un apartado adicional de aperturas, defensas, gambitos y sistemas. Se deriva de las partidas oficiales terminadas del archivo deportivo, incluidas las anteriores. Las jugadas persistidas son la evidencia; no hay un inventario paralelo que pueda divergir. Las partidas presenciales sin notación y los resultados manuales sin movimientos no conceden cartas.
+
+`aperturas_partidas_jugador` pagina hasta 100 encuentros por petición y devuelve sólo el ID público, fecha, rival público, color, resultado y las primeras 40 medias jugadas. El envoltorio público es SECURITY INVOKER y la proyección privada conserva los filtros del archivo deportivo. No abre acceso a mesas, cuentas, correos ni PGN privados, ni recibe jugadas del navegador.
+
+`lib/albumAperturas.ts` reconoce la posición más profunda del catálogo CC0 de Lichess (incluidas transposiciones), su familia y los gambitos o sistemas identificados. Londres, Muro de Piedra e Hipopótamo tienen además reconocimiento por formación propia, independiente de la respuesta rival. Una carta agrupa sus partidas una sola vez, cuenta resultados por color y muestra la posición y variante de su primera aparición. El registro significa que esa apertura apareció en el encuentro, no que el jugador la domine.
+
+Al terminar una partida online oficial, el visor presenta las cartas reconocidas con entrada animada, brillo e inclinación. Señala la primera aparición o repetición y permite recorrerlas e ir al álbum, conservando los controles de revisión. Respeta movimiento reducido. Estas cartas se consiguen por partidas y no participan del sorteo ni de los intercambios de jugadores.
+
+Pruebas: `node --test tests/album-aperturas.test.cjs tests/partidas-publicas.test.cjs`. Cubren transposiciones, formaciones de cada color, gambitos, deduplicación, resultados, partidas inválidas, paginación, exclusión de mesas activas/anuladas/amistosas y proyección sin información privada. Revisión visual local con las partidas públicas de Fonchi: cinco cartas en cuatro partidas, incluidas dos apariciones del Hipopótamo; detalle con enlaces de repaso y presentación final con tres cartas. Pantallas de escritorio y de 390 px sin desborde horizontal.

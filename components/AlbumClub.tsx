@@ -2,6 +2,8 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import {useSearchParams} from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useJugadores } from '@/context/JugadoresContext';
 import { useMiJugador } from '@/context/useMiJugador';
@@ -16,6 +18,7 @@ export {Carta};
 import { AlbumCatalogoProvider, useCatalogoAlbum } from '@/context/AlbumCatalogoContext';
 import { IdentidadJugador } from './IdentidadJugador';
 import s from './AlbumClub.module.css';
+const AlbumAperturas=dynamic(()=>import('./AlbumAperturas').then(m=>m.AlbumAperturas),{loading:()=> <p role="status">Abriendo tu colección de aperturas…</p>});
 
 function Modal({ titulo, cerrar, children }: { titulo: string; cerrar: () => void; children: React.ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -27,10 +30,11 @@ function Modal({ titulo, cerrar, children }: { titulo: string; cerrar: () => voi
 
 export function AlbumClub() {
   const { session, cargando } = useAuth();
-  return <DatosFiguritasProvider><AlbumCatalogoProvider><AlbumCuenta key={session?.user.id ?? 'visitante'} cuenta={session?.user.id ?? null} cargandoAuth={cargando}/></AlbumCatalogoProvider></DatosFiguritasProvider>;
+  const aperturas=useSearchParams().get('seccion')==='aperturas';
+  return <DatosFiguritasProvider><AlbumCatalogoProvider><AlbumCuenta key={(session?.user.id ?? 'visitante')+':'+aperturas} cuenta={session?.user.id ?? null} cargandoAuth={cargando} aperturas={aperturas}/></AlbumCatalogoProvider></DatosFiguritasProvider>;
 }
 
-function AlbumCuenta({ cuenta, cargandoAuth }: { cuenta: string | null; cargandoAuth: boolean }) {
+function AlbumCuenta({ cuenta, cargandoAuth, aperturas }: { cuenta: string | null; cargandoAuth: boolean; aperturas:boolean }) {
   const { catalogo:catalogoAlbum,porId:figuritaPorId,actualizar:actualizarCatalogo }=useCatalogoAlbum();
   const {esAdmin}=useAuth();const {jugadores}=useJugadores();
   const [nuevoJugador,setNuevoJugador]=useState('');
@@ -41,7 +45,7 @@ function AlbumCuenta({ cuenta, cargandoAuth }: { cuenta: string | null; cargando
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
-  const [tab, setTab] = useState<'album'|'repetidas'|'cambios'>('album');
+  const [tab, setTab] = useState<'album'|'repetidas'|'cambios'|'aperturas'>(aperturas?'aperturas':'album');
   const [filtro, setFiltro] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
   const [seleccionada, setSeleccionada] = useState<Figurita | null>(null);
@@ -131,9 +135,9 @@ function AlbumCuenta({ cuenta, cargandoAuth }: { cuenta: string | null; cargando
       {esAdmin&&cuenta&&<details className={s.reglas}><summary>Gestión del álbum · agregar jugadores con foto</summary><div className={s.reglasInterior}><p>Primero cargá una foto individual recortada en el perfil. Cada jugador nuevo se incorpora al final de la colección con sus nueve combinaciones.</p><label>Jugador con foto<select value={nuevoJugador} onChange={e=>setNuevoJugador(e.target.value)}><option value="">Elegí un jugador</option>{incorporables.map(j=><option key={j.id} value={j.id}>{j.apodo||j.nombre}</option>)}</select></label><button className={s.botonDorado} disabled={ocupado||!nuevoJugador} onClick={()=>void operar('agregar',{jugadorId:nuevoJugador},'Jugador incorporado al álbum con sus nueve combinaciones.')}>Agregar figurita</button>{!incorporables.length&&<p>Todos los jugadores con foto ya están en el álbum. Cargá una foto en otro perfil para incorporarlo.</p>}</div></details>}
       <div aria-live="polite">{aviso && <p className={s.aviso}>{aviso}</p>}</div>
       {error && <div role="alert" className={s.error}><p>{error}</p><button className={s.boton} disabled={ocupado} onClick={()=>void refrescar()}>Reintentar</button></div>}
-      <div className={s.tabs} role="group" aria-label="Secciones del álbum">{([['album','El álbum'],['repetidas',`Mis repetidas (${repetidas})`],['cambios',`Intercambios${pendientes.length ? ` (${pendientes.length})` : ''}`]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={tab===id} disabled={id!=='album'&&!estado?.jugadorId} onClick={()=>{setTab(id);setFiltro('Todas');if(id==='cambios')void cargarMercado();}}>{label}</button>)}</div>
+      <div className={s.tabs} role="group" aria-label="Secciones del álbum">{([['album','El álbum'],['aperturas','Mis aperturas ✦'],['repetidas',`Mis repetidas (${repetidas})`],['cambios',`Intercambios${pendientes.length ? ` (${pendientes.length})` : ''}`]] as const).map(([id,label])=><button key={id} type="button" aria-pressed={tab===id} disabled={id!=='album'&&id!=='aperturas'&&!estado?.jugadorId} onClick={()=>{setTab(id);setFiltro('Todas');if(id==='cambios')void cargarMercado();}}>{label}</button>)}</div>
 
-      {tab!=='cambios' ? <>
+      {tab==='aperturas'?<AlbumAperturas key={jugador?.id??'sin-jugador'} jugadorId={cuenta?jugador?.id??null:null}/>:tab!=='cambios' ? <>
         <div className={s.filtros}><div role="group" aria-label="Filtrar figuritas">{['Todas','Jugadores','Campeones','Especiales',...(cuenta?['Me faltan']:[])].map(v=><button key={v} aria-pressed={filtro===v} onClick={()=>setFiltro(v)}>{v}</button>)}</div><label><span className={s.sr}>Buscar figurita</span><input type="search" placeholder="Buscá un nombre…" value={busqueda} onChange={e=>setBusqueda(e.target.value)} /></label></div>
         {tab==='repetidas' && <p className={s.ayuda}>Conservás siempre una copia en el álbum. Las que ofrecés quedan reservadas hasta que la propuesta se resuelva o venza.</p>}
         <div className={s.grilla}>{lista.map(f=><Carta key={f.id} f={f} cantidad={existencias.get(f.id)?.cantidad??0} seleccionar={()=>setSeleccionada(f)}/>)}</div>
