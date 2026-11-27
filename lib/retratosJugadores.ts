@@ -1,10 +1,11 @@
 /** Retratos preparados desde las imágenes facilitadas para cada jugador. */
 type JugadorConFoto = { id: string; fotoUrl: string | null };
-type Preparado = { archivo: string; fotoRegistrada: string | null; pixel?: boolean };
+type Preparado = { archivo: string; fotoRegistrada: string | null; miniatura?: string; pixel?: boolean };
 const bucket = "https://xewtgrrsepjlzwvknkxb.supabase.co/storage/v1/object/public/fotos-jugadores/";
 const fotoRegistrada = (id: string, version: string) => `${bucket}${id}.png?v=${version}`;
 
 const preparados: Record<string, Preparado> = {
+  "f88a3bd3-bedd-41dc-a115-17ba1378b6bb": { archivo: "/imagenes/retratos/bruno-album-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/bruno-album-transparente.webp", miniatura: "/imagenes/retratos/bruno-album-transparente.webp" },
   "2c191207-a48a-418b-a8ef-210a00e5acc4": { archivo: "/imagenes/retratos/ezequiel-nunez-tablero-20261110-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ezequiel-nunez-tablero-20261110.jpg" },
   "3059d6c3-44f3-49f7-8b57-8156cae5d0f0": { archivo: "/imagenes/retratos/ismael-gonzalez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/ismael-gonzalez-tablero-20261103-miniatura.webp" },
   "171197d2-fa9e-4a6a-ac3e-3139fbc7ff62": { archivo: "/imagenes/retratos/agustin-nunez-tablero-20261103-transparente.webp", fotoRegistrada: "https://atlantida-ajedrez.vercel.app/imagenes/retratos/agustin-nunez-tablero-20261103-miniatura.webp" },
@@ -34,7 +35,7 @@ export function retratoJugador(jugador: JugadorConFoto) {
   const preparado = preparados[jugador.id];
   // Una nueva foto subida por el administrador tiene prioridad sobre el recorte anterior.
   if (preparado && jugador.fotoUrl === preparado.fotoRegistrada) {
-    return { src: preparado.archivo, miniatura: preparado.archivo.replace("-transparente.webp", "-miniatura.webp"), transparente: true, pixel: Boolean(preparado.pixel) };
+    return { src: preparado.archivo, miniatura: preparado.miniatura ?? preparado.archivo.replace("-transparente.webp", "-miniatura.webp"), transparente: true, pixel: Boolean(preparado.pixel) };
   }
   return { src: jugador.fotoUrl, miniatura: jugador.fotoUrl, transparente: false, pixel: false };
 }
