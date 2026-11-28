@@ -110,3 +110,10 @@ El tablero se abre con «Estudiar esta apertura» y regresa a la familia selecci
 Después de revelar todo el sobre, se muestra el progreso actual de las familias relacionadas con sus cartas o mejoras. El enlace vuelve al álbum. Las formaciones propias muestran sólo la secuencia de movimientos, sin cabeceras PGN técnicas.
 
 Validación: `tests/familias-aperturas.test.cjs` comprueba cobertura sin duplicados, independencia entre colecciones, agrupación de Londres y formación, separación del Hipopótamo, legalidad del PGN mostrado y conexiones por jugadas, además de la correspondencia con las ramas que sí pueden dar una mítica. Revisión visual en escritorio y 390 px: portadas, búsqueda, cartas conseguidas, mapa plegable, objetivo sin imágenes, estudio y regreso, resumen de sobre y enlace.
+
+## Figuritas en las portadas y familias pendientes
+El álbum abre por defecto «Mi colección» (o «Su colección» en una visita), con sólo familias que tienen cartas obtenidas. Cada portada muestra una figurita en miniatura derivada de una de sus cartas reales: prioriza mítica, foil y rara. El diagrama y la edición corresponden a esa carta obtenida, sin duplicar premios ni crear existencias.
+
+«Ver todas» y «Por descubrir» permiten consultar las pendientes, que usan un dorso gris con candado y carecen de frente, imágenes de piezas, color de familia y brillo. La búsqueda sin coincidencias propias permite extenderla explícitamente a pendientes. La portada pendiente puede abrir la familia para consultar objetivos y estudio, manteniendo las cartas sin obtener detrás de su dorso.
+
+Validación visual en escritorio y 390 px: seis familias obtenidas y cero pendientes en la vista inicial de Fonchi, miniaturas reales de sus cartas, doce pendientes sin imágenes al cambiar de filtro, búsqueda extendida sin desborde horizontal y consola sin errores. Sin cambios en recompensas ni persistencia.

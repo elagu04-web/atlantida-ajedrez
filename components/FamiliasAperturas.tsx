@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element -- Miniaturas de cartas obtenidas con piezas SVG locales. */
 'use client';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
+import {Chess} from 'chess.js';
 import {familiasAperturas,ramasDeFamilia,identidadFamilia,type FamiliaAperturas,type RamaFamilia} from '@/lib/familiasAperturas';
 import type {CartaApertura as DatosCarta,HallazgoApertura} from '@/lib/albumAperturas';
 import {CartaApertura} from './CartaApertura';
@@ -12,15 +14,15 @@ const favoritas=['Italian Game','Sicilian Defense','London System','Ruy Lopez','
 type Props={cartas:DatosCarta[];miticas:DatosCarta[];nombreJugador?:string;familiaId:string|null;seleccionarFamilia:(id:string|null)=>void;verCarta:(c:DatosCarta)=>void;estudiar:(id:string)=>void};
 
 export function FamiliasAperturas({cartas,miticas,nombreJugador,familiaId,seleccionarFamilia,verCarta,estudiar}:Props){
- const familias=useMemo(()=>familiasAperturas(cartas,miticas),[cartas,miticas]),[busqueda,setBusqueda]=useState(''),[filtro,setFiltro]=useState('todas'),[limite,setLimite]=useState(12);
+ const familias=useMemo(()=>familiasAperturas(cartas,miticas),[cartas,miticas]),[busqueda,setBusqueda]=useState(''),[filtro,setFiltro]=useState('iniciadas'),[limite,setLimite]=useState(12);
  const familia=familias.find(f=>f.id===familiaId);
  if(familia)return <PaginaFamilia key={familia.id} familia={familia} nombreJugador={nombreJugador} volver={()=>seleccionarFamilia(null)} verCarta={verCarta} estudiar={estudiar}/>;
  const consulta=limpiar(busqueda),lista=familias.filter(f=>(filtro==='todas'||(filtro==='iniciadas'?f.obtenidas.length>0:f.obtenidas.length===0))&&limpiar(f.nombre+' '+f.id+' '+f.posiciones.map(p=>p.nombre+' '+p.eco).join(' ')).includes(consulta)).sort((a,b)=>b.obtenidas.length-a.obtenidas.length||prioridad(a.id)-prioridad(b.id)||a.nombre.localeCompare(b.nombre,'es'));
  return <div className={s.album}>
   <div className={s.resumen}><span><strong>{familias.filter(f=>f.obtenidas.length).length}</strong> familias iniciadas</span><span><strong>{cartas.length}</strong> posiciones conseguidas</span><span><strong>{miticas.length}</strong> míticas</span></div>
-  <div className={s.herramientas}><div className={s.filtros} role="group" aria-label="Filtrar familias">{[['todas','Todas las familias'],['iniciadas',nombreJugador?'Las que empezó':'Las que empecé'],['pendientes','Por empezar']].map(([id,label])=><button key={id} aria-pressed={filtro===id} onClick={()=>{setFiltro(id);setLimite(12);}}>{label}</button>)}</div><label><span>Buscar familia o variante</span><input type="search" value={busqueda} placeholder="Siciliana, Italiana, Londres…" onChange={e=>{setBusqueda(e.target.value);setLimite(12);}}/></label></div>
+  <div className={s.herramientas}><div className={s.filtros} role="group" aria-label="Filtrar familias">{[['iniciadas',nombreJugador?'Su colección':'Mi colección'],['todas','Ver todas'],['pendientes','Por descubrir']].map(([id,label])=><button key={id} aria-pressed={filtro===id} onClick={()=>{setFiltro(id);setLimite(12);}}>{label}</button>)}</div><label><span>Buscar familia o variante</span><input type="search" value={busqueda} placeholder="Siciliana, Italiana, Londres…" onChange={e=>{setBusqueda(e.target.value);setLimite(12);}}/></label></div>
   <div className={s.familias}>{lista.slice(0,limite).map(f=><PortadaFamilia key={f.id} familia={f} abrir={()=>seleccionarFamilia(f.id)}/>)}</div>
-  {!lista.length&&<p className={s.vacio}>No hay familias con ese filtro. Probá otro nombre o volvé a «Todas las familias».</p>}
+  {!lista.length&&<div className={s.vacio}><p>{filtro==='iniciadas'?(consulta?'Esa familia todavía no aparece en esta colección.':nombreJugador?'Todavía no tiene cartas de aperturas.':'Tu primera figurita de aperturas está por llegar. Las conseguís jugando partidas guardadas.'):'No hay familias con ese nombre. Probá otra búsqueda.'}</p>{filtro==='iniciadas'&&<button className={s.mas} onClick={()=>setFiltro('todas')}>{consulta?'Buscar también las pendientes':'Descubrir otras familias'} →</button>}</div>}
   {lista.length>limite&&<button className={s.mas} onClick={()=>setLimite(n=>n+12)}>Ver más familias <span>({lista.length-limite})</span> ↓</button>}
   <details className={s.catalogo}><summary>Acerca de este álbum</summary><p>Las familias reúnen aperturas, defensas, gambitos y sistemas. El catálogo tiene 3865 posiciones con nombre; el progreso de cada familia cuenta únicamente las conseguidas en partidas guardadas. Las formaciones propias se agregan cuando aparecen en esas partidas.</p></details>
  </div>;
@@ -29,10 +31,15 @@ function prioridad(id:string){const i=favoritas.indexOf(id);return i<0?100:i;}
 
 function PortadaFamilia({familia:f,abrir}:{familia:FamiliaAperturas;abrir:()=>void}){
  const identidad=identidadFamilia(f.id),empezada=f.obtenidas.length>0;
- return <button className={`${s.portada} ${s[identidad.tono]}`} onClick={abrir} aria-label={`Abrir ${f.nombre}, ${f.obtenidas.length} de ${f.posiciones.length} posiciones conseguidas`}>
-  <div className={s.escena}><span className={s.sello}>ATLÁNTIDA · APERTURAS</span><span className={s.estado}>{empezada?'EN COLECCIÓN':'POR EMPEZAR'}</span><div className={s.pila}><span className={s.cartaTrasera}/><span className={s.cartaIntermedia}/><span className={s.cubierta}><ArteFamiliaApertura identidad={identidad}/><span className={s.numeroColeccion}>{String(f.posiciones.length).padStart(2,'0')}<small>POSICIONES</small></span></span></div><p className={s.lema}>{identidad.lema}</p></div>
+ const figurita=f.miticas[0]??[...f.obtenidas].sort((a,b)=>Number(b.acabado==='foil')-Number(a.acabado==='foil')||Number(b.rareza==='rara')-Number(a.rareza==='rara')||b.profundidad-a.profundidad)[0];
+ return <button className={`${s.portada} ${s[identidad.tono]} ${empezada?'':s.sinDescubrir}`} data-familia-estado={empezada?'obtenida':'pendiente'} onClick={abrir} aria-label={`Abrir ${f.nombre}, ${f.obtenidas.length} de ${f.posiciones.length} posiciones conseguidas`}>
+  <div className={s.escena}><span className={s.sello}>ATLÁNTIDA · APERTURAS</span><span className={s.estado}>{empezada?'FIGURITA CONSEGUIDA':'POR DESCUBRIR'}</span><div className={`${s.pila} ${figurita?s.pilaFigurita:''}`}><span className={s.cartaTrasera}/><span className={s.cartaIntermedia}/>{figurita?<FiguritaPortada carta={figurita}/>:<span className={s.dorsoPortada} aria-hidden="true"><CandadoCarta/><b>POR DESCUBRIR</b><small>LAS CARTAS LLEGAN JUGANDO</small></span>}</div><p className={s.lema}>{empezada?identidad.lema:'UNA FAMILIA POR ESTRENAR'}</p></div>
   <div className={s.infoPortada}><h3>{f.nombre}</h3><div className={s.progresoTexto}><strong>{f.obtenidas.length} <span>/ {f.posiciones.length}</span></strong><small>{empezada?'posiciones conseguidas':'una familia por descubrir'}</small></div><progress max={f.posiciones.length||1} value={f.obtenidas.length}/><footer><span>{f.miticas.length?`✦ ${f.miticas.length} ${f.miticas.length===1?'mítica':'míticas'}`:f.tieneMitica?'✧ Mítica pendiente':empezada?'✓ Carta conseguida':'♧ Carta pendiente'}</span><b>Abrir familia →</b></footer></div>
  </button>;
+}
+function FiguritaPortada({carta}:{carta:DatosCarta}){
+ const casillas=useMemo(()=>new Chess(carta.fen).board().flat(),[carta.fen]);
+ return <span className={`${s.figuritaPortada} ${carta.acabado==='foil'?s.figuritaFoil:''} ${carta.rareza==='mitica'?s.figuritaMitica:''}`} aria-hidden="true"><span className={s.edicionFigurita}><b>{carta.rareza==='mitica'?'MÍTICA':carta.rareza==='rara'?'RARA':'COMÚN'}{carta.acabado==='foil'?' · FOIL':''}</b><small>{carta.eco??'CLUB'}</small></span><span className={s.tableroFigurita}>{casillas.map((p,i)=><span key={i} className={(Math.floor(i/8)+i%8)%2?s.casillaOscura:s.casillaClara}>{p&&<img src={`/piezas/cburnett/${p.color}${p.type.toUpperCase()}.svg`} alt="" loading="lazy" draggable={false}/>}</span>)}</span><strong>{carta.nombre}</strong>{carta.acabado==='foil'&&<i className={s.reflejoFigurita}/>}</span>;
 }
 
 function PaginaFamilia({familia:f,nombreJugador,volver,verCarta,estudiar}:{familia:FamiliaAperturas;nombreJugador?:string;volver:()=>void;verCarta:(c:DatosCarta)=>void;estudiar:(id:string)=>void}){
