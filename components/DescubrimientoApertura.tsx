@@ -9,7 +9,7 @@ import s from './AlbumAperturas.module.css';
 
 export function DescubrimientoApertura({partida}:{partida:PartidaOnline}){
  const {session}=useAuth(),{jugador}=useMiJugador();
- const elegible=!!session&&!!colorOnline(partida,session.user.id)&&partida.estado.fase==='terminada'&&partida.estado.porElo===true&&partida.estado.movimientos.length>=4;
+ const elegible=!!session&&!!colorOnline(partida,session.user.id)&&partida.estado.fase==='terminada'&&partida.estado.movimientos.length>=4;
  if(!elegible||!jugador)return null;
  return <CartasDePartida key={session.user.id+':'+jugador.id+':'+partida.id} partidaId={partida.id} jugadorId={jugador.id}/>;
 }

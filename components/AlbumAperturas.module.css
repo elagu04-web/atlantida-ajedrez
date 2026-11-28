@@ -5,3 +5,5 @@
 .mitica{--acento:#ffe19b;--oscuro:#73531c}.mitica .carta{border:2px solid #f8d67e;box-shadow:0 0 25px #e9b54d33}.mitica .identidad{background:linear-gradient(100deg,#79521b,#d7b65c,#79521b);color:#211c15}.mitica .datosCarta{background:linear-gradient(140deg,#614717,#232b2d 75%)}.mitica .datosCarta h3{color:#ffe3a1}
 
 .datosCarta .lineaCarta{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:10px;line-height:1.5;min-height:30px;margin:0 0 12px;color:#c6d4e3}.datosCarta h3{margin-bottom:8px}@media(max-width:600px){.datosCarta .lineaCarta{font-size:8px;min-height:24px}}
+
+.origenCartas{margin-bottom:22px;padding:20px 22px;border:1px solid #d2b77766;border-radius:13px;background:linear-gradient(115deg,#3d4c3933,#172b3f)}.origenCartas>strong{font-size:18px;color:#e6c98e}.origenCartas p{font-size:13px;line-height:1.7;color:#afc3d8;margin:8px 0 14px;max-width:800px}.origenCartas a{font-size:12px}

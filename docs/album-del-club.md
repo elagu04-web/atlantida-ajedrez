@@ -84,3 +84,15 @@ Desde el 27/11/2026, por pedido de Agustín, se pueden visitar los álbumes del 
 Las seis nuevas especiales confirmadas en las láminas son: 34 La montaña de Elo (A09), 35 Hipopofonchy (A10), 36 Victornator (A12), 37 Momento histórico (F01), 38 Ludoarte (F07) y 39 Torneo en juego (F08). Usan imágenes existentes seleccionadas por Agustín, sin regenerar rostros. Cada una tiene nueve combinaciones. Total: 39 bases y 351 versiones. Las tres escenas mantienen la fotografía completa, sobre una extensión difuminada de la misma imagen; los retratos de jugadores siguen siendo individuales.
 
 Validación adicional: `tests/album-social.test.cjs` comprueba las proyecciones de visita como anónimo y autenticado, la exclusión de cartas inactivas o no obtenidas y la imposibilidad de leer o alterar las tablas privadas. La revisión local confirmó la búsqueda, la visita a las 14 versiones de Agustín Fuentes, el filtro foil, las aperturas de Fonchi y el tamaño móvil a 390 px.
+
+## Aclaración de origen y amistosas · 27/11/2026
+
+A pedido de Agustín, «Aperturas» abre primero las cartas obtenidas. El tablero queda como «Estudiar variantes · sin premios», con un aviso visible de que sólo las partidas terminadas guardadas generan cartas, mejoras, sobres y progreso de ramas. Explorar nunca escribe recompensas.
+
+La migración `20261128002900_aperturas_amistosas_guardadas.sql` agrega un origen interno para la colección: archivo oficial y amistosas humanas terminadas con resultado válido, dos cuentas distintas y al menos cuatro medias jugadas guardadas. Mantiene el límite de 40 medias jugadas y la paginación. No modifica el Elo, el archivo público ni los inventarios.
+
+Las amistosas se devuelven sólo si auth.uid() pertenece a la mesa y el jugador consultado es el perfil verificado de esa cuenta. Los visitantes conservan sólo las partidas oficiales públicas: no se publica la notación de las mesas privadas. El campo `amistosa` permite enlazar el repaso a la mesa original, protegida por sus permisos existentes, y distinguirla en el detalle. El sobre de final de partida admite ahora amistosas. El marcador de sobres abiertos valida ambas fuentes, sin conceder cartas desde el navegador.
+
+La colección y su modal se reinician al cambiar de cuenta o de jugador; las lecturas se cancelan para evitar conservar detalles de amistosas al cerrar sesión.
+
+Prueba `tests/aperturas-amistosas.test.cjs`: amistosas propias de ambos colores, resultados y tipos inválidos, mesas activas y canceladas, ausencia de rival, misma cuenta en ambos colores, falta de jugadas, paginación, límite de movimientos, cuentas ajenas, visitantes anónimos, apertura idempotente del sobre y acceso directo denegado. Verificación en producción con transacción revertida: tres amistosas para su propietario, cero para el visitante y apertura de sobre válida sin conservar la prueba.

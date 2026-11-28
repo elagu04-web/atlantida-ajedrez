@@ -3,7 +3,7 @@ import catalogo from '../data/aperturas-catalogo.json';
 
 export type TipoCartaApertura='apertura'|'defensa'|'gambito'|'sistema';
 export const tiposCartaApertura={apertura:'Aperturas',defensa:'Defensas',gambito:'Gambitos',sistema:'Sistemas'};
-export type PartidaAperturas={id:string;fecha:string;color:'w'|'b';rival:string;resultado:'1-0'|'0-1'|'1/2-1/2';movimientos:string[]};
+export type PartidaAperturas={id:string;fecha:string;color:'w'|'b';rival:string;resultado:'1-0'|'0-1'|'1/2-1/2';movimientos:string[];amistosa?:boolean};
 export type HallazgoApertura={id:string;nombre:string;original:string;tipo:TipoCartaApertura;eco:string|null;fen:string;variante:string;pgn:string;profundidad:number;lado:'w'|'b'};
 export type CartaApertura=HallazgoApertura&{partidas:Omit<PartidaAperturas,'movimientos'>[];victorias:number;tablas:number;blancas:number;negras:number;rareza:'comun'|'rara'|'mitica';acabado:'normal'|'foil';ramaCompleta?:{cartas:number;partidaId:string;fecha:string}};
 const clave=(fen:string)=>fen.split(' ').slice(0,4).join(' ');
