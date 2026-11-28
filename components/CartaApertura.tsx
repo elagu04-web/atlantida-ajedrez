@@ -15,6 +15,6 @@ export function CartaApertura({carta,seleccionar}:{carta:DatosCarta;seleccionar?
   <div className={s.datosCarta}><span className={s.tipo}>{singular} · colección personal</span><h3>{carta.nombre}</h3><p className={s.lineaCarta} title={carta.pgn}>{carta.ramaCompleta?`Rama completa · ${carta.ramaCompleta.cartas} posiciones`:carta.pgn}</p><div className={s.cifras}><span><b>{carta.partidas.length}</b> {carta.partidas.length===1?'partida':'partidas'}</span><span><b>{carta.victorias}</b> {carta.victorias===1?'victoria':'victorias'}</span></div><p>{carta.blancas>0&&`♔ ${carta.blancas} con blancas`}{carta.blancas>0&&carta.negras>0?' · ':''}{carta.negras>0&&`♚ ${carta.negras} con negras`}</p><span className={s.firmaCarta}>JUGADA A JUGADA <span>✦</span> EL ÁLBUM DEL CLUB</span></div>
  </>;
  const contenido=seleccionar?<button type="button" className={s.carta} onClick={seleccionar} aria-label={`Ver ${carta.nombre}, ${carta.partidas.length} ${carta.partidas.length===1?'partida':'partidas'}`}>{interior}</button>:<div className={s.carta}>{interior}</div>;
- const clases=`${s.inclinable} ${s[carta.tipo]} ${carta.rareza==='mitica'?s.mitica:''}`;
+ const clases=`${s.inclinable} ${s[carta.tipo]} ${carta.rareza==='mitica'?s.mitica:carta.rareza==='comun'?s.comun:''}`;
  return carta.acabado==='foil'?<CartaBrillante className={clases} inclinacion={12} acabado="foil" distinciones={carta.rareza==='mitica'?['Rama completa']:[]} tactil>{contenido}</CartaBrillante>:<div className={clases}>{contenido}</div>;
 }

@@ -8,7 +8,7 @@ import {TableroApertura} from './TableroApertura';
 import s from './ExploradorAperturas.module.css';
 
 const normalizar=(v:string)=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-export function ExploradorAperturas({cartas,nombreJugador,verCarta,inicioId}:{cartas:CartaApertura[];nombreJugador?:string;verCarta:(c:CartaApertura)=>void;inicioId?:string|null}){
+export function ExploradorAperturas({cartas,nombreJugador,verCarta,inicioId,compacto=false}:{cartas:CartaApertura[];nombreJugador?:string;verCarta:(c:CartaApertura)=>void;inicioId?:string|null;compacto?:boolean}){
  const [arbol]=useState(()=>crearArbolAperturas()),[ruta,setRuta]=useState(()=>inicioId?arbol.rutasPorCarta.get(inicioId.replace('mitica:',''))??'':''),[busqueda,setBusqueda]=useState(''),[soloJugadas,setSoloJugadas]=useState(false),[color,setColor]=useState<'w'|'b'>('w'),[aviso,setAviso]=useState('');
  const propias=new Map(cartas.map(c=>[c.id,c])),ids=new Set(propias.keys());
  const nodo=arbol.nodos.get(ruta)!,chess=posicionDeRuta(ruta),historial=chess.history(),progreso=progresoRama(nodo,ids);
@@ -22,7 +22,7 @@ export function ExploradorAperturas({cartas,nombreJugador,verCarta,inicioId}:{ca
  const victoriaPropia=!!conseguida?.partidas.some(p=>gradoApertura(conseguida,p)===2);
  const jugadas=siguientes.filter(h=>!soloJugadas||h.progreso.conseguidas>0);
  return <div className={s.explorador}>
-  <div className={s.intro}><div><p className={s.kicker}>TABLERO DE ESTUDIO · SIN PREMIOS</p><h3>Acá estudiás. Las cartas se ganan jugando.</h3><p>Este tablero es para conocer las variantes. Las cartas, los sobres y las míticas se consiguen únicamente al terminar partidas amistosas o de torneo con jugadas guardadas. Explorar acá no suma progreso.</p></div><div className={s.global}><strong>{progresoRama(arbol.nodos.get('')!,ids).conseguidas}<small> / {arbol.nodos.get('')!.descendientes.length}</small></strong><span>posiciones del catálogo conseguidas</span></div></div>
+  <div className={s.intro}><div><p className={s.kicker}>TABLERO DE ESTUDIO · SIN PREMIOS</p><h3>{compacto?'Estudiar esta apertura.':'Acá estudiás. Las cartas se ganan jugando.'}</h3><p>{compacto?'Recorré sus continuaciones y prepará tu próxima partida. El progreso del álbum viene de las partidas guardadas.':'Este tablero es para conocer las variantes. Las cartas, los sobres y las míticas se consiguen únicamente al terminar partidas amistosas o de torneo con jugadas guardadas. Explorar acá no suma progreso.'}</p></div>{!compacto&&<div className={s.global}><strong>{progresoRama(arbol.nodos.get('')!,ids).conseguidas}<small> / {arbol.nodos.get('')!.descendientes.length}</small></strong><span>posiciones del catálogo conseguidas</span></div>}</div>
   <label className={s.buscador}><span>Buscar una apertura o variante</span><input type="search" placeholder="Siciliana, Najdorf, Londres, B90…" value={busqueda} onChange={e=>setBusqueda(e.target.value)}/></label>
   {busqueda.trim()&&<div className={s.resultados} aria-label="Resultados de aperturas">{resultados.length?resultados.map(n=><button key={n.ruta} onClick={()=>cambiar(n.ruta)}><span>{n.carta!.nombre}</span><small>{n.carta!.eco} · {ids.has(n.carta!.id)?'✓ Conseguida':'Por descubrir'} · {n.carta!.pgn}</small></button>):<p>No encontramos esa apertura. Probá otro nombre o su código ECO.</p>}{resultados.length===30&&<p>Mostrando 30 coincidencias. Escribí un nombre más específico para afinar la búsqueda.</p>}</div>}
   <div className={s.recorrido}>

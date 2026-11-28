@@ -96,3 +96,17 @@ Las amistosas se devuelven sólo si auth.uid() pertenece a la mesa y el jugador 
 La colección y su modal se reinician al cambiar de cuenta o de jugador; las lecturas se cancelan para evitar conservar detalles de amistosas al cerrar sesión.
 
 Prueba `tests/aperturas-amistosas.test.cjs`: amistosas propias de ambos colores, resultados y tipos inválidos, mesas activas y canceladas, ausencia de rival, misma cuenta en ambos colores, falta de jugadas, paginación, límite de movimientos, cuentas ajenas, visitantes anónimos, apertura idempotente del sobre y acceso directo denegado. Verificación en producción con transacción revertida: tres amistosas para su propietario, cero para el visitante y apertura de sobre válida sin conservar la prueba.
+
+## Presentación por familias · 27/11/2026
+
+El álbum de aperturas abre portadas por familia, con cubiertas vectoriales originales, cartas apiladas, identidad de color y motivo, progreso de posiciones y estado de míticas. Prioriza familias iniciadas; ofrece búsqueda por familia, variante o ECO, filtros y carga de más familias. El total de 3865 queda en los detalles del catálogo.
+
+`lib/familiasAperturas.ts` organiza cada posición exactamente una vez: agrupa órdenes de Londres y las variantes de los gambitos de rey/dama; distingue el Hipopótamo por formación del club de la línea Nh6 del catálogo. Las formaciones propias se incorporan cuando se consiguen. Las míticas se muestran según los premios existentes; sólo se anuncia su posibilidad si la familia contiene una rama elegible del motor. No cambia premios, partidas, probabilidades, permisos ni persistencia.
+
+Dentro de una familia: cartas conseguidas ampliables con sus encuentros, objetivos pendientes con dorso y candado, y un mapa plegable que conecta cada posición con su antecesora catalogada de la misma familia. Las pendientes no renderizan su frente, diagrama, imágenes ni efectos; el objetivo puede mostrar la secuencia textual para planificar una partida. Las posiciones con nombres repetidos se distinguen por ECO, paso y jugadas.
+
+El tablero se abre con «Estudiar esta apertura» y regresa a la familia seleccionada; cambiar de familia o de vista lleva al comienzo del contenido, respetando movimiento reducido. La variante de estudio compacta evita el contador global. Las comunes usan acabado mate y colores discretos; rara foil y mítica conservan sus efectos. La carta ampliada tiene más espacio.
+
+Después de revelar todo el sobre, se muestra el progreso actual de las familias relacionadas con sus cartas o mejoras. El enlace vuelve al álbum. Las formaciones propias muestran sólo la secuencia de movimientos, sin cabeceras PGN técnicas.
+
+Validación: `tests/familias-aperturas.test.cjs` comprueba cobertura sin duplicados, independencia entre colecciones, agrupación de Londres y formación, separación del Hipopótamo, legalidad del PGN mostrado y conexiones por jugadas, además de la correspondencia con las ramas que sí pueden dar una mítica. Revisión visual en escritorio y 390 px: portadas, búsqueda, cartas conseguidas, mapa plegable, objetivo sin imágenes, estudio y regreso, resumen de sobre y enlace.

@@ -78,7 +78,7 @@ export function descubrirAperturas(movimientos:string[],color:'w'|'b'):HallazgoA
    if(typeof u!=='string'||!/^([a-h][1-8]){2}[qrbn]?$/.test(u))return [];
    c.move({from:u.slice(0,2),to:u.slice(2,4),promotion:u[4]});
    const entrada=posiciones.get(clave(c.fen()));if(entrada){const f=cartaDePosicion(entrada);resultado.set(f.id,f);}
-   for(const f of sistemas(c,color))if(!resultado.has(f.id))resultado.set(f.id,{...f,pgn:c.pgn(),profundidad:c.history().length});
+   for(const f of sistemas(c,color))if(!resultado.has(f.id))resultado.set(f.id,{...f,pgn:c.history().map((m,i)=>(i%2===0?`${Math.floor(i/2)+1}. `:'')+m).join(' '),profundidad:c.history().length});
   }
  } catch {return [];}
  return [...resultado.values()];
