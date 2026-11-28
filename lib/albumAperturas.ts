@@ -4,8 +4,8 @@ import catalogo from '../data/aperturas-catalogo.json';
 export type TipoCartaApertura='apertura'|'defensa'|'gambito'|'sistema';
 export const tiposCartaApertura={apertura:'Aperturas',defensa:'Defensas',gambito:'Gambitos',sistema:'Sistemas'};
 export type PartidaAperturas={id:string;fecha:string;color:'w'|'b';rival:string;resultado:'1-0'|'0-1'|'1/2-1/2';movimientos:string[]};
-export type HallazgoApertura={id:string;nombre:string;original:string;tipo:TipoCartaApertura;eco:string|null;fen:string;variante:string};
-export type CartaApertura=HallazgoApertura&{partidas:Omit<PartidaAperturas,'movimientos'>[];victorias:number;tablas:number;blancas:number;negras:number};
+export type HallazgoApertura={id:string;nombre:string;original:string;tipo:TipoCartaApertura;eco:string|null;fen:string;variante:string;pgn:string;profundidad:number;lado:'w'|'b'};
+export type CartaApertura=HallazgoApertura&{partidas:Omit<PartidaAperturas,'movimientos'>[];victorias:number;tablas:number;blancas:number;negras:number;rareza:'comun'|'rara'|'mitica';acabado:'normal'|'foil';ramaCompleta?:{cartas:number;partidaId:string;fecha:string}};
 const clave=(fen:string)=>fen.split(' ').slice(0,4).join(' ');
 const posiciones=new Map(catalogo.map(a=>[a.fen,a]));
 const nombres:Record<string,string>={
@@ -24,16 +24,18 @@ const nombres:Record<string,string>={
  'Benko Gambit':'Gambito Benko','Benoni Defense':'Defensa Benoni','Bogo-Indian Defense':'Defensa Bogoindia',
  'Evans Gambit':'Gambito Evans','Smith-Morra Gambit':'Gambito Smith-Morra','Budapest Defense':'Defensa Budapest',
  'Slav Formation':'Formación Eslava',
+ 'Closed':'Cerrada','Open':'Abierta','English Attack':'Ataque Inglés','Classical Variation':'Variante Clásica',
+ 'Dragon Variation':'Variante del Dragón','Accelerated Dragon':'Dragón Acelerado','Modern Line':'Línea Moderna','Traditional Line':'Línea Tradicional','Poisoned Pawn':'Peón Envenenado',
 };
 export function nombreApertura(nombre:string):string {
  if(nombres[nombre])return nombres[nombre];
- return nombre.split(': ').map(parte=>nombres[parte]??parte
+ return nombre.split(': ').map(parte=>nombres[parte]??parte.split(', ').map(detalle=>nombres[detalle]??detalle
   .replace(/^(.*) Gambit Accepted$/,'Gambito $1 Aceptado').replace(/^(.*) Gambit Declined$/,'Gambito $1 Rehusado')
   .replace(/^(.*) Gambit$/,'Gambito $1').replace(/^(.*) Defense$/,'Defensa $1')
   .replace(/^(.*) System$/,'Sistema $1').replace(/^(.*) Opening$/,'Apertura $1')
   .replace(/^(.*) Variation$/,'Variante $1').replace(/^(.*) Attack$/,'Ataque $1')
   .replace(/^(.*) Formation$/,'Formación $1')
-  .replace(/^(.*) Game$/,'Apertura $1')).join(' · ');
+  .replace(/^(.*) Game$/,'Apertura $1')).join(' · ')).join(' · ');
 }
 function tipoDe(nombre:string):TipoCartaApertura {
  if(/Hippopotamus|Stonewall/.test(nombre))return 'sistema';
@@ -43,7 +45,16 @@ function tipoDe(nombre:string):TipoCartaApertura {
  return 'apertura';
 }
 function hallazgo(original:string,tipo:TipoCartaApertura,fen:string,eco:string|null,variante=original):HallazgoApertura {
- return {id:`${tipo}:${original}`,nombre:nombreApertura(original),original,tipo,fen,eco,variante:nombreApertura(variante)};
+ return {id:`formacion:${original}`,nombre:nombreApertura(original),original,tipo,fen,eco,variante:nombreApertura(variante),pgn:'',profundidad:0,lado:'w'};
+}
+/** Identidad de la posición, independiente de la partida y del orden del catálogo. */
+export function idPosicionApertura(fen:string):string {
+ let hash=2166136261;for(const caracter of clave(fen)){hash^=caracter.charCodeAt(0);hash=Math.imul(hash,16777619);}
+ return `posicion:${(hash>>>0).toString(36)}`;
+}
+export function cartaDePosicion(entrada:(typeof catalogo)[number]):HallazgoApertura {
+ const hipopotamoCatalogo=entrada.nombre.startsWith('Hippopotamus Defense'),nombre=hipopotamoCatalogo?nombreApertura(entrada.nombre).replace('Sistema Hipopótamo','Defensa Hipopótamo'):nombreApertura(entrada.nombre);
+ return {id:idPosicionApertura(entrada.fen),nombre,original:entrada.nombre,tipo:hipopotamoCatalogo?'defensa':tipoDe(entrada.nombre),eco:entrada.eco,fen:entrada.fen,variante:nombre,pgn:entrada.pgn,profundidad:entrada.pgn.split(/\s+/).filter(t=>!/^\d+\./.test(t)).length,lado:entrada.fen.split(' ')[1]==='w'?'b':'w'};
 }
 // Las formaciones propias también se reconocen cuando cambia el orden de jugadas
 // o la respuesta del rival. Se exige la estructura completa, no un primer peón.
@@ -55,31 +66,21 @@ function sistemas(c:Chess,color:'w'|'b'):HallazgoApertura[] {
  if(todos([['d4','p'],['e3','p'],['f3','n'],['f4','b']])&&color==='w')salida.push(hallazgo('London System','sistema',c.fen(),null));
  if(todos([['b3','p'],['g3','p'],['d3','p'],['e3','p'],['b2','b'],['g2','b'],['d2','n'],['e2','n']]))salida.push(hallazgo('Hippopotamus Defense','sistema',c.fen(),null));
  if(todos([['c3','p'],['d4','p'],['e3','p'],['f4','p']]))salida.push(hallazgo('Stonewall Attack','sistema',c.fen(),null));
- return salida;
+ return salida.map(f=>({...f,lado:color}));
 }
-/** Sólo la apertura más específica del catálogo, más sus gambitos/sistemas y
- * formaciones propias. Nunca entrega todas las aperturas transitorias de 1.e4. */
+/** Cada posición catalogada realmente alcanzada entrega su propia carta.
+ * La ilustración y el nombre siempre corresponden a esa misma posición. */
 export function descubrirAperturas(movimientos:string[],color:'w'|'b'):HallazgoApertura[] {
  if(!Array.isArray(movimientos)||movimientos.length<4)return [];
- const c=new Chess(),formaciones=new Map<string,HallazgoApertura>();
- let ultima:{entrada:(typeof catalogo)[number];fen:string}|null=null;
+ const c=new Chess(),resultado=new Map<string,HallazgoApertura>();
  try {
   for(const u of movimientos.slice(0,40)){
    if(typeof u!=='string'||!/^([a-h][1-8]){2}[qrbn]?$/.test(u))return [];
    c.move({from:u.slice(0,2),to:u.slice(2,4),promotion:u[4]});
-   const entrada=posiciones.get(clave(c.fen()));if(entrada)ultima={entrada,fen:c.fen()};
-   for(const f of sistemas(c,color))if(!formaciones.has(f.id))formaciones.set(f.id,f);
+   const entrada=posiciones.get(clave(c.fen()));if(entrada){const f=cartaDePosicion(entrada);resultado.set(f.id,f);}
+   for(const f of sistemas(c,color))if(!resultado.has(f.id))resultado.set(f.id,{...f,pgn:c.pgn(),profundidad:c.history().length});
   }
  } catch {return [];}
- const resultado=new Map<string,HallazgoApertura>();
- if(ultima){
-  const {entrada,fen}=ultima,partes=entrada.nombre.split(': '),raiz=partes[0];
-  const base=hallazgo(raiz,tipoDe(raiz),fen,entrada.eco,entrada.nombre);resultado.set(base.id,base);
-  for(const detalle of partes.slice(1).flatMap(p=>p.split(', ')).filter(p=>/Gambit|System|Formation/.test(p))){
-   const f=hallazgo(detalle,tipoDe(detalle),fen,entrada.eco,entrada.nombre);resultado.set(f.id,f);
-  }
- }
- for(const [id,f] of formaciones)resultado.set(id,f);
  return [...resultado.values()];
 }
 export function coleccionarAperturas(partidas:PartidaAperturas[]):CartaApertura[] {
@@ -88,7 +89,8 @@ export function coleccionarAperturas(partidas:PartidaAperturas[]):CartaApertura[
   if(vistas.has(p.id))continue;vistas.add(p.id);
   const {movimientos,...datos}=p;
   for(const f of descubrirAperturas(movimientos,p.color)){
-   const carta=cartas.get(f.id)??{...f,partidas:[],victorias:0,tablas:0,blancas:0,negras:0};
+   const carta=cartas.get(f.id)??{...f,partidas:[],victorias:0,tablas:0,blancas:0,negras:0,rareza:'comun',acabado:'normal'} as CartaApertura;
+   if(f.lado===p.color){carta.rareza='rara';if(p.resultado===(p.color==='w'?'1-0':'0-1'))carta.acabado='foil';}
    carta.partidas.push(datos);carta[p.color==='w'?'blancas':'negras']++;
    if(p.resultado===(p.color==='w'?'1-0':'0-1'))carta.victorias++;
    if(p.resultado==='1/2-1/2')carta.tablas++;

@@ -4,18 +4,22 @@ require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f
 const {descubrirAperturas,coleccionarAperturas}=require('../lib/albumAperturas.ts');
 const uci=pgn=>{const c=new Chess();c.loadPgn(pgn);return c.history({verbose:true}).map(m=>m.from+m.to+(m.promotion??''));};
 
-test('Las aperturas se reconocen por posición y no entregan todas las familias transitorias',()=>{
+test('Una partida descubre cada posición nombrada que realmente alcanzó, con su diagrama exacto',()=>{
  const a=descubrirAperturas(uci('1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5'),'w');
  assert.ok(a.some(c=>c.nombre==='Apertura Italiana'));
- assert.ok(!a.some(c=>/Pawn/.test(c.original)));
+ assert.ok(a.some(c=>c.original==="King's Pawn Game"));
+ const italiana=a.find(c=>c.nombre==='Apertura Italiana'),c=new Chess();c.loadPgn(italiana.pgn);
+ assert.equal(c.fen().split(' ').slice(0,4).join(' '),italiana.fen);
+ assert.notEqual(italiana.fen,a.find(c=>c.original==="King's Pawn Game").fen);
  const normal=descubrirAperturas(uci('1. d4 Nf6 2. c4 e6 3. Nc3 Bb4'),'w');
  const transpuesta=descubrirAperturas(uci('1. c4 Nf6 2. Nc3 e6 3. d4 Bb4'),'w');
- assert.deepEqual(normal.map(c=>c.id),transpuesta.map(c=>c.id));
+ assert.equal(normal.find(c=>c.nombre==='Defensa Nimzoindia').id,transpuesta.find(c=>c.nombre==='Defensa Nimzoindia').id);
+ assert.ok(!transpuesta.some(c=>c.original==="Queen's Pawn Game"));
  assert.ok(normal.some(c=>c.nombre==='Defensa Nimzoindia'));
 });
 test('Los gambitos y sistemas tienen cartas propias; las formaciones pertenecen al color que las juega',()=>{
  const evans=descubrirAperturas(uci('1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4'),'w');
- assert.ok(evans.some(c=>c.nombre==='Gambito Evans'&&c.tipo==='gambito'));
+ assert.ok(evans.some(c=>c.nombre.includes('Gambito Evans')&&c.tipo==='gambito'));
  assert.ok(evans.some(c=>c.nombre==='Apertura Italiana'));
  const london=uci('1. d4 a6 2. Nf3 h6 3. Bf4 b6 4. e3 g6');
  assert.ok(descubrirAperturas(london,'w').some(c=>c.nombre==='Sistema Londres'));

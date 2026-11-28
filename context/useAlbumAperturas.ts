@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {supabase} from '@/lib/supabase';
 import {coleccionarAperturas,type PartidaAperturas} from '@/lib/albumAperturas';
+import {miticasDeRamas} from '@/lib/recompensasAperturas';
 
 export function useAlbumAperturas(jugadorId:string|null){
  const [revision,actualizar]=useState(0);
@@ -38,5 +39,6 @@ export function useAlbumAperturas(jugadorId:string|null){
  },[jugadorId,revision]);
  const vigente=estado.jugador===jugadorId;
  const cartas=useMemo(()=>vigente?coleccionarAperturas(estado.partidas):[],[vigente,estado.partidas]);
- return {cartas,partidas:vigente?estado.partidas:[],cargando:!!jugadorId&&(!vigente||estado.cargando),error:vigente?estado.error:'',refrescar};
+ const miticas=useMemo(()=>miticasDeRamas(cartas),[cartas]);
+ return {cartas,miticas,partidas:vigente?estado.partidas:[],cargando:!!jugadorId&&(!vigente||estado.cargando),error:vigente?estado.error:'',refrescar};
 }
